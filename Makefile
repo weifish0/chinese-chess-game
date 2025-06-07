@@ -2,7 +2,7 @@ C := gcc
 CXX := g++
 SOURCE_DIR := $(CURDIR)
 BUILD_DIR := $(CURDIR)/build
-PROJECT_NAME := 2025_I2P2_TowerDefense
+PROJECT_NAME := CHINESE-CHESS-GAME
 ifeq ($(OS),Windows_NT)
 	GENERATOR := Unix Makefiles
 	GENERATOR_PROGRAM := $(CURDIR)/ninja.exe
