@@ -11,7 +11,7 @@ int main(int argc, char **argv) {
 
     game.AddNewScene("start", new StartScene());
 
-	game.Start("start", 60, 1600, 832);
+	game.Start("start", 60, 2666, 1500);
 	
 	return 0;
 }
