@@ -10,10 +10,6 @@
 #include "Engine/IScene.hpp"
 #include "Engine/Point.hpp"
 
-// For others to use TurretMap.
-typedef std::map<Engine::Point, Turret *> Pos_Turret_Map;
-extern Pos_Turret_Map TurretMap;
-
 class Turret;
 namespace Engine {
     class Group;
@@ -22,9 +18,9 @@ namespace Engine {
     class Sprite;
 }   // namespace Engine
 
-class PlayScene final : public Engine::IScene {
+class XiangqiScene final : public Engine::IScene {
 private:
-    enum TileType {
+    enum CrosspointType {
         TILE_DIRT,
         TILE_FLOOR,
         TILE_OCCUPIED,
@@ -64,12 +60,12 @@ public:
     Engine::Image *imgTarget;
     Engine::Sprite *dangerIndicator;
     Turret *preview;
-    std::vector<std::vector<TileType>> mapState;
+    std::vector<std::vector<CrosspointType>> mapState;
     std::vector<std::vector<int>> mapDistance;
     std::list<std::pair<int, float>> enemyWaveData;
     std::list<int> keyStrokes;
     static Engine::Point GetClientSize();
-    explicit PlayScene() = default;
+    explicit XiangqiScene() = default;
     void Initialize() override;
     void Terminate() override;
     void Update(float deltaTime) override;

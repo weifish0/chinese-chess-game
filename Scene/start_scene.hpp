@@ -10,7 +10,7 @@ public:
     explicit StartScene() = default;
     void Initialize() override;
     void Terminate() override;
-    void PlaygroundOnClick(int stage);
+    void PlayOnClick(int stage);
     void SettingsOnClick(int stage);
 };
 #endif // STARTSCENE_HPP
