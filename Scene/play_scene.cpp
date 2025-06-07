@@ -21,14 +21,14 @@ void PlayScene::Initialize() {
     int h = Engine::GameEngine::GetInstance().GetScreenSize().y;
     int halfW = w / 2;
     int halfH = h / 2;
-    Engine::ImageButton *btn;
-    al_init_image_addon();
+    //Engine::ImageButton *btn;
+    //al_init_image_addon();
 
-    ALLEGRO_BITMAP* image = al_load_bitmap("Resource/images/chess_board.png");
-    if (!image) {
-        std::cerr << "Failed to load image!" << std::endl;
-    }
-    al_draw_bitmap(image, 0, 0, 0); // x, y 是圖片顯示的位置
+    
+    
+    
+    //image->Position = Point(halfW - 400, halfH - 200);
+    AddNewObject(new Engine::Image("chess_board.png", 333, 187.5 , 2000 , 1125 , 0, 0));
 
 
 
