@@ -2,7 +2,8 @@
 #include <functional>
 #include <memory>
 #include <string>
-
+#include <ostream>
+#include <iostream>
 #include "Engine/AudioHelper.hpp"
 #include "Engine/GameEngine.hpp"
 #include "Engine/Point.hpp"
@@ -20,23 +21,25 @@ void StartScene::Initialize() {
     int halfH = h / 2;
     Engine::ImageButton *btn;
 
-    AddNewObject(new Engine::Label("elephant chess", "pirulen.ttf", 120, halfW, halfH / 3 + 50, 10, 255, 255, 255, 0.5, 0.5));
+    AddNewObject(new Engine::Label("對戰暗棋", "font2.ttc", 300, halfW, halfH / 3 + 50, 102, 204, 255, 255, 0.5, 0.5));
+    // auto font = al_load_font("pirulen.ttf", 120, 0);
+    // if (!font) std::cerr << "Font load failed!" << std::endl;
 
-    // btn = new Engine::ImageButton("stage-select/dirt.png", "stage-select/floor.png", halfW - 200, halfH / 2 + 200, 400, 100);
-    // btn->SetOnClickCallback(std::bind(&StartScene::PlayOnClick, this, 1));
-    // AddNewControlObject(btn);
-    AddNewObject(new Engine::Label("Play", "pirulen.ttf", 48, halfW, halfH / 2 + 250, 0, 0, 0, 255, 0.5, 0.5));
+    btn = new Engine::ImageButton("start/block.png", "start/dirt.png", halfW - 400, halfH / 2 + 300, 800, 200);
+    btn->SetOnClickCallback(std::bind(&StartScene::PlayOnClick, this, 1));
+    AddNewControlObject(btn);
+    AddNewObject(new Engine::Label("開始", "font2.ttc", 140, halfW, halfH / 2 + 400, 14 , 37 , 67 , 255, 0.5, 0.5));
 
-    // btn = new Engine::ImageButton("stage-select/dirt.png", "stage-select/floor.png", halfW - 200, halfH * 3 / 2 - 50, 400, 100);
-    // btn->SetOnClickCallback(std::bind(&StartScene::SettingsOnClick, this, 2));
-    // AddNewControlObject(btn);
-    AddNewObject(new Engine::Label("Settings", "pirulen.ttf", 48, halfW, halfH * 3 / 2, 0, 0, 0, 255, 0.5, 0.5));
+    btn = new Engine::ImageButton("start/block.png", "start/dirt.png", halfW - 400, halfH * 3 / 2 - 50, 800, 200);
+    btn->SetOnClickCallback(std::bind(&StartScene::SettingsOnClick, this, 2));
+    AddNewControlObject(btn);
+    AddNewObject(new Engine::Label("設置", "font2.ttc", 140, halfW, halfH * 3 / 2 +50, 14, 37, 67, 255, 0.5, 0.5));
 }
 void StartScene::Terminate() {
     IScene::Terminate();
 }
 void StartScene::PlayOnClick(int stage) {
-    Engine::GameEngine::GetInstance().ChangeScene("stage-select");
+    Engine::GameEngine::GetInstance().ChangeScene("mode_select");
 }
 void StartScene::SettingsOnClick(int stage) {
     Engine::GameEngine::GetInstance().ChangeScene("settings");

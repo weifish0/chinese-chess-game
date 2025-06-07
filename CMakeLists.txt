@@ -40,6 +40,10 @@ add_executable(CHINESE-CHESS-GAME
     
     Scene/start_scene.cpp
     Scene/start_scene.hpp
+    Scene/mode_select.cpp
+    Scene/mode_select.hpp
+    Scene/play_scene.cpp
+    Scene/play_scene.hpp
 
     UI/Component/Image.cpp
     UI/Component/Image.hpp
