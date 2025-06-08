@@ -73,7 +73,6 @@ void Player::Draw() const {
 }
 
 void Player::Update(float deltaTime) {
-    std::cout << "current_frame: " << current_frame << std::endl;
     if (is_moving) {
         // 更新動畫計時器
         animation_timer += deltaTime;
