@@ -14,6 +14,10 @@ file(COPY allegro_monolith-5.2.dll DESTINATION ${CMAKE_CURRENT_BINARY_DIR})
 
 add_executable(CHINESE-CHESS-GAME
 
+    ChessPiece/ChessPiece.cpp
+    ChessPiece/ChessPiece.hpp
+    ChessPiece/KingPiece.cpp
+    ChessPiece/KingPiece.hpp
 
     Engine/Allegro5Exception.cpp
     Engine/Allegro5Exception.hpp
@@ -37,6 +41,8 @@ add_executable(CHINESE-CHESS-GAME
     Engine/Point.hpp
     Engine/Resources.cpp
     Engine/Resources.hpp
+    Engine/Sprite.cpp
+    Engine/Sprite.hpp
     
     Scene/start_scene.cpp
     Scene/start_scene.hpp
