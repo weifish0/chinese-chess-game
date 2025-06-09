@@ -16,8 +16,20 @@ add_executable(CHINESE-CHESS-GAME
 
     ChessPiece/ChessPiece.cpp
     ChessPiece/ChessPiece.hpp
+    ChessPiece/CannonPiece.cpp
+    ChessPiece/CannonPiece.hpp
+    ChessPiece/ChariotPiece.cpp
+    ChessPiece/ChariotPiece.hpp
+    ChessPiece/ElephantPiece.cpp
+    ChessPiece/ElephantPiece.hpp
+    ChessPiece/GuardPiece.cpp
+    ChessPiece/GuardPiece.hpp
+    ChessPiece/HorsePiece.cpp
+    ChessPiece/HorsePiece.hpp
     ChessPiece/KingPiece.cpp
     ChessPiece/KingPiece.hpp
+    ChessPiece/PawnPiece.cpp
+    ChessPiece/PawnPiece.hpp
 
     Engine/Allegro5Exception.cpp
     Engine/Allegro5Exception.hpp

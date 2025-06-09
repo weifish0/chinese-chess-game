@@ -12,7 +12,13 @@
 #include "Scene/xiangqi_scene.hpp"
 
 #include "ChessPiece/ChessPiece.hpp"
+#include "ChessPiece/CannonPiece.hpp"
+#include "ChessPiece/ChariotPiece.hpp"
+#include "ChessPiece/ElephantPiece.hpp"
+#include "ChessPiece/GuardPiece.hpp"
+#include "ChessPiece/HorsePiece.hpp"
 #include "ChessPiece/KingPiece.hpp"
+#include "ChessPiece/PawnPiece.hpp"
 
 #include "Engine/GameEngine.hpp"
 #include "Engine/IScene.hpp"
@@ -58,8 +64,8 @@ void XiangqiScene::ReadChessboard() {
     std::vector<int> mapData;
     std::ifstream fin(filename);
     while (fin >> c) {
-        std::cout << "[DEBUGGER] c = " << c << std::endl;
-        std::cout << ", mapData.size() = " << static_cast<int>(mapData.size()) << std::endl;
+        // std::cout << "[DEBUGGER] c = " << c << std::endl;
+        // std::cout << ", mapData.size() = " << static_cast<int>(mapData.size()) << std::endl;
         if ('0' <= c && c <= '7') {
             mapData.push_back(c - '0');
 
@@ -88,20 +94,47 @@ void XiangqiScene::ReadChessboard() {
             
             // Construct all the chess pieces.
             // BLACK at the top, RED at the bottom.
-            Engine::Point position(blockSize * (i-4) + halfW, blockSize * j + halfH);
+            Engine::Point position(blockSize * (j-4) + halfW, blockSize * (i-4.5) + halfH); // i for row, j for column!
             std::string img = "xiangqi_scene/";
             if (num == KING) {
-                std::cout << "[DEBUGGER] i, j = " << i << "," << j << std::endl;
                 (color == RED) ? img += "red_piece_shuai.png" : img += "black_piece_jiang.png";
-                PieceGroup->AddNewObject(new KingPiece(img, position, color, false, 100));
+                PieceGroup->AddNewObject(new KingPiece(img, position, color, false, KING * 10));
 
+            } else if (num == GUARD) {
+                (color == RED) ? img += "red_" : img += "black_";
+                img += "piece_shi.png";
+                PieceGroup->AddNewObject(new GuardPiece(img, position, color, false, GUARD * 10));
+
+            } else if (num == ELFNT) {
+                (color == RED) ? img += "red_" : img += "black_";
+                img += "piece_xiang.png";
+                PieceGroup->AddNewObject(new ElephantPiece(img, position, color, false, ELFNT * 10));
+
+            } else if (num == HORSE) {
+                (color == RED) ? img += "red_" : img += "black_";
+                img += "piece_ma.png";
+                PieceGroup->AddNewObject(new HorsePiece(img, position, color, false, HORSE * 10));
+
+            } else if (num == CHARIOT) {
+                (color == RED) ? img += "red_" : img += "black_";
+                img += "piece_ju.png";
+                PieceGroup->AddNewObject(new ChariotPiece(img, position, color, false, CHARIOT * 10));
+
+            } else if (num == CANNON) {
+                (color == RED) ? img += "red_" : img += "black_";
+                img += "piece_pao.png";
+                PieceGroup->AddNewObject(new CannonPiece(img, position, color, false, CANNON * 10));
+
+            } else if (num == PAWN) {
+                (color == RED) ? img += "red_piece_bing.png" : img += "black_piece_zu.png";
+                PieceGroup->AddNewObject(new PawnPiece(img, position, color, false, PAWN * 10));
             }
         }
     }
 
     // Debugging
-    for (int i=0;i<ChessboardHeight;i++) {
-        for(int j=0;j<ChessboardWidth;j++) std::cout << ChessboardState[i][j] << " ";
-        std::cout << std::endl;
-    }
+    // for (int i=0;i<ChessboardHeight;i++) {
+    //     for(int j=0;j<ChessboardWidth;j++) std::cout << ChessboardState[i][j] << " ";
+    //     std::cout << std::endl;
+    // }
 }
