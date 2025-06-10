@@ -37,6 +37,8 @@ add_executable(CHINESE-CHESS-GAME
     Engine/Point.hpp
     Engine/Resources.cpp
     Engine/Resources.hpp
+    Engine/Sprite.cpp
+    Engine/Sprite.hpp
     
     Scene/start_scene.cpp
     Scene/start_scene.hpp
@@ -53,6 +55,9 @@ add_executable(CHINESE-CHESS-GAME
     UI/Component/Label.hpp
     UI/Component/Slider.cpp
     UI/Component/Slider.hpp
+
+    Chess/chess.cpp
+    Chess/chess.hpp
     
     main.cpp
 )
