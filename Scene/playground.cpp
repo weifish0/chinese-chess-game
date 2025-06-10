@@ -8,6 +8,12 @@ void Playground::Initialize() {
     // 載入背景圖片
     background = Engine::Resources::GetInstance().GetBitmap("playground/playground.png");
     
+    // 載入暗棋建築圖片
+    anqi_house = Engine::Resources::GetInstance().GetBitmap("playground/anqi_house.png");
+    
+    // 載入象棋建築圖片
+    xiangqi_house = Engine::Resources::GetInstance().GetBitmap("playground/xiangqi_house.png");
+
     // 創建玩家
     player = new Player();
     AddNewObject(player);
@@ -31,6 +37,29 @@ void Playground::Draw() const {
             background.get(),
             camera_x, camera_y, VIEWPORT_WIDTH, VIEWPORT_HEIGHT, // 來源區域
             0, 0, SCREEN_RIGHT, SCREEN_BOTTOM,                   // 目標區域（全螢幕）
+            0
+        );
+    }
+    
+    // 繪製暗棋建築
+    if (anqi_house) {
+        float draw_x = (ANQI_HOUSE_X - camera_x) * scale_x;
+        float draw_y = (ANQI_HOUSE_Y - camera_y) * scale_y;
+        al_draw_scaled_bitmap(
+            anqi_house.get(),
+            0, 0, al_get_bitmap_width(anqi_house.get()), al_get_bitmap_height(anqi_house.get()),
+            draw_x, draw_y, ANQI_HOUSE_SIZE, ANQI_HOUSE_SIZE, 
+            0
+        );
+    }
+
+    if (xiangqi_house) {
+        float draw_x = (XIANGQI_HOUSE_X - camera_x) * scale_x;
+        float draw_y = (XIANGQI_HOUSE_Y - camera_y) * scale_y;
+        al_draw_scaled_bitmap(
+            xiangqi_house.get(),
+            0, 0, al_get_bitmap_width(xiangqi_house.get()), al_get_bitmap_height(xiangqi_house.get()),
+            draw_x, draw_y, XIANGQI_HOUSE_SIZE, XIANGQI_HOUSE_SIZE, 
             0
         );
     }
@@ -69,6 +98,18 @@ void Playground::Update(float deltaTime) {
     float playerY = player->getY();
     float playerSize = player->getSize();
     
+    // 檢查玩家是否靠近暗棋建築
+    float distance = std::sqrt(std::pow(playerX - ANQI_HOUSE_X, 2) + std::pow(playerY - ANQI_HOUSE_Y, 2));
+    if (distance < 100 && Engine::GameEngine::GetInstance().IsKeyDown(ALLEGRO_KEY_SPACE)) {
+        Engine::GameEngine::GetInstance().ChangeScene("start");
+    }
+
+    // 檢查玩家是否靠近象棋建築
+    float distance2 = std::sqrt(std::pow(playerX - XIANGQI_HOUSE_X, 2) + std::pow(playerY - XIANGQI_HOUSE_Y, 2));
+    if (distance2 < 100 && Engine::GameEngine::GetInstance().IsKeyDown(ALLEGRO_KEY_SPACE)) {
+        Engine::GameEngine::GetInstance().ChangeScene("start");
+    }
+    
     // 處理輸入並檢查邊界
     if (Engine::GameEngine::GetInstance().IsKeyDown(ALLEGRO_KEY_W)) {
         // 檢查上邊界
@@ -100,6 +141,6 @@ void Playground::Update(float deltaTime) {
 }
 
 // 新增：處理滑鼠事件
-// void Playground::OnMouseDown(int button, int mx, int my) {
-//     std::cout << "Mouse Click: screen(" << mx << ", " << my << ")" << std::endl;
-// }
+void Playground::OnMouseDown(int button, int mx, int my) {
+    std::cout << "Mouse Click: screen(" << mx << ", " << my << ")" << std::endl;
+}
