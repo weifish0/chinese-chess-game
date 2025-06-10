@@ -8,12 +8,14 @@ void Playground::Initialize() {
     // 載入背景圖片
     background = Engine::Resources::GetInstance().GetBitmap("playground/playground.png");
     
-    // 載入暗棋建築圖片
-    anqi_house = Engine::Resources::GetInstance().GetBitmap("playground/anqi_house.png");
+    // 載入建築圖片
+    auto anqi_house_img = Engine::Resources::GetInstance().GetBitmap("playground/anqi_house.png");
+    auto xiangqi_house_img = Engine::Resources::GetInstance().GetBitmap("playground/xiangqi_house.png");
     
-    // 載入象棋建築圖片
-    xiangqi_house = Engine::Resources::GetInstance().GetBitmap("playground/xiangqi_house.png");
-
+    // 初始化建築物
+    buildings.push_back(Building(ANQI_HOUSE_X, ANQI_HOUSE_Y, HOUSE_SIZE, HOUSE_SIZE, anqi_house_img, "anqi_house"));
+    buildings.push_back(Building(XIANGQI_HOUSE_X, XIANGQI_HOUSE_Y, HOUSE_SIZE, HOUSE_SIZE, xiangqi_house_img, "xiangqi_house"));
+    
     // 創建玩家
     player = new Player();
     AddNewObject(player);
@@ -31,40 +33,29 @@ void Playground::Draw() const {
     float scale_x = SCREEN_RIGHT / VIEWPORT_WIDTH;
     float scale_y = SCREEN_BOTTOM / VIEWPORT_HEIGHT;
 
-    // 繪製背景（只繪製視窗範圍內的部分，並縮放到全螢幕）
+    // 繪製背景
     if (background) {
         al_draw_scaled_bitmap(
             background.get(),
-            camera_x, camera_y, VIEWPORT_WIDTH, VIEWPORT_HEIGHT, // 來源區域
-            0, 0, SCREEN_RIGHT, SCREEN_BOTTOM,                   // 目標區域（全螢幕）
+            camera_x, camera_y, VIEWPORT_WIDTH, VIEWPORT_HEIGHT,
+            0, 0, SCREEN_RIGHT, SCREEN_BOTTOM,
             0
         );
     }
     
-    // 繪製暗棋建築
-    if (anqi_house) {
-        float draw_x = (ANQI_HOUSE_X - camera_x) * scale_x;
-        float draw_y = (ANQI_HOUSE_Y - camera_y) * scale_y;
+    // 繪製所有建築物
+    for (const auto& building : buildings) {
+        float draw_x = (building.x - camera_x - building.width/2) * scale_x;
+        float draw_y = (building.y - camera_y - building.height/2) * scale_y;
         al_draw_scaled_bitmap(
-            anqi_house.get(),
-            0, 0, al_get_bitmap_width(anqi_house.get()), al_get_bitmap_height(anqi_house.get()),
-            draw_x, draw_y, ANQI_HOUSE_SIZE, ANQI_HOUSE_SIZE, 
-            0
-        );
-    }
-
-    if (xiangqi_house) {
-        float draw_x = (XIANGQI_HOUSE_X - camera_x) * scale_x;
-        float draw_y = (XIANGQI_HOUSE_Y - camera_y) * scale_y;
-        al_draw_scaled_bitmap(
-            xiangqi_house.get(),
-            0, 0, al_get_bitmap_width(xiangqi_house.get()), al_get_bitmap_height(xiangqi_house.get()),
-            draw_x, draw_y, XIANGQI_HOUSE_SIZE, XIANGQI_HOUSE_SIZE, 
+            building.image.get(),
+            0, 0, al_get_bitmap_width(building.image.get()), al_get_bitmap_height(building.image.get()),
+            draw_x, draw_y, building.width * scale_x, building.height * scale_y,
             0
         );
     }
     
-    // 繪製玩家（固定在螢幕正中央，並縮放）
+    // 繪製玩家
     if (player) {
         float sprite_width = player->getSize();
         float sprite_height = player->getSize();
@@ -87,54 +78,98 @@ void Playground::UpdateCamera() {
     camera_y = std::max(0.0f, std::min(camera_y, SCREEN_BOTTOM - VIEWPORT_HEIGHT));
 }
 
+bool Playground::CheckBuildingCollision(float newX, float newY) {
+    for (const auto& building : buildings) {
+        if (building.IsColliding(newX, newY, player->getSize())) {
+            return true;
+        }
+    }
+    return false;
+}
+
 void Playground::Update(float deltaTime) {
     player->Update(deltaTime);
-
-    // 更新鏡頭位置
     UpdateCamera();
     
-    // 獲取玩家當前位置
     float playerX = player->getX();
     float playerY = player->getY();
     float playerSize = player->getSize();
+    float moveSpeed = player->getSpeed();
     
-    // 檢查玩家是否靠近暗棋建築
-    float distance = std::sqrt(std::pow(playerX - ANQI_HOUSE_X, 2) + std::pow(playerY - ANQI_HOUSE_Y, 2));
-    if (distance < 100 && Engine::GameEngine::GetInstance().IsKeyDown(ALLEGRO_KEY_SPACE)) {
-        Engine::GameEngine::GetInstance().ChangeScene("start");
-    }
-
-    // 檢查玩家是否靠近象棋建築
-    float distance2 = std::sqrt(std::pow(playerX - XIANGQI_HOUSE_X, 2) + std::pow(playerY - XIANGQI_HOUSE_Y, 2));
-    if (distance2 < 100 && Engine::GameEngine::GetInstance().IsKeyDown(ALLEGRO_KEY_SPACE)) {
-        Engine::GameEngine::GetInstance().ChangeScene("start");
-    }
-    
-    // 處理輸入並檢查邊界
+    // 處理輸入並檢查碰撞
     if (Engine::GameEngine::GetInstance().IsKeyDown(ALLEGRO_KEY_W)) {
-        // 檢查上邊界
-        if (playerY - playerSize/2 > SCREEN_TOP) {
+        float newY = playerY - moveSpeed;
+        // 先檢查垂直移動
+        if (newY - playerSize/2 > SCREEN_TOP && !CheckBuildingCollision(playerX, newY)) {
             player->moveUp();
+        } else {
+            // 如果垂直移動會碰撞，嘗試水平移動
+            if (Engine::GameEngine::GetInstance().IsKeyDown(ALLEGRO_KEY_A) && 
+                !CheckBuildingCollision(playerX - moveSpeed, playerY)) {
+                player->moveLeft();
+            }
+            if (Engine::GameEngine::GetInstance().IsKeyDown(ALLEGRO_KEY_D) && 
+                !CheckBuildingCollision(playerX + moveSpeed, playerY)) {
+                player->moveRight();
+            }
         }
     }
     if (Engine::GameEngine::GetInstance().IsKeyDown(ALLEGRO_KEY_S)) {
-        // 檢查下邊界
-        if (playerY + playerSize/2 < SCREEN_BOTTOM) {
+        float newY = playerY + moveSpeed;
+        if (newY + playerSize/2 < SCREEN_BOTTOM && !CheckBuildingCollision(playerX, newY)) {
             player->moveDown();
+        } else {
+            if (Engine::GameEngine::GetInstance().IsKeyDown(ALLEGRO_KEY_A) && 
+                !CheckBuildingCollision(playerX - moveSpeed, playerY)) {
+                player->moveLeft();
+            }
+            if (Engine::GameEngine::GetInstance().IsKeyDown(ALLEGRO_KEY_D) && 
+                !CheckBuildingCollision(playerX + moveSpeed, playerY)) {
+                player->moveRight();
+            }
         }
     }
     if (Engine::GameEngine::GetInstance().IsKeyDown(ALLEGRO_KEY_A)) {
-        // 檢查左邊界
-        if (playerX - playerSize/2 > SCREEN_LEFT) {
+        float newX = playerX - moveSpeed;
+        if (newX - playerSize/2 > SCREEN_LEFT && !CheckBuildingCollision(newX, playerY)) {
             player->moveLeft();
+        } else {
+            if (Engine::GameEngine::GetInstance().IsKeyDown(ALLEGRO_KEY_W) && 
+                !CheckBuildingCollision(playerX, playerY - moveSpeed)) {
+                player->moveUp();
+            }
+            if (Engine::GameEngine::GetInstance().IsKeyDown(ALLEGRO_KEY_S) && 
+                !CheckBuildingCollision(playerX, playerY + moveSpeed)) {
+                player->moveDown();
+            }
         }
     }
     if (Engine::GameEngine::GetInstance().IsKeyDown(ALLEGRO_KEY_D)) {
-        // 檢查右邊界
-        if (playerX + playerSize/2 < SCREEN_RIGHT) {
+        float newX = playerX + moveSpeed;
+        if (newX + playerSize/2 < SCREEN_RIGHT && !CheckBuildingCollision(newX, playerY)) {
             player->moveRight();
+        } else {
+            if (Engine::GameEngine::GetInstance().IsKeyDown(ALLEGRO_KEY_W) && 
+                !CheckBuildingCollision(playerX, playerY - moveSpeed)) {
+                player->moveUp();
+            }
+            if (Engine::GameEngine::GetInstance().IsKeyDown(ALLEGRO_KEY_S) && 
+                !CheckBuildingCollision(playerX, playerY + moveSpeed)) {
+                player->moveDown();
+            }
         }
     }
+    
+    // 檢查是否靠近建築物並按下空白鍵
+    for (const auto& building : buildings) {
+        if (building.IsColliding(playerX, playerY, player->getSize()) && 
+            Engine::GameEngine::GetInstance().IsKeyDown(ALLEGRO_KEY_SPACE)) {
+            if (building.name == "anqi_house") {
+                Engine::GameEngine::GetInstance().ChangeScene("start");
+            }
+        }
+    }
+    
     if (Engine::GameEngine::GetInstance().IsKeyDown(ALLEGRO_KEY_ESCAPE)) {
         Engine::GameEngine::GetInstance().ChangeScene("start");
     }

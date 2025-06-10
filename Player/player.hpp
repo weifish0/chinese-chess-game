@@ -44,6 +44,7 @@ public:
     float getX() const { return x; }
     float getY() const { return y; }
     float getSize() const { return size; }
+    float getSpeed() const { return speed; }
 };
 
 #endif // PLAYER_HPP 

@@ -4,8 +4,30 @@
 #include <allegro5/allegro.h>
 #include <allegro5/allegro_primitives.h>
 #include <memory>
+#include <vector>
 #include "Engine/IScene.hpp"
 #include "Player/player.hpp"
+
+// 建築物結構
+struct Building {
+    float x;
+    float y;
+    float width;
+    float height;
+    std::shared_ptr<ALLEGRO_BITMAP> image;
+    std::string name;
+
+    Building(float x, float y, float width, float height, std::shared_ptr<ALLEGRO_BITMAP> img, std::string name)
+        : x(x), y(y), width(width), height(height), image(img), name(name) {}
+
+    bool IsColliding(float playerX, float playerY, float playerSize) const {
+        // 檢查玩家是否與建築物碰撞
+        return (playerX + playerSize/2 > x - width/2 + 10 &&
+                playerX - playerSize/2 < x + width/2  - 10&&
+                playerY + playerSize/2 > y - height/2 + 10 &&
+                playerY - playerSize/2 < y + height/2 - 10);
+    }
+};
 
 class Playground final : public Engine::IScene {
 private:
@@ -13,6 +35,7 @@ private:
     std::shared_ptr<ALLEGRO_BITMAP> background;  // 背景圖片
     std::shared_ptr<ALLEGRO_BITMAP> anqi_house;  // 暗棋建築圖片
     std::shared_ptr<ALLEGRO_BITMAP> xiangqi_house;  // 象棋建築圖片
+    std::vector<Building> buildings;  // 建築物列表
 
     // 螢幕邊界
     static constexpr float SCREEN_LEFT = 0;
@@ -30,9 +53,8 @@ private:
     static constexpr float ANQI_HOUSE_X = 600;
     static constexpr float ANQI_HOUSE_Y = 1000;
     static constexpr float XIANGQI_HOUSE_X = 1400;
-    static constexpr float XIANGQI_HOUSE_Y = 50;
-    static constexpr float ANQI_HOUSE_SIZE = 1000;
-    static constexpr float XIANGQI_HOUSE_SIZE = 1000;
+    static constexpr float XIANGQI_HOUSE_Y = 100;
+    static constexpr float HOUSE_SIZE = 400;
 
 public:
     explicit Playground() : camera_x(0), camera_y(0) {}
@@ -47,6 +69,7 @@ public:
 private:
     // 更新鏡頭位置
     void UpdateCamera();
+    bool CheckBuildingCollision(float newX, float newY);  // 新增：檢查建築物碰撞
 };
 
 #endif // PLAYGROUND_HPP 
