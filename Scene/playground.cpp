@@ -9,12 +9,16 @@ void Playground::Initialize() {
     background = Engine::Resources::GetInstance().GetBitmap("playground/playground.png");
     
     // 載入建築圖片
-    auto anqi_house_img = Engine::Resources::GetInstance().GetBitmap("playground/anqi_house.png");
-    auto xiangqi_house_img = Engine::Resources::GetInstance().GetBitmap("playground/xiangqi_house.png");
+    auto anqi_house_normal = Engine::Resources::GetInstance().GetBitmap("playground/anqi_house.png");
+    auto anqi_house_pressed = Engine::Resources::GetInstance().GetBitmap("playground/anqi_house_pressed.png");
+    auto xiangqi_house_normal = Engine::Resources::GetInstance().GetBitmap("playground/xiangqi_house.png");
+    auto xiangqi_house_pressed = Engine::Resources::GetInstance().GetBitmap("playground/xiangqi_house_pressed.png");
     
     // 初始化建築物
-    buildings.push_back(Building(ANQI_HOUSE_X, ANQI_HOUSE_Y, HOUSE_SIZE, HOUSE_SIZE, anqi_house_img, "anqi_house"));
-    buildings.push_back(Building(XIANGQI_HOUSE_X, XIANGQI_HOUSE_Y, HOUSE_SIZE, HOUSE_SIZE, xiangqi_house_img, "xiangqi_house"));
+    buildings.push_back(Building(ANQI_HOUSE_X, ANQI_HOUSE_Y, HOUSE_SIZE, HOUSE_SIZE, 
+                                anqi_house_normal, anqi_house_pressed, "anqi_house"));
+    buildings.push_back(Building(XIANGQI_HOUSE_X, XIANGQI_HOUSE_Y, HOUSE_SIZE, HOUSE_SIZE, 
+                                xiangqi_house_normal, xiangqi_house_pressed, "xiangqi_house"));
     
     // 創建玩家
     player = new Player();
@@ -48,8 +52,9 @@ void Playground::Draw() const {
         float draw_x = (building.x - camera_x - building.width/2) * scale_x;
         float draw_y = (building.y - camera_y - building.height/2) * scale_y;
         al_draw_scaled_bitmap(
-            building.image.get(),
-            0, 0, al_get_bitmap_width(building.image.get()), al_get_bitmap_height(building.image.get()),
+            building.GetCurrentImage().get(),
+            0, 0, al_get_bitmap_width(building.GetCurrentImage().get()), 
+            al_get_bitmap_height(building.GetCurrentImage().get()),
             draw_x, draw_y, building.width * scale_x, building.height * scale_y,
             0
         );
@@ -96,77 +101,52 @@ void Playground::Update(float deltaTime) {
     float playerSize = player->getSize();
     float moveSpeed = player->getSpeed();
     
+    // 獲取滑鼠位置
+    ALLEGRO_MOUSE_STATE mouse_state;
+    al_get_mouse_state(&mouse_state);
+    int mouse_x = mouse_state.x;
+    int mouse_y = mouse_state.y;
+    
+    // 更新建築物的懸停狀態
+    float scale_x = SCREEN_RIGHT / VIEWPORT_WIDTH;
+    float scale_y = SCREEN_BOTTOM / VIEWPORT_HEIGHT;
+    
+    // 重置所有建築物的懸停狀態
+    for (auto& building : buildings) {
+        building.is_hovered = false;
+    }
+    
+    // 檢查每個建築物的懸停狀態
+    for (auto& building : buildings) {
+        if (building.IsMouseOver(mouse_x, mouse_y, camera_x, camera_y, scale_x, scale_y)) {
+            building.is_hovered = true;
+            break;  // 一次只能懸停一個建築物
+        }
+    }
+    
     // 處理輸入並檢查碰撞
     if (Engine::GameEngine::GetInstance().IsKeyDown(ALLEGRO_KEY_W)) {
         float newY = playerY - moveSpeed;
-        // 先檢查垂直移動
         if (newY - playerSize/2 > SCREEN_TOP && !CheckBuildingCollision(playerX, newY)) {
             player->moveUp();
-        } else {
-            // 如果垂直移動會碰撞，嘗試水平移動
-            if (Engine::GameEngine::GetInstance().IsKeyDown(ALLEGRO_KEY_A) && 
-                !CheckBuildingCollision(playerX - moveSpeed, playerY)) {
-                player->moveLeft();
-            }
-            if (Engine::GameEngine::GetInstance().IsKeyDown(ALLEGRO_KEY_D) && 
-                !CheckBuildingCollision(playerX + moveSpeed, playerY)) {
-                player->moveRight();
-            }
         }
     }
     if (Engine::GameEngine::GetInstance().IsKeyDown(ALLEGRO_KEY_S)) {
         float newY = playerY + moveSpeed;
         if (newY + playerSize/2 < SCREEN_BOTTOM && !CheckBuildingCollision(playerX, newY)) {
             player->moveDown();
-        } else {
-            if (Engine::GameEngine::GetInstance().IsKeyDown(ALLEGRO_KEY_A) && 
-                !CheckBuildingCollision(playerX - moveSpeed, playerY)) {
-                player->moveLeft();
-            }
-            if (Engine::GameEngine::GetInstance().IsKeyDown(ALLEGRO_KEY_D) && 
-                !CheckBuildingCollision(playerX + moveSpeed, playerY)) {
-                player->moveRight();
-            }
         }
     }
     if (Engine::GameEngine::GetInstance().IsKeyDown(ALLEGRO_KEY_A)) {
         float newX = playerX - moveSpeed;
         if (newX - playerSize/2 > SCREEN_LEFT && !CheckBuildingCollision(newX, playerY)) {
             player->moveLeft();
-        } else {
-            if (Engine::GameEngine::GetInstance().IsKeyDown(ALLEGRO_KEY_W) && 
-                !CheckBuildingCollision(playerX, playerY - moveSpeed)) {
-                player->moveUp();
-            }
-            if (Engine::GameEngine::GetInstance().IsKeyDown(ALLEGRO_KEY_S) && 
-                !CheckBuildingCollision(playerX, playerY + moveSpeed)) {
-                player->moveDown();
-            }
         }
     }
     if (Engine::GameEngine::GetInstance().IsKeyDown(ALLEGRO_KEY_D)) {
         float newX = playerX + moveSpeed;
         if (newX + playerSize/2 < SCREEN_RIGHT && !CheckBuildingCollision(newX, playerY)) {
             player->moveRight();
-        } else {
-            if (Engine::GameEngine::GetInstance().IsKeyDown(ALLEGRO_KEY_W) && 
-                !CheckBuildingCollision(playerX, playerY - moveSpeed)) {
-                player->moveUp();
-            }
-            if (Engine::GameEngine::GetInstance().IsKeyDown(ALLEGRO_KEY_S) && 
-                !CheckBuildingCollision(playerX, playerY + moveSpeed)) {
-                player->moveDown();
-            }
-        }
-    }
-    
-    // 檢查是否靠近建築物並按下空白鍵
-    for (const auto& building : buildings) {
-        if (building.IsColliding(playerX, playerY, player->getSize()) && 
-            Engine::GameEngine::GetInstance().IsKeyDown(ALLEGRO_KEY_SPACE)) {
-            if (building.name == "anqi_house") {
-                Engine::GameEngine::GetInstance().ChangeScene("start");
-            }
         }
     }
     
@@ -177,5 +157,14 @@ void Playground::Update(float deltaTime) {
 
 // 新增：處理滑鼠事件
 void Playground::OnMouseDown(int button, int mx, int my) {
-    std::cout << "Mouse Click: screen(" << mx << ", " << my << ")" << std::endl;
+    float scale_x = SCREEN_RIGHT / VIEWPORT_WIDTH;
+    float scale_y = SCREEN_BOTTOM / VIEWPORT_HEIGHT;
+    
+    // 檢查是否點擊了建築物
+    for (const auto& building : buildings) {
+        if (building.IsMouseOver(mx, my, camera_x, camera_y, scale_x, scale_y)) {
+            Engine::GameEngine::GetInstance().ChangeScene("start");
+            return;
+        }
+    }
 }

@@ -5,6 +5,7 @@
 #include <allegro5/allegro_primitives.h>
 #include <memory>
 #include <vector>
+#include <cmath>
 #include "Engine/IScene.hpp"
 #include "Player/player.hpp"
 
@@ -14,18 +15,40 @@ struct Building {
     float y;
     float width;
     float height;
-    std::shared_ptr<ALLEGRO_BITMAP> image;
+    std::shared_ptr<ALLEGRO_BITMAP> normal_image;    // 一般狀態圖片
+    std::shared_ptr<ALLEGRO_BITMAP> pressed_image;   // 按下狀態圖片
     std::string name;
+    bool is_hovered;  // 滑鼠是否懸停在建築上
 
-    Building(float x, float y, float width, float height, std::shared_ptr<ALLEGRO_BITMAP> img, std::string name)
-        : x(x), y(y), width(width), height(height), image(img), name(name) {}
+    Building(float x, float y, float width, float height, 
+            std::shared_ptr<ALLEGRO_BITMAP> normal_img,
+            std::shared_ptr<ALLEGRO_BITMAP> pressed_img,
+            std::string name)
+        : x(x), y(y), width(width), height(height), 
+          normal_image(normal_img), pressed_image(pressed_img),
+          name(name), is_hovered(false) {}
 
     bool IsColliding(float playerX, float playerY, float playerSize) const {
         // 檢查玩家是否與建築物碰撞
-        return (playerX + playerSize/2 > x - width/2 + 10 &&
-                playerX - playerSize/2 < x + width/2  - 10&&
-                playerY + playerSize/2 > y - height/2 + 10 &&
-                playerY - playerSize/2 < y + height/2 - 10);
+        return (playerX + playerSize/2 > x - width/2 &&
+                playerX - playerSize/2 < x + width/2 &&
+                playerY + playerSize/2 > y - height/2 &&
+                playerY - playerSize/2 < y + height/2);
+    }
+
+    bool IsMouseOver(float mouseX, float mouseY, float camera_x, float camera_y, float scale_x, float scale_y) const {
+        // 將滑鼠座標轉換為遊戲世界座標
+        float world_mouse_x = mouseX / scale_x + camera_x;
+        float world_mouse_y = mouseY / scale_y + camera_y;
+
+        return (world_mouse_x > x - width/2 &&
+                world_mouse_x < x + width/2 &&
+                world_mouse_y > y - height/2 &&
+                world_mouse_y < y + height/2);
+    }
+
+    std::shared_ptr<ALLEGRO_BITMAP> GetCurrentImage() const {
+        return is_hovered ? pressed_image : normal_image;
     }
 };
 
