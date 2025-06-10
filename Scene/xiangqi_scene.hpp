@@ -31,7 +31,6 @@ public:
     PieceColor round;
     ChessPiece *preview;                           // Preview of the selected chess piece.
     ChessPiece *selectedPiece;                     // Selected Piece.
-    Engine::Point selectedPiecePos;                // The original Position of the selected piece.
     std::map<Engine::Point, ChessPiece*> PieceMap; // Keep track of each ChessPiece (using Engine::Point(Palace Point) as the key).
 
     bool ExpertMode = false;
