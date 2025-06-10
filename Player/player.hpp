@@ -37,7 +37,7 @@ public:
     void moveRight();
 
     // IObject 介面實現
-    void Draw() const override;
+    void Draw(float draw_x, float draw_y, float scale_x, float scale_y);
     void Update(float deltaTime) override;
 
     // Getters

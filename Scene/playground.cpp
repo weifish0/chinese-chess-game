@@ -3,6 +3,7 @@
 #include "Engine/Resources.hpp"
 #include <iostream>
 
+
 void Playground::Initialize() {
     // 載入背景圖片
     background = Engine::Resources::GetInstance().GetBitmap("playground/playground.png");
@@ -10,6 +11,10 @@ void Playground::Initialize() {
     // 創建玩家
     player = new Player();
     AddNewObject(player);
+
+    // 初始化鏡頭位置到玩家位置
+    camera_x = player->getX() - VIEWPORT_WIDTH / 2;
+    camera_y = player->getY() - VIEWPORT_HEIGHT / 2;
 }
 
 void Playground::Terminate() {
@@ -17,20 +22,47 @@ void Playground::Terminate() {
 }
 
 void Playground::Draw() const {
-    // 繪製背景
+    float scale_x = SCREEN_RIGHT / VIEWPORT_WIDTH;
+    float scale_y = SCREEN_BOTTOM / VIEWPORT_HEIGHT;
+
+    // 繪製背景（只繪製視窗範圍內的部分，並縮放到全螢幕）
     if (background) {
-        std::cout << "background: " << background.get() << std::endl;
-        al_draw_bitmap(background.get(), 0, 0, 0);
+        al_draw_scaled_bitmap(
+            background.get(),
+            camera_x, camera_y, VIEWPORT_WIDTH, VIEWPORT_HEIGHT, // 來源區域
+            0, 0, SCREEN_RIGHT, SCREEN_BOTTOM,                   // 目標區域（全螢幕）
+            0
+        );
     }
     
-    // 直接繪製玩家，而不是調用 IScene::Draw()
+    // 繪製玩家（固定在螢幕正中央，並縮放）
     if (player) {
-        player->Draw();
+        float sprite_width = player->getSize();
+        float sprite_height = player->getSize();
+        float draw_x = (player->getX() - camera_x - sprite_width / 2) * scale_x;
+        float draw_y = (player->getY() - camera_y - sprite_height / 2) * scale_y;
+        player->Draw(draw_x, draw_y, scale_x, scale_y);
     }
+}
+
+void Playground::UpdateCamera() {
+    if (!player) return;
+    // std::cout << "camera(" << camera_x << ", " << camera_y << ")" << std::endl;
+
+    // 目標鏡頭位置
+    camera_x  = player->getX() - VIEWPORT_WIDTH / 2;
+    camera_y = player->getY() - VIEWPORT_HEIGHT / 2;
+
+    // 限制鏡頭不超出地圖邊界
+    camera_x = std::max(0.0f, std::min(camera_x, SCREEN_RIGHT - VIEWPORT_WIDTH));
+    camera_y = std::max(0.0f, std::min(camera_y, SCREEN_BOTTOM - VIEWPORT_HEIGHT));
 }
 
 void Playground::Update(float deltaTime) {
     player->Update(deltaTime);
+
+    // 更新鏡頭位置
+    UpdateCamera();
     
     // 獲取玩家當前位置
     float playerX = player->getX();
@@ -66,3 +98,8 @@ void Playground::Update(float deltaTime) {
         Engine::GameEngine::GetInstance().ChangeScene("start");
     }
 }
+
+// 新增：處理滑鼠事件
+// void Playground::OnMouseDown(int button, int mx, int my) {
+//     std::cout << "Mouse Click: screen(" << mx << ", " << my << ")" << std::endl;
+// }

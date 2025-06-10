@@ -42,7 +42,6 @@ add_executable(CHINESE-CHESS-GAME
     Scene/start_scene.hpp
     Scene/playground.cpp
     Scene/playground.hpp
-
     Player/player.cpp
     Player/player.hpp
 

@@ -5,7 +5,7 @@
 Player::Player(float startX, float startY) {
     x = startX;
     y = startY;
-    speed = 5.0f;
+    speed = 3.0f;
     size = 30.0f;
 
     // 載入 sprites
@@ -56,23 +56,25 @@ void Player::moveRight() {
     is_moving = true;
 }
 
-void Player::Draw() const {
+void Player::Draw(float draw_x, float draw_y, float scale_x, float scale_y) {
     if (current_sprite) {
-        // 計算 sprite 的中心點
         float sprite_width = frame_width;
         float sprite_height = frame_height;
-        
-        // 繪製當前幀
-        al_draw_bitmap_region(current_sprite.get(),
-                            current_frame * frame_width, 0,  // 源區域的起始位置
-                            frame_width, frame_height,       // 源區域的大小
-                            x - sprite_width/2,              // 目標位置
-                            y - sprite_height/2,
-                            0);
+        al_draw_scaled_bitmap(
+            current_sprite.get(),
+            current_frame * frame_width, 0,
+            frame_width, frame_height,
+            draw_x,
+            draw_y,
+            sprite_width * scale_x,
+            sprite_height * scale_y,
+            0
+        );
     }
 }
 
 void Player::Update(float deltaTime) {
+    // std::cout << "player(" << x << ", " << y << ")" << std::endl;
     if (is_moving) {
         // 更新動畫計時器
         animation_timer += deltaTime;
