@@ -10,6 +10,7 @@
 #include "Engine/Collider.hpp"
 #include "Engine/IScene.hpp"
 #include "ChessPiece/ChessPiece.hpp"
+#include "UI/Component/Label.hpp"
 
 // Engine::Collider collider; // Collider in XiangqiScene.
 //                            // Due to the constructor of the collider, it is deemed as a non-static, const variable.
@@ -27,8 +28,14 @@ public:
     Engine::Group *PieceGroup;      // Pieces on chessboard. 場上的棋子們。
     Engine::Group *UIGroup;         // UI interface: Surrender flag, Back-to-main btn, Preview of chess pieces. UI 介面（投降、回主畫面、預覽）。
 
+    Engine::Image *chessboard;
+    Engine::Label *RoundReminder;    // To show the enabled color for the round.
+    Engine::Label *RoundWarning1, *RoundWarning2, *RoundWarning3;
+    int warning_tick;                // Animation tick for RoundWarning.
+    bool WrongPiece = false;
+
     std::vector<std::vector<int>> ChessboardState; // Note down the chess on the chessboard.
-    PieceColor round;
+    PieceColor Round;
     ChessPiece *preview;                           // Preview of the selected chess piece.
     ChessPiece *selectedPiece;                     // Selected Piece.
     std::map<Engine::Point, ChessPiece*> PieceMap; // Keep track of each ChessPiece (using Engine::Point(Palace Point) as the key).
@@ -40,7 +47,7 @@ public:
     explicit XiangqiScene() = default;
     void Initialize() override;
     void ReadChessboard();
-    // void Update();
+    void Update(float deltaTime) override;
     // void SelectedPiecePathExpand();
     void OnMouseDown(int button, int mx, int my);
     void OnMouseMove(int mx, int my);
