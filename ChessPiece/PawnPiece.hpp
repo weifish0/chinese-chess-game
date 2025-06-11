@@ -1,11 +1,16 @@
 #ifndef PAWNPIECE_HPP
 #define PAWNPIECE_HPP
 
+#include <iostream>
 #include "ChessPiece.hpp"
 
 class PawnPiece final : public ChessPiece {
 public:
-    PawnPiece(std::string img, Engine::Point position, PieceColor color, bool isPreview, int score);
+    ChessPiece* Clone() const override{
+        std::cout << "[LOG] Pawn Clone!" << std::endl;
+        return new PawnPiece(*this);
+    }
+    PawnPiece(std::string img, Engine::Point position, PieceColor color, int score);
     // void OnAnimation(ChessPiece *enemy_piece);
 };
 
