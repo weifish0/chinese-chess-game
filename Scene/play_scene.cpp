@@ -38,10 +38,11 @@ int attack_tick = 0;
 int harmony_tick = 0;
 int harmony_flag = 0;
 int attack_flag = 0;
+int attack_mark = 0;
 Engine::Label* harmony_warn;
 Engine::Label* attack_warn;
-std::set<Chess*> red_target;
-std::set<Chess*> black_target;
+std::set<Chess*> red_attack_target;
+std::set<Chess*> black_attack_target;
 Chess* red_attacker;
 Chess* black_attacker;
 enum Turn{
@@ -53,6 +54,7 @@ Turn turn = UNKNOWNED;
 std::vector<std::vector<Chess*>> chessPositions(4, std::vector<Chess*>(8, nullptr));
 
 void PlayScene::Initialize() {
+    
     attack_flag = 0;
     harmony_flag = 0;
     color = -1;
@@ -61,8 +63,8 @@ void PlayScene::Initialize() {
     harmony_step = 0;
     red_attack_step = 0;
     black_attack_step = 0;
-    red_target.clear();
-    black_target.clear();
+    red_attack_target.clear();
+    black_attack_target.clear();
     int w = Engine::GameEngine::GetInstance().GetScreenSize().x;
     int h = Engine::GameEngine::GetInstance().GetScreenSize().y;
     int halfW = w / 2;
@@ -188,7 +190,7 @@ bool Edible(Chess* eater,Chess* prey){
     
 
 bool PlayScene::CannonValidEating(int j,int i,int temp_y,int temp_x){
-    std::cout << j << " " << i << " " << temp_y << " " << temp_x << " " <<std::endl;
+    //std::cout << j << " " << i << " " << temp_y << " " << temp_x << " " <<std::endl;
     if((j==temp_y)==(i==temp_x)){
         return false;
     }
@@ -227,7 +229,7 @@ bool PlayScene::CannonValidEating(int j,int i,int temp_y,int temp_x){
             }
         }
     }
-    std::cout << count <<std::endl;
+    //std::cout << count <<std::endl;
 
     if(count==1)
         return true;
@@ -279,31 +281,41 @@ void PlayScene::Go(Engine::Point pos,int j,int i){
     chessPositions[temp_y][temp_x] = nullptr;
     temp->ClickCancel();
     temp = nullptr;
-    if(chessPositions[j][i]==nullptr){
-        std::cout << "200\n";
-    }
     ChangeRound();
 }
 
 
 
 void PlayScene::Update(float deltaTime) {
+    //std::cout << attack_tick << std::endl;
     attack_tick++;
     harmony_tick++;
-    if(harmony_tick>60){
+    if(harmony_tick>10000000){
         harmony_tick = 0;
     }
-    if(attack_tick>60){
+    if(attack_tick>10000000){
         attack_tick = 0;
     }
-    int cur_step = (turn==RED_TURN)?:red_attack_step;black_attack_step;
-    if(cur_step>=5&&cur_step<=10){
-        if(attack_tick<60){
+    int cur_step = (turn==RED_TURN)?black_attack_step:red_attack_step;
+    if((cur_step>=5&&cur_step<=10||attack_mark)&&harmony_step<25){
+        if(!attack_flag){
+            attack_tick = 0;
+            attack_flag = 1;
+        }
+        if(attack_tick<45){
+            std::cout << "yes\n";
             attack_warn->Text = "長捉禁手" + std::to_string(cur_step) + "/10";
+            if(cur_step==10){
+                attack_warn->Text = "長捉禁手" + std::to_string(cur_step) + "/10,請移動其他旗子"; 
+            }
+            else if(attack_mark){
+                attack_warn->Text = "長捉禁手10/10,請移動其他旗子!"; 
+            }
             attack_warn->Color = al_map_rgba(255,255,255,255);
         }
         else{
             attack_warn->Color = al_map_rgba(255,255,255,0);
+            attack_mark = 0;
         }
     }
     else{
@@ -315,7 +327,7 @@ void PlayScene::Update(float deltaTime) {
             harmony_tick = 0;
             harmony_flag = 1;
         }
-        if(harmony_tick<60){
+        if(harmony_tick<45){
             harmony_warn->Text = "空步判和" + std::to_string(harmony_step) + "/50";
             harmony_warn->Color = al_map_rgba(255 , 255, 255, 255);
         }
@@ -357,6 +369,8 @@ void PlayScene::Update(float deltaTime) {
             if(chess && ClickCheck(chess->Position)&& mouseJustClicked){
                 if(!chess->Check_open()){
                     harmony_step = 0;
+                    int& attack_step = (turn==RED_TURN)?red_attack_step:black_attack_step;
+                    attack_step = 0;
                     chess->Open();
                     if(turn==UNKNOWNED)
                         InitializeRound(chess->getColor());
@@ -375,6 +389,8 @@ void PlayScene::Update(float deltaTime) {
                         }
                         else if(temp->getType()==CANNON){//diff color
                             if(CannonValidEating(j,i,temp_y,temp_x)){
+                                int& attack_step = (turn==RED_TURN)?red_attack_step:black_attack_step;
+                                attack_step = 0;
                                 pos = chess->Position;
                                 if(chess->getColor()==RED)
                                     red_remain--;
@@ -388,6 +404,8 @@ void PlayScene::Update(float deltaTime) {
                         }
                         else if(abs(temp_y-j)+abs(temp_x-i)==1){//diff color
                             if(Edible(temp,chess)){
+                                int& attack_step = (turn==RED_TURN)?red_attack_step:black_attack_step;
+                                attack_step = 0;
                                 pos = chess->Position;
                                 if(chess->getColor()==RED)
                                     red_remain--;
@@ -421,14 +439,27 @@ void PlayScene::Update(float deltaTime) {
                 }
             }
             else if((!chess)&&ClickCheck(pos)&&temp&&mouseJustClicked){
-                // std::cout << "attack_step:" << attack_step << std::endl;
-                // std::cout << "harmony_step:" << harmony_step <<std::endl;
+                Chess* cur_attacker = (temp->getColor()==RED)?red_attacker:black_attacker;
                 int attack_step = (temp->getColor()==RED)?red_attack_step:black_attack_step;
-                if(abs(temp_y-j)+abs(temp_x-i)==1&&attack_step<10){//!(attack_step==10&&temp==attacker)
-                    Go(pos,j,i);//move
-                    harmony_step++;
-                    harmony_flag = 0;
-                    Target(j,i,temp_y,temp_x);
+                std::cout << "attack_step:" << attack_step << std::endl;
+                std::cout << "harmony_step:" << harmony_step <<std::endl;
+                
+                std::cout<< "100\n";
+                if(abs(temp_y-j)+abs(temp_x-i)==1){//!(attack_step==10&&temp==attacker)
+                    if(!(attack_step==10&&temp==cur_attacker)){
+                        Target(j,i,temp_y,temp_x);
+                        Go(pos,j,i);//move
+                        harmony_step++;
+                        harmony_flag = 0;
+                    }
+                    
+                    else{
+                        if(attack_step==10){
+                            attack_mark = 1;
+                            attack_tick = 0;
+                        }
+                            
+                    }
                 }
             }
         }  
@@ -437,6 +468,7 @@ void PlayScene::Update(float deltaTime) {
 }
 
 void PlayScene::Target(int j,int i,int temp_y,int temp_x){
+    std::cout << "200\n";
     int color = temp->getColor();
     std::vector<std::pair<int,int>> direction = {
         {-1,0},//up
@@ -444,49 +476,56 @@ void PlayScene::Target(int j,int i,int temp_y,int temp_x){
         {0,-1},//left
         {0,1}///right
     };
-    std::set<Chess*>& cur_target = (color==RED)?black_target:red_target;
+    std::set<Chess*>& cur_attack_target = (color==RED)?red_attack_target:black_attack_target;
     int& cur_attack_step = (color==RED)?red_attack_step:black_attack_step;
     Chess*& cur_attacker = (color==RED)?red_attacker:black_attacker;
-    if(cur_target.empty()){
+    if(cur_attack_target.empty()){
         for(auto dir:direction){
             int dj = dir.first;
             int di = dir.second;
             if(j+dj>=0&&j+dj<4&&i+di>=0&&i+di<8){
                 if(chessPositions[j+dj][i+di]!=nullptr&&(j+dj!=temp_y||i+di!=temp_x)){
-                    cur_target.insert(chessPositions[j+dj][i+di]);
+                    cur_attack_target.insert(chessPositions[j+dj][i+di]);
                 }
             }
         }
     }
     else{
         int mark = 0;
-        std::set<Chess*> update_target;
+        std::set<Chess*> update_attack_target;
         for(auto dir:direction){
             int dj = dir.first;
             int di = dir.second;
             if(j+dj>=0&&j+dj<4&&i+di>=0&&i+di<8){
                 if(chessPositions[j+dj][i+di]!=nullptr&&(j+dj!=temp_y||i+di!=temp_x)){
                     Chess* chess = chessPositions[j+dj][i+di];
-                    if(cur_target.find(chess)!=cur_target.end()){
+                    if(cur_attack_target.find(chess)!=cur_attack_target.end()){
                         mark = 1;
                     }
-                    update_target.insert(chess);
+                    update_attack_target.insert(chess);
                 }
             }
         }
-        cur_target = update_target;
+        cur_attack_target = update_attack_target;
         if(mark)
             cur_attack_step++;
         else
             cur_attack_step = 0;
+
+        std::cout << mark << std::endl;
     }
-    if(!cur_target.empty())
+    if(!cur_attack_target.empty()){
         cur_attacker = temp;
+        attack_flag = 0;
+    }
     else
         cur_attacker = nullptr;
 
-    if(cur_attacker)
-        std::cout << cur_attacker->getType() << " " << cur_attacker->getColor() << " " << cur_attacker->getNumber() << std::endl;
+    // if(cur_attacker){
+    //     std::cout << cur_attacker->getType() << " " << cur_attacker->getColor() << " " << cur_attacker->getNumber() << std::endl;
+    //     std::cout << cur_attack_step << std::endl;
+    // }
+    std::cout << "attack_flag:" << attack_flag << std::endl;
 
 }
 
