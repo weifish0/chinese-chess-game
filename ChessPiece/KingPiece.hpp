@@ -1,6 +1,7 @@
 #ifndef KINGPIECE_HPP
 #define KINGPIECE_HPP
 
+#include <iostream>
 #include <utility>
 #include <set>
 #include <unordered_set>
@@ -23,6 +24,10 @@ private:
     std::set<std::pair<int, int>> PossiblePalacePosition;
 public:
     explicit KingPiece(std::string img, Engine::Point position, PieceColor color, bool isPreview, int score);
+    ChessPiece* Clone() const override {
+        std::cout << "[LOG] King Clone!" << std::endl;
+        return new KingPiece(*this);
+    }
     bool IsValidMove(Engine::Point nextPos, std::vector<std::vector<int>> ChessboardState);
     // void OnAnimation(ChessPiece *enemy_chess);
 };

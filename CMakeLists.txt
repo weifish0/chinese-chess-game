@@ -58,8 +58,12 @@ add_executable(CHINESE-CHESS-GAME
     
     Scene/start_scene.cpp
     Scene/start_scene.hpp
+    Scene/playground_scene.cpp
+    Scene/playground_scene.hpp
     Scene/xiangqi_scene.cpp
     Scene/xiangqi_scene.hpp
+    Scene/xiangqi_win_scene.cpp
+    Scene/xiangqi_win_scene.hpp
 
     UI/Component/Image.cpp
     UI/Component/Image.hpp
