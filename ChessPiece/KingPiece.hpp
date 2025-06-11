@@ -28,7 +28,8 @@ public:
         std::cout << "[LOG] King Clone!" << std::endl;
         return new KingPiece(*this);
     }
-    bool IsValidMove(Engine::Point nextPos, std::vector<std::vector<int>> ChessboardState);
+    
+   bool KingPiece::IsValidMove(int y,int x,int next_y,int next_x, std::vector<std::vector<std::pair<int,ChessPiece*>>> ChessboardState);
     // void OnAnimation(ChessPiece *enemy_chess);
 };
 

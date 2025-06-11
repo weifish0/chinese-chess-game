@@ -25,31 +25,24 @@ KingPiece::KingPiece(std::string img, Engine::Point position, PieceColor color, 
     }
 }
 
-bool KingPiece::IsValidMove(Engine::Point nextPos, std::vector<std::vector<int>> ChessboardState) {
-    int h = Engine::GameEngine::GetInstance().GetScreenSize().y;
-    int w = Engine::GameEngine::GetInstance().GetScreenSize().x;
-    int halfW = w / 2;
-    int halfH = h / 2;
-    
-    // Conversion of nextPos to Palace Point format: 
-    // >>> PalacePoint {j, i} 
-    //     ≡ Engine::Point (blockSize * (j-4) + halfW, blockSize * (i-4.5) + halfH)
-    int _x = (nextPos.x - halfW) / blockSize + 4;                   // Palace x position of `nextPos`.
-    int _y = (float) (nextPos.y - halfH) / (float) blockSize + 4.5; // Palace y position of `nextPos`.
-    
-    // Check if the nextPos is already on the outside of the palace.
-    if (PossiblePalacePosition.find({_x, _y}) == PossiblePalacePosition.cend())
+bool KingPiece::IsValidMove(int y,int x,int next_y,int next_x, std::vector<std::vector<std::pair<int,ChessPiece*>>> ChessboardState) {
+    if(ChessboardState[y][x].first*ChessboardState[next_y][next_x].first>0){
         return false;
+    }
 
-    // Check if it is withing 1 palace distance (horizontally or vertically).
-    if (std::abs(_x - currentPalcacePosition.first) + std::abs(_y - currentPalcacePosition.second) != 1)
-        return false;
-
-    // Check if, in case of chess piece encounter, the chess piece is of the same color,
-    // If so, the move should be INVALID;
-    // Or else, the move should be considered as "EATING" an enemy chess piece.
-    if (ChessboardState[_x][_y] * color > 0) // Of the same color
-        return false;
-
-    return true;
+    if(abs(y-next_y)+abs(x-next_x)==1){
+        if(ChessboardState[y][x].first<0){
+            if(!(next_y>=7&&next_y<=9)||!(next_x>=3&&next_x<=5))
+                return false;
+            else
+                return true;
+        }
+        else if(ChessboardState[y][x].first>0){
+            if(!(next_y>=0&&next_y<=2)||!(next_x>=3&&next_x<=5))
+                return false;
+            else 
+                return true;
+        }
+    }
+    return false;
 }

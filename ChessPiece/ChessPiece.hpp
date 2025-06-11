@@ -37,7 +37,7 @@ public:
     }
     virtual ~ChessPiece() {};  // Always make base destructors virtual - safe default (@chatgpt)
     ChessPiece(std::string img, Engine::Point position, PieceColor color, int score);
-    virtual bool IsValidMove(Engine::Point nextPos, std::vector<std::vector<int>> ChessboardState);
+    virtual bool IsValidMove(int y,int x,int next_y,int next_x, std::vector<std::vector<std::pair<int,ChessPiece*>>> ChessboardState);
     virtual void OnAnimation(ChessPiece *enemy_piece);
 };
 
