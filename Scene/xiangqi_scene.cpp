@@ -30,6 +30,8 @@
 
 #include "UI/Component/Image.hpp"
 
+PieceColor winner = RED;
+
 /* DEVELOP KIT */
 int XiangqiScene::x_to_col(float x) {
     int h = Engine::GameEngine::GetInstance().GetScreenSize().y;
@@ -100,7 +102,6 @@ void XiangqiScene::Initialize() {
     preview = nullptr;
     SelectFlag = false;
     SwitchFlag = false;
-    RedKing = BlackKing = nullptr;
 
     // bgmId = AudioHelper::PlayBGM("play.ogg");
 }
@@ -154,12 +155,12 @@ void XiangqiScene::ReadChessboard() {
                 if (color == RED) {
                     img += "red_piece_shuai.png";
                     PieceGroup->AddNewObject(new_piece = new KingPiece(img, position, color, false, KING * 10));
-                    RedKing = new_piece;
+                    RedKing = true;
 
                 } else {
                     img += "black_piece_jiang.png";
                     PieceGroup->AddNewObject(new_piece = new KingPiece(img, position, color, false, KING * 10));
-                    BlackKing = new_piece;
+                    BlackKing = true;
                 }
 
             } else if (num == GUARD) {
@@ -202,9 +203,10 @@ void XiangqiScene::ReadChessboard() {
 
 void XiangqiScene::Update(float deltaTime) {
     // Winning Condition:
-    // if (!RedKing || !BlackKing) {
-    //     Engine::GameEngine::GetInstance().ChangeScene("xiangqi_win");
-    // }
+    if ((!RedKing && BlackKing) || (RedKing && !BlackKing)) {
+        winner = (RedKing) ? RED : BLACK;
+        Engine::GameEngine::GetInstance().ChangeScene("xiangqi_win");
+    }
 
     // RoundWarnings
     if (1 <= warning_tick && warning_tick <= 30 * ALLEGRO_PI) {
@@ -263,13 +265,9 @@ void XiangqiScene::OnMouseDown(int button, int mx, int my) {
         }
 
     } else if ((button & 1) && SelectFlag) { // ATTEMPT TO PUT DOWN THE PIECE
-        if (preview) {
-            std::cout << "[DEBUGGER] Remove preview from UIGroup!" << std::endl;
-            // std::cout << "[DEBUGGER] preview != nullptr ? " << ((preview) ? "YES" : "NAH") << std::endl;//
-            UIGroup->RemoveObject(preview->GetObjectIterator());
-
+        UIGroup->RemoveObject(preview->GetObjectIterator());
+        if (preview)
             SelectFlag = false;
-        }
     }
     IScene::OnMouseDown(button, mx, my);
 }
@@ -303,6 +301,7 @@ void XiangqiScene::OnMouseUp(int button, int mx, int my) {
     IScene::OnMouseUp(button, mx, my);
     const int _col_target = x_to_col(mx), _row_target = y_to_row(my); // Rhe column and row of the target position.
     Engine::Point _target(_col_target, _row_target);
+    int state_target = ChessboardState[_row_target][_col_target];
 
     if (button & 1 && preview && !SelectFlag && !WrongPiece) { // ABOUT TO DONE MOVING A PIECE!
         // blockSize * (col-4) + halfW, blockSize * (row-4.5) + halfH
@@ -321,11 +320,9 @@ void XiangqiScene::OnMouseUp(int button, int mx, int my) {
         // Case 3: If the target block is occupied by a piece of the same color, CHANGE `selectedPiece`.
         
         // Case 3
-        if (ChessboardState[_row_target][_col_target] * Round > 0) { // Of the same color.
+        if (state_target * Round > 0) { // Of the same color.
             std::cout << "[DEBUGGER] OnMouseUp: Case 3 - Of the same color!" << std::endl;
             selectedPiece = PieceMap.find(_target)->second;
-            std::cout << "[DEBUGGER] OnMouseUp: Case 3-2" << std::endl;
-            std::cout << "[DEBUGGER] preview != nullptr ? " << ((preview) ? "YES" : "NAH") << std::endl;//
             preview = nullptr;
             std::cout << "[DEBUGGER] OnMouseUp: Case 3-3" << std::endl;
             assert(selectedPiece != nullptr);
@@ -339,19 +336,25 @@ void XiangqiScene::OnMouseUp(int button, int mx, int my) {
         // Case 2 and 1
         else {
             // Case 2
-            if (ChessboardState[_row_target][_col_target] * Round < 0) { // Of different color.
+            std::cout << "[DEBUGGER] Case 2 in OnMouseUp: ";
+            std::cout << state_target << " * " << Round << std::endl;
+            if (state_target * Round < 0) { // Of different color.
                 // Eat the target
                 auto it = PieceMap.find(_target);
                 auto pt = it->first;//
                 PieceGroup->RemoveObject(it->second->GetObjectIterator()); // Delete the eaten piece from PieceGroup.
                 PieceMap.erase(it); // Delete the eaten piece from PieceMap.
                 std::cout << "[DEBUGGER] The target chess piece at (" << pt.x << "," << pt.y << ") has been successfully eaten!" << std::endl;
+
+                // Case: Eating a king piece.
+                if (state_target == RED * KING)       RedKing = false;
+                else if (state_target == BLACK *KING) BlackKing = false;
+                std::cout << "[DEBUGGER] Kings (Black : Red) ??" << ((BlackKing) ? "YES" : "NO") << " " << ((RedKing) ? "YES" : "NO") << std::endl;
             }
 
             
             ChessboardState[_row_target][_col_target] = state_selected; // Move the selected piece (state) to the target position.
             ChessboardState[_row_selected][_col_selected] = NONE;       // Clear the original selected position's state.
-            std::cout << "[DEBUGGER] ChessboardState[" << _row_selected << "][" << _col_selected << "] == " << ChessboardState[_row_selected][_col_selected] << std::endl;
             selectedPiece->Position.x = col_to_x(_col_target); // As for the actual selectedPiece pointer, change its x.
             selectedPiece->Position.y = row_to_y(_row_target); // As for the actual selectedPiece pointer, change its y.
             PieceMap.erase(_selected);                 // Erase the old data with old selected position as the key.

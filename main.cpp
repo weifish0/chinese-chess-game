@@ -5,6 +5,7 @@
 #include "Engine/LOG.hpp"
 #include "Scene/start_scene.hpp"
 #include "Scene/xiangqi_scene.hpp"
+#include "Scene/xiangqi_win_scene.hpp"
 
 int main(int argc, char **argv) {
 	Engine::LOG::SetConfig(true);

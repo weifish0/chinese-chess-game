@@ -9,9 +9,14 @@
 
 #include "Engine/AudioHelper.hpp"
 #include "Engine/Collider.hpp"
+#include "Engine/GameEngine.hpp"
 #include "Engine/IScene.hpp"
 #include "ChessPiece/ChessPiece.hpp"
 #include "UI/Component/Label.hpp"
+
+#include "xiangqi_scene.hpp"
+
+extern PieceColor winner;
 
 // Engine::Collider collider; // Collider in XiangqiScene.
 //                            // Due to the constructor of the collider, it is deemed as a non-static, const variable.
@@ -21,8 +26,6 @@ class XiangqiWinScene final : public Engine::IScene {
 private:
 public:
     /* PROPERTIES */
-    Engine::Group *UIGroup;
-    
 
     /* METHODS */
     explicit XiangqiWinScene() = default;
