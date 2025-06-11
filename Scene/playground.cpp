@@ -24,6 +24,14 @@ void Playground::Initialize() {
     player = new Player();
     AddNewObject(player);
 
+    // 創建 NPC
+    auto npc_image = Engine::Resources::GetInstance().GetBitmap("playground/xiangqi_NPC.png");
+    NPC* npc = new NPC(700, 350, 65, npc_image);
+    npc->addDialogue("你好，歡迎來到象棋世界！");
+    npc->addDialogue("這裡有暗棋和象棋兩種遊戲。");
+    npc->addDialogue("你可以選擇任意一個建築物進入遊戲。");
+    npcs.push_back(npc);
+
     // 初始化鏡頭位置到玩家位置
     camera_x = player->getX() - VIEWPORT_WIDTH / 2;
     camera_y = player->getY() - VIEWPORT_HEIGHT / 2;
@@ -32,6 +40,12 @@ void Playground::Initialize() {
 void Playground::Terminate() {
     // 清理建築物資源
     buildings.clear();
+    
+    // 清理 NPC 資源
+    for (auto npc : npcs) {
+        delete npc;
+    }
+    npcs.clear();
     
     // 清理其他資源
     IScene::Terminate();
@@ -62,6 +76,13 @@ void Playground::Draw() const {
             draw_x, draw_y, building.width * scale_x, building.height * scale_y,
             0
         );
+    }
+    
+    // 繪製所有 NPC
+    for (const auto& npc : npcs) {
+        float draw_x = (npc->getX() - camera_x - npc->getSize()/2) * scale_x;
+        float draw_y = (npc->getY() - camera_y - npc->getSize()/2) * scale_y;
+        npc->Draw(draw_x, draw_y, scale_x, scale_y);
     }
     
     // 繪製玩家
@@ -96,6 +117,25 @@ bool Playground::CheckBuildingCollision(float newX, float newY) {
     return false;
 }
 
+void Playground::CheckNPCInteraction() {
+    float playerX = player->getX();
+    float playerY = player->getY();
+    
+    for (auto npc : npcs) {
+        if (npc->isInRange(playerX, playerY)) {
+            if (Engine::GameEngine::GetInstance().IsKeyDown(ALLEGRO_KEY_SPACE)) {
+                if (!npc->getIsTalking()) {
+                    npc->startDialogue();
+                } else if (npc->hasMoreDialogue()) {
+                    npc->nextDialogue();
+                } else {
+                    npc->endDialogue();
+                }
+            }
+        }
+    }
+}
+
 void Playground::Update(float deltaTime) {
     player->Update(deltaTime);
     UpdateCamera();
@@ -124,9 +164,12 @@ void Playground::Update(float deltaTime) {
     for (auto& building : buildings) {
         if (building.IsMouseOver(mouse_x, mouse_y, camera_x, camera_y, scale_x, scale_y)) {
             building.is_hovered = true;
-            break;  // 一次只能懸停一個建築物
+            break;
         }
     }
+    
+    // 檢查 NPC 互動
+    CheckNPCInteraction();
     
     // 處理輸入並檢查碰撞
     if (Engine::GameEngine::GetInstance().IsKeyDown(ALLEGRO_KEY_W)) {

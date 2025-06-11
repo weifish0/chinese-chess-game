@@ -8,6 +8,7 @@
 #include <cmath>
 #include "Engine/IScene.hpp"
 #include "Player/player.hpp"
+#include "NPC/npc.hpp"
 
 // 建築物結構
 struct Building {
@@ -59,6 +60,7 @@ private:
     std::shared_ptr<ALLEGRO_BITMAP> anqi_house;  // 暗棋建築圖片
     std::shared_ptr<ALLEGRO_BITMAP> xiangqi_house;  // 象棋建築圖片
     std::vector<Building> buildings;  // 建築物列表
+    std::vector<NPC*> npcs;  // 新增：NPC 列表
 
     // 螢幕邊界
     static constexpr float SCREEN_LEFT = 0;
@@ -93,6 +95,7 @@ private:
     // 更新鏡頭位置
     void UpdateCamera();
     bool CheckBuildingCollision(float newX, float newY);  // 新增：檢查建築物碰撞
+    void CheckNPCInteraction();  // 新增：檢查 NPC 互動
 };
 
 #endif // PLAYGROUND_HPP 

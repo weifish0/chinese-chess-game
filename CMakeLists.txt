@@ -44,6 +44,8 @@ add_executable(CHINESE-CHESS-GAME
     Scene/playground.hpp
     Player/player.cpp
     Player/player.hpp
+    NPC/npc.cpp
+    NPC/npc.hpp
 
     UI/Component/Image.cpp
     UI/Component/Image.hpp
