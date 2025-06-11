@@ -1,7 +1,7 @@
 #include "KingPiece.hpp"
 
-KingPiece::KingPiece(std::string img, Engine::Point position, PieceColor color, bool isPreview, int score)
-    : ChessPiece(img, position, color, isPreview, score) {
+KingPiece::KingPiece(std::string img, Engine::Point position, PieceColor color, int score)
+    : ChessPiece(img, position, color, score) {
 
     if (this->color == BLACK) {
         // All the possible palace position for black KingPiece.

@@ -30,16 +30,13 @@ protected:
     int score;
 
 public:
-    /* PROPERTY */
-    bool isPreview; // For user preview after double-clicking a chess piece.
-
     /* METHOD */
     virtual ChessPiece* Clone() const {
         std::cout << "[LOG] ChessPiece Clone!" << std::endl;
         return new ChessPiece(*this); // Default copy behavior (@chatgpt)
     }
     virtual ~ChessPiece() {};  // Always make base destructors virtual - safe default (@chatgpt)
-    ChessPiece(std::string img, Engine::Point position, PieceColor color, bool isPreview, int score);
+    ChessPiece(std::string img, Engine::Point position, PieceColor color, int score);
     virtual bool IsValidMove(Engine::Point nextPos, std::vector<std::vector<int>> ChessboardState);
     virtual void OnAnimation(ChessPiece *enemy_piece);
 };

@@ -23,7 +23,7 @@ private:
     std::pair<int, int> currentPalcacePosition;
     std::set<std::pair<int, int>> PossiblePalacePosition;
 public:
-    explicit KingPiece(std::string img, Engine::Point position, PieceColor color, bool isPreview, int score);
+    explicit KingPiece(std::string img, Engine::Point position, PieceColor color, int score);
     ChessPiece* Clone() const override {
         std::cout << "[LOG] King Clone!" << std::endl;
         return new KingPiece(*this);

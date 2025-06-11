@@ -10,7 +10,7 @@ public:
         std::cout << "[LOG] Chariot Clone!" << std::endl;
         return new ChariotPiece(*this);
     }
-    ChariotPiece(std::string img, Engine::Point position, PieceColor color, bool isPreview, int score);
+    ChariotPiece(std::string img, Engine::Point position, PieceColor color, int score);
     // void OnAnimation(ChessPiece* enemy_piece);
 };
 

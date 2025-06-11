@@ -8,8 +8,8 @@
 #include "Engine/Point.hpp"
 #include "Engine/Sprite.hpp"
 
-ChessPiece::ChessPiece(std::string img, Engine::Point position, PieceColor color, bool isPreview, int score) 
-    : Sprite(img, position.x, position.y, 90, 90), color(color), isPreview(isPreview), score(score) {
+ChessPiece::ChessPiece(std::string img, Engine::Point position, PieceColor color, int score) 
+    : Sprite(img, position.x, position.y, 90, 90), color(color), score(score) {
 }
 bool ChessPiece::IsValidMove(Engine::Point nextPos, std::vector<std::vector<int>> ChessboardState) {
     return true;

@@ -10,7 +10,7 @@ public:
         std::cout << "[LOG] Pawn Clone!" << std::endl;
         return new PawnPiece(*this);
     }
-    PawnPiece(std::string img, Engine::Point position, PieceColor color, bool isPreview, int score);
+    PawnPiece(std::string img, Engine::Point position, PieceColor color, int score);
     // void OnAnimation(ChessPiece *enemy_piece);
 };
 

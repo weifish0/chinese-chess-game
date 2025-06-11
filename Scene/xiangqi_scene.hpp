@@ -37,11 +37,19 @@ public:
     int warning_tick;                // Animation tick for RoundWarning.
     bool WrongPiece = false;
 
-    std::vector<std::vector<int>> ChessboardState; // Note down the chess on the chessboard.
+    // ChessboardState Storer.
+    // >>> Use row-col system (aka. palace position system) as indices to access
+    // >>> Content: std::pair<int, ChessPiece*>
+    // >>> first: <COLOR> * <PIECETYPE>
+    // >>> second: <CHESSPIECE POINTER>
+    std::vector<std::vector<std::pair<int, ChessPiece*>>> ChessboardState;
+
+    // Row and Column of the piece previously selected by the user.
+    // >>> first: <ROW>, second: <COL>
+    std::pair<int, int> SelectedRowCol;
+
     PieceColor Round;
-    ChessPiece *preview;                           // Preview of the selected chess piece.
-    ChessPiece *selectedPiece;                     // Selected Piece.
-    std::map<Engine::Point, ChessPiece*> PieceMap; // Keep track of each ChessPiece (using Engine::Point(Palace Point) as the key).
+    ChessPiece *preview; // Preview of the selected chess piece.
 
     bool ExpertMode = false;
     bool SwitchFlag;

@@ -14,7 +14,7 @@ public:
         std::cout << "[LOG] Guard Clone!" << std::endl;
         return new GuardPiece(*this);
     }
-    explicit GuardPiece(std::string img, Engine::Point position, PieceColor color, bool isPreview, int score);
+    explicit GuardPiece(std::string img, Engine::Point position, PieceColor color, int score);
     // void OnAnimation(ChessPiece *enemy_chess);
 };
 

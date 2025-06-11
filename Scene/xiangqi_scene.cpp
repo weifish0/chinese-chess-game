@@ -30,6 +30,9 @@
 
 #include "UI/Component/Image.hpp"
 
+#define STATES(row, col) (ChessboardState[row][col].first)
+#define PIECES(row, col) (ChessboardState[row][col].second)
+
 PieceColor winner = RED;
 
 /* DEVELOP KIT */
@@ -68,7 +71,7 @@ float XiangqiScene::row_to_y(int row) {
 
 void XiangqiScene::PrintChessboardState() {
     for (int row = 0; row < ChessboardHeight; row++) {
-        for (int col = 0; col < ChessboardWidth; col++) std::cout << std::setw(2) << std::setfill(' ') << ChessboardState[row][col] << " ";
+        for (int col = 0; col < ChessboardWidth; col++) std::cout << std::setw(2) << std::setfill(' ') << ChessboardState[row][col].first << " ";
         std::cout << std::endl;
     }
 }
@@ -87,6 +90,7 @@ void XiangqiScene::Initialize() {
 
     // Read Chessboard txt file
     ReadChessboard();
+    std::cout << "[DEBUGGER] 002" << std::endl;
 
     ChessboardGroup->AddNewObject(chessboard = new Engine::Image("xiangqi/xiangqi_chessboard_albert.jpg", halfW, halfH, blockSize * 10, blockSize * 11, 0.5, 0.5));
     // Round Reminder (color)
@@ -97,6 +101,7 @@ void XiangqiScene::Initialize() {
     UIGroup->AddNewObject(RoundWarning1 = new Engine::Label("Cannot choose", "pirulen.ttf", 30, w - halfW / 4, halfH / 8, 255, 150, 150, 0, 0.5, 0.5));
     UIGroup->AddNewObject(RoundWarning2 = new Engine::Label("BLACK PIECES", "pirulen.ttf", 36, w - halfW / 4, halfH / 8 + 50, 255, 150, 150, 0, 0.5, 0.5));
     UIGroup->AddNewObject(RoundWarning3 = new Engine::Label("in this round!!", "pirulen.ttf", 30, w - halfW / 4, halfH / 8 + 100, 255, 150, 150, 0, 0.5, 0.5));
+    std::cout << "[DEBUGGER] 003" << std::endl;
 
     Round = RED;
     preview = nullptr;
@@ -104,14 +109,16 @@ void XiangqiScene::Initialize() {
     SwitchFlag = false;
 
     // bgmId = AudioHelper::PlayBGM("play.ogg");
+    std::cout << "[DEBUGGER] 004" << std::endl;
 }
+
 void XiangqiScene::ReadChessboard() {
     int h = Engine::GameEngine::GetInstance().GetScreenSize().y;
     int w = Engine::GameEngine::GetInstance().GetScreenSize().x;
     int halfW = w / 2;
     int halfH = h / 2;
-
-    this->ChessboardState.clear();
+    ChessboardState.clear();
+    ChessboardState = std::vector<std::vector<std::pair<int, ChessPiece*>>>(ChessboardHeight, std::vector<std::pair<int, ChessPiece*>>(ChessboardWidth, {0, nullptr}));
     
     std::string filename = "Resource/xiangqi_chessboard.txt";
     // Read chessboard file.
@@ -137,68 +144,65 @@ void XiangqiScene::ReadChessboard() {
         throw std::ios_base::failure("Chessboard data corrupted...");
     
     // Store map in 2D array.
-    ChessboardState = std::vector<std::vector<int>>(ChessboardHeight, std::vector<int>(ChessboardWidth));
     for (int row = 0; row < ChessboardHeight; row++) {
         PieceColor color = (row < ChessboardHeight / 2) ? BLACK : RED;
 
         for (int col = 0; col < ChessboardWidth; col++) {
             const int num = mapData[row * ChessboardWidth + col];
-            ChessboardState[row][col] = color * num; // Red pieces would generally go up (decrease in y), so I set the state of red pieces to negative.
+            STATES(row, col) = color * num; // Red pieces would generally go up (decrease in y), so I set the state of red pieces to negative.
             
             // Construct all the chess pieces.
             // BLACK at the top, RED at the bottom.
-            Engine::Point position(blockSize * (col-4) + halfW, blockSize * (row-4.5) + halfH); // Regular form: i for row, j for column!
+            Engine::Point position(col_to_x(col), row_to_y(row)); // Regular form: i for row, j for column!
             Engine::Point palace_position(col, row);                                            // Palace form
             std::string img = "xiangqi/";
             ChessPiece *new_piece = nullptr;
+
             if (num == KING) {
                 if (color == RED) {
                     img += "red_piece_shuai.png";
-                    PieceGroup->AddNewObject(new_piece = new KingPiece(img, position, color, false, KING * 10));
+                    PieceGroup->AddNewObject(new_piece = new KingPiece(img, position, color, KING * 10));
                     RedKing = true;
 
                 } else {
                     img += "black_piece_jiang.png";
-                    PieceGroup->AddNewObject(new_piece = new KingPiece(img, position, color, false, KING * 10));
+                    PieceGroup->AddNewObject(new_piece = new KingPiece(img, position, color, KING * 10));
                     BlackKing = true;
                 }
 
             } else if (num == GUARD) {
                 (color == RED) ? img += "red_" : img += "black_";
                 img += "piece_shi.png";
-                PieceGroup->AddNewObject(new_piece = new GuardPiece(img, position, color, false, GUARD * 10));
+                PieceGroup->AddNewObject(new_piece = new GuardPiece(img, position, color, GUARD * 10));
 
             } else if (num == ELFNT) {
                 (color == RED) ? img += "red_" : img += "black_";
                 img += "piece_xiang.png";
-                PieceGroup->AddNewObject(new_piece = new ElephantPiece(img, position, color, false, ELFNT * 10));
+                PieceGroup->AddNewObject(new_piece = new ElephantPiece(img, position, color, ELFNT * 10));
 
             } else if (num == HORSE) {
                 (color == RED) ? img += "red_" : img += "black_";
                 img += "piece_ma.png";
-                PieceGroup->AddNewObject(new_piece = new HorsePiece(img, position, color, false, HORSE * 10));
+                PieceGroup->AddNewObject(new_piece = new HorsePiece(img, position, color, HORSE * 10));
 
             } else if (num == CHARIOT) {
                 (color == RED) ? img += "red_" : img += "black_";
                 img += "piece_ju.png";
-                PieceGroup->AddNewObject(new_piece = new ChariotPiece(img, position, color, false, CHARIOT * 10));
+                PieceGroup->AddNewObject(new_piece = new ChariotPiece(img, position, color, CHARIOT * 10));
 
             } else if (num == CANNON) {
                 (color == RED) ? img += "red_" : img += "black_";
                 img += "piece_pao.png";
-                PieceGroup->AddNewObject(new_piece = new CannonPiece(img, position, color, false, CANNON * 10));
+                PieceGroup->AddNewObject(new_piece = new CannonPiece(img, position, color, CANNON * 10));
 
             } else if (num == PAWN) {
                 (color == RED) ? img += "red_piece_bing.png" : img += "black_piece_zu.png";
-                PieceGroup->AddNewObject(new_piece = new PawnPiece(img, position, color, false, PAWN * 10));
+                PieceGroup->AddNewObject(new_piece = new PawnPiece(img, position, color, PAWN * 10));
             }
 
-            if (new_piece) PieceMap.insert({palace_position, new_piece}); // Insert the pair (PalacePos, ChessPiece*) into PieceMap.
-                                                                          // PalacePos := (_col, _row)
+            if (new_piece) PIECES(row, col) = new_piece; // Store the piece pointer into the Chessboard.
         }
     }
-
-    PrintChessboardState();//
 }
 
 void XiangqiScene::Update(float deltaTime) {
@@ -233,31 +237,28 @@ void XiangqiScene::OnMouseDown(int button, int mx, int my) {
     int halfW = w / 2;
     int halfH = h / 2;
 
-    if ((button & 1) && !SelectFlag) { // START TO SELECT A PIECE (IF THERE IS ONE)
-        const int _col = x_to_col(mx), _row = y_to_row(my);
-        Engine::Point _targetPos(_col, _row); // Target position col & row
-
-        std::cout << "[DEBUGGER] OnMouseDown: " << _row << "," << _col << std::endl;//
-        
+    // Select a piece if there is one:
+    if ((button & 1) && !SelectFlag) { 
+        const int _col_mouse = x_to_col(mx), _row_mouse = y_to_row(my);
         // Check if (x, y) is valid:
-        if (_col < 0 || ChessboardWidth <= _col || _row < 0 || ChessboardHeight <= _row)
-            return;
+        std::cout << "[DEBUGGER] OnMouseDown: " << _row_mouse << "," << _col_mouse << std::endl;//
+        if (_row_mouse < 0 || ChessboardHeight <= _row_mouse || _col_mouse < 0 || ChessboardWidth <= _col_mouse) return;
 
-        std::cout << "[DEBUGGER] OnMouseDown: ChessboardState[" << _row << "][" << _col << "] == " << ChessboardState[_row][_col] << std::endl;//
+        std::cout << "[DEBUGGER] OnMouseDown: STATES[" << _row_mouse << "][" << _col_mouse << "] == " << STATES(_row_mouse, _col_mouse) << std::endl;//
 
-        if (ChessboardState[_row][_col] * Round > 0) { // If not empty && same color:
-            selectedPiece = (PieceMap.find(_targetPos))->second; // Assign `selectPiece` with an actual chess piece.
+        if (STATES(_row_mouse, _col_mouse) * Round > 0) { // If not empty && with correct color:
+            SelectedRowCol = std::pair(_row_mouse, _col_mouse); // Jot down the original row and column of the player-selected piece.
+            auto selectedPiece = PIECES(_row_mouse, _col_mouse);
             assert(selectedPiece != nullptr);
             std::cout << "[DEBUG] selectedPiece is type: " << typeid(*selectedPiece).name() << std::endl;
             preview = selectedPiece->Clone(); // Deep copy of the selected piece!
-            preview->isPreview = true; // Set this as an `isPreview` ChessPiece.
             
             UIGroup->AddNewObject(preview);
             std::cout << "[DEBUGGER] Preview created!" << std::endl;
 
             SelectFlag = true;
 
-        } else if (ChessboardState[_row][_col] * Round < 0) { // Of a different color.
+        } else if (STATES(_row_mouse, _col_mouse) * Round < 0) { // Of a different color.
             SelectFlag = false;
             WrongPiece = true;
             warning_tick = 1;
@@ -282,14 +283,11 @@ void XiangqiScene::OnMouseMove(int mx, int my) {
     const int _col = x_to_col(mx), _row = y_to_row(my);
 
     if (!preview || _col < 0 || _col >= ChessboardWidth || _row < 0 || _row >= ChessboardHeight) {
-        // std::cout << "[DEBUGGER] OnMouseMove (i): preview != nullptr ? " << ((preview) ? "YES" : "NAH") << std::endl;//
         return;
     }
     preview->Visible = true;
     preview->Tint = al_map_rgba(255, 255, 255, 100);
-    preview->Position.x = blockSize * (_col-4)   + halfW;
-    preview->Position.y = blockSize * (_row-4.5) + halfH;
-    // std::cout << "[DEBUGGER] OnMousemove(ii): preview == nullptr ? " << ((preview) ? "YES" : "NAH") << std::endl;//
+    preview->Position.x = col_to_x(_col), preview->Position.y = row_to_y(_row);
 }
 
 void XiangqiScene::OnMouseUp(int button, int mx, int my) {
@@ -299,30 +297,24 @@ void XiangqiScene::OnMouseUp(int button, int mx, int my) {
     int halfH = h / 2;
 
     IScene::OnMouseUp(button, mx, my);
-    const int _col_target = x_to_col(mx), _row_target = y_to_row(my); // Rhe column and row of the target position.
-    Engine::Point _target(_col_target, _row_target);
-    int state_target = ChessboardState[_row_target][_col_target];
+    const int _col_mouse = x_to_col(mx), _row_mouse = y_to_row(my); // The column and row of the target position.
 
     if (button & 1 && preview && !SelectFlag && !WrongPiece) { // ABOUT TO DONE MOVING A PIECE!
+        // Check if the target position (in terms of row-col)
+        if (_row_mouse < 0 || ChessboardHeight <= _row_mouse || _col_mouse < 0 || ChessboardWidth <= _col_mouse)
+            return;
+        
         // blockSize * (col-4) + halfW, blockSize * (row-4.5) + halfH
-        const int _col_selected = x_to_col(selectedPiece->Position.x), _row_selected = y_to_row(selectedPiece->Position.y);
-        Engine::Point _selected(_col_selected, _row_selected); // PalacePos format: (_col, _row)
-        std::cout << "[DEBUGGER] _row_selected, _col_selected = " <<  _row_selected << "," << _col_selected << std::endl;
-        int state_selected = ChessboardState[_row_selected][_col_selected];
+        std::cout << "[DEBUGGER] _row_selected, _col_selected = " <<  SelectedRowCol.first << "," << SelectedRowCol.second << std::endl;
+        int state_selected = STATES(SelectedRowCol.first, SelectedRowCol.second);
 
         // Check if valid. (Call the method of the chess to see if valid.)
+        // if (!selectedPiece->IsValidMove(_target)) return;
 
-        // preview = nullptr;
-
-        // Moving Pieces!
-        // Case 1: If the selected piece wanders to a no man's land, we merely move the selected piece to the wanted place.
-        // Case 2: If the target block is occupied by a piece of different color, EAT it!
+        // PIECE MOVEMENT & UPDATE        
         // Case 3: If the target block is occupied by a piece of the same color, CHANGE `selectedPiece`.
-        
-        // Case 3
-        if (state_target * Round > 0) { // Of the same color.
-            std::cout << "[DEBUGGER] OnMouseUp: Case 3 - Of the same color!" << std::endl;
-            selectedPiece = PieceMap.find(_target)->second;
+        if (STATES(_row_mouse, _col_mouse) * Round > 0) { // Of the same color.
+            auto selectedPiece = PIECES(_row_mouse, _col_mouse);
             preview = nullptr;
             std::cout << "[DEBUGGER] OnMouseUp: Case 3-3" << std::endl;
             assert(selectedPiece != nullptr);
@@ -333,45 +325,40 @@ void XiangqiScene::OnMouseUp(int button, int mx, int my) {
             std::cout << "[DEBUGGER] OnMouseUp: Case 3-5" << std::endl;
         }
 
-        // Case 2 and 1
+        // Case 2 and 1: Eat an enemy || Wander to a no man's land.
         else {
-            // Case 2
+            // Case 2: If the target block is occupied by a piece of different color, EAT it!
             std::cout << "[DEBUGGER] Case 2 in OnMouseUp: ";
-            std::cout << state_target << " * " << Round << std::endl;
-            if (state_target * Round < 0) { // Of different color.
+            std::cout << STATES(_row_mouse, _col_mouse) << " * " << Round << std::endl;
+            if (STATES(_row_mouse, _col_mouse) * Round < 0) { // Of different color.
                 // Eat the target
-                auto it = PieceMap.find(_target);
-                auto pt = it->first;//
-                PieceGroup->RemoveObject(it->second->GetObjectIterator()); // Delete the eaten piece from PieceGroup.
-                PieceMap.erase(it); // Delete the eaten piece from PieceMap.
-                std::cout << "[DEBUGGER] The target chess piece at (" << pt.x << "," << pt.y << ") has been successfully eaten!" << std::endl;
+                auto ptr = PIECES(_row_mouse, _col_mouse);
+                PieceGroup->RemoveObject(ptr->GetObjectIterator()); // Delete the eaten piece from PieceGroup.
 
                 // Case: Eating a king piece.
-                if (state_target == RED * KING)       RedKing = false;
-                else if (state_target == BLACK *KING) BlackKing = false;
-                std::cout << "[DEBUGGER] Kings (Black : Red) ??" << ((BlackKing) ? "YES" : "NO") << " " << ((RedKing) ? "YES" : "NO") << std::endl;
+                if (STATES(_row_mouse, _col_mouse) == RED * KING)       RedKing = false;
+                else if (STATES(_row_mouse, _col_mouse) == BLACK *KING) BlackKing = false;
             }
 
-            
-            ChessboardState[_row_target][_col_target] = state_selected; // Move the selected piece (state) to the target position.
-            ChessboardState[_row_selected][_col_selected] = NONE;       // Clear the original selected position's state.
-            selectedPiece->Position.x = col_to_x(_col_target); // As for the actual selectedPiece pointer, change its x.
-            selectedPiece->Position.y = row_to_y(_row_target); // As for the actual selectedPiece pointer, change its y.
-            PieceMap.erase(_selected);                 // Erase the old data with old selected position as the key.
-            PieceMap.insert({_target, selectedPiece}); // Add new data with target position as the key.
+            // Moved to Target
+            STATES(_row_mouse, _col_mouse) = state_selected; // Move the selected piece (state) to the target position.
+            PIECES(_row_mouse, _col_mouse) = PIECES(SelectedRowCol.first, SelectedRowCol.second);
+            PIECES(_row_mouse, _col_mouse)->Position.x = col_to_x(_col_mouse); // As for the actual selectedPiece pointer, change its x.
+            PIECES(_row_mouse, _col_mouse)->Position.y = row_to_y(_row_mouse); // As for the actual selectedPiece pointer, change its y.
+
+            // Deleted from Selected Place
+            STATES(SelectedRowCol.first, SelectedRowCol.second) = NONE;       // Clear the original selected position's state.
+            PIECES(SelectedRowCol.first, SelectedRowCol.second) = nullptr;
             std::cout << "[DEBUGGER] move selectedPiece to the next place." << std::endl;
             
-            selectedPiece = nullptr;              // "Release" `selectedPiece`
             Round = (Round == RED) ? BLACK : RED; // `Round` flip - for RED to BLACK, and vice versa.
             RoundReminder->Text = ((Round == RED) ? "RED" : "BLACK"); // Change RoundReminder text.
             RoundReminder->Color = ((Round == RED) ? al_map_rgba(255, 0, 0, 255) : al_map_rgba(100, 100, 150, 255));
             RoundWarning2->Text = ((Round == RED) ? "BLACK PIECES" : "RED PIECES"); // Change RoundWarning text.
         }
-        // std::cout << "[DEBUGGER] OnMouseUp: preview == nullptr ? " << ((preview) ? "YES" : "NAH") << std::endl;//
         std::cout << "[DEBUGGER] round == " << Round << std::endl;
-
-        OnMouseMove(mx, my);
     }
-    PrintChessboardState();
+    PrintChessboardState();//
     WrongPiece = false; // Reset `WrongPiece` to default: false.
+    OnMouseMove(mx, my);
 }

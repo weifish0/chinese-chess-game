@@ -10,7 +10,7 @@ public:
         std::cout << "[LOG] King Clone!" << std::endl;
         return new CannonPiece(*this);
     }
-    CannonPiece(std::string img, Engine::Point position, PieceColor color, bool isPreview, int score);
+    CannonPiece(std::string img, Engine::Point position, PieceColor color, int score);
     // void OnAnimation();
 };
 

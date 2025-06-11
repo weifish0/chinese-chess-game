@@ -10,7 +10,7 @@ public:
         std::cout << "[LOG] Elfnt Clone!" << std::endl;
         return new ElephantPiece(*this);
     }
-    explicit ElephantPiece(std::string img, Engine::Point position, PieceColor color, bool isPreview, int score);
+    explicit ElephantPiece(std::string img, Engine::Point position, PieceColor color, int score);
     // void OnAnimation(ChessPiece *enemy_chess);
 };
 
