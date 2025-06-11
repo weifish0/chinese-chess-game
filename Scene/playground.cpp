@@ -30,6 +30,10 @@ void Playground::Initialize() {
 }
 
 void Playground::Terminate() {
+    // 清理建築物資源
+    buildings.clear();
+    
+    // 清理其他資源
     IScene::Terminate();
 }
 
