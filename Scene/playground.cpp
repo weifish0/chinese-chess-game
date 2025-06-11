@@ -27,9 +27,9 @@ void Playground::Initialize() {
     // 創建 NPC
     auto npc_image = Engine::Resources::GetInstance().GetBitmap("playground/xiangqi_NPC.png");
     NPC* npc = new NPC(700, 350, 65, npc_image);
-    npc->addDialogue("你好，歡迎來到象棋世界！");
-    npc->addDialogue("這裡有暗棋和象棋兩種遊戲。");
-    npc->addDialogue("你可以選擇任意一個建築物進入遊戲。");
+    npc->addDialogue("Hello, welcome to the chess world!");
+    npc->addDialogue("There are two games here: anqi and xiangqi.");
+    npc->addDialogue("Please choose a building to enter the game.");
     npcs.push_back(npc);
 
     // 初始化鏡頭位置到玩家位置
@@ -117,21 +117,35 @@ bool Playground::CheckBuildingCollision(float newX, float newY) {
     return false;
 }
 
+bool Playground::CheckNPCCollision(float newX, float newY) {
+    for (const auto& npc : npcs) {
+        if (npc->IsColliding(newX, newY, player->getSize())) {
+            return true;
+        }
+    }
+    return false;
+}
+
 void Playground::CheckNPCInteraction() {
-    float playerX = player->getX();
-    float playerY = player->getY();
-    
+    // 檢查是否在 NPC 互動範圍內
     for (auto npc : npcs) {
-        if (npc->isInRange(playerX, playerY)) {
-            if (Engine::GameEngine::GetInstance().IsKeyDown(ALLEGRO_KEY_SPACE)) {
+        if (npc->isInRange(player->getX(), player->getY())) {
+            // 檢查空白鍵的狀態變化
+            bool space_key_is_down = Engine::GameEngine::GetInstance().IsKeyDown(ALLEGRO_KEY_SPACE);
+            if (space_key_is_down && !space_key_was_down) {  // 只在按下的那一瞬間觸發
                 if (!npc->getIsTalking()) {
+                    // 開始對話
                     npc->startDialogue();
                 } else if (npc->hasMoreDialogue()) {
+                    // 下一句對話
                     npc->nextDialogue();
                 } else {
+                    // 結束對話
                     npc->endDialogue();
                 }
             }
+            space_key_was_down = space_key_is_down;  // 更新狀態
+            break;  // 一次只處理一個 NPC
         }
     }
 }
@@ -174,25 +188,33 @@ void Playground::Update(float deltaTime) {
     // 處理輸入並檢查碰撞
     if (Engine::GameEngine::GetInstance().IsKeyDown(ALLEGRO_KEY_W)) {
         float newY = playerY - moveSpeed;
-        if (newY - playerSize/2 > SCREEN_TOP && !CheckBuildingCollision(playerX, newY)) {
+        if (newY - playerSize/2 > SCREEN_TOP && 
+            !CheckBuildingCollision(playerX, newY) && 
+            !CheckNPCCollision(playerX, newY)) {
             player->moveUp();
         }
     }
     if (Engine::GameEngine::GetInstance().IsKeyDown(ALLEGRO_KEY_S)) {
         float newY = playerY + moveSpeed;
-        if (newY + playerSize/2 < SCREEN_BOTTOM && !CheckBuildingCollision(playerX, newY)) {
+        if (newY + playerSize/2 < SCREEN_BOTTOM && 
+            !CheckBuildingCollision(playerX, newY) && 
+            !CheckNPCCollision(playerX, newY)) {
             player->moveDown();
         }
     }
     if (Engine::GameEngine::GetInstance().IsKeyDown(ALLEGRO_KEY_A)) {
         float newX = playerX - moveSpeed;
-        if (newX - playerSize/2 > SCREEN_LEFT && !CheckBuildingCollision(newX, playerY)) {
+        if (newX - playerSize/2 > SCREEN_LEFT && 
+            !CheckBuildingCollision(newX, playerY) && 
+            !CheckNPCCollision(newX, playerY)) {
             player->moveLeft();
         }
     }
     if (Engine::GameEngine::GetInstance().IsKeyDown(ALLEGRO_KEY_D)) {
         float newX = playerX + moveSpeed;
-        if (newX + playerSize/2 < SCREEN_RIGHT && !CheckBuildingCollision(newX, playerY)) {
+        if (newX + playerSize/2 < SCREEN_RIGHT && 
+            !CheckBuildingCollision(newX, playerY) && 
+            !CheckNPCCollision(newX, playerY)) {
             player->moveRight();
         }
     }

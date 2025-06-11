@@ -61,6 +61,9 @@ private:
     std::shared_ptr<ALLEGRO_BITMAP> xiangqi_house;  // 象棋建築圖片
     std::vector<Building> buildings;  // 建築物列表
     std::vector<NPC*> npcs;  // 新增：NPC 列表
+    float camera_x;  // 鏡頭位置 X
+    float camera_y;  // 鏡頭位置 Y
+    bool space_key_was_down;  // 新增：追蹤空白鍵的狀態
 
     // 螢幕邊界
     static constexpr float SCREEN_LEFT = 0;
@@ -69,8 +72,6 @@ private:
     static constexpr float SCREEN_BOTTOM = 1500;
 
     // 鏡頭相關
-    float camera_x;  // 鏡頭位置 X
-    float camera_y;  // 鏡頭位置 Y
     static constexpr float VIEWPORT_WIDTH = 800;   // 視窗寬度
     static constexpr float VIEWPORT_HEIGHT = 600;  // 視窗高度
 
@@ -82,7 +83,7 @@ private:
     static constexpr float HOUSE_SIZE = 400;
 
 public:
-    explicit Playground() : camera_x(0), camera_y(0) {}
+    explicit Playground() : camera_x(0), camera_y(0), space_key_was_down(false) {}
     void Initialize() override;
     void Terminate() override;
     void Update(float deltaTime) override;
@@ -95,6 +96,7 @@ private:
     // 更新鏡頭位置
     void UpdateCamera();
     bool CheckBuildingCollision(float newX, float newY);  // 新增：檢查建築物碰撞
+    bool CheckNPCCollision(float newX, float newY);  // 新增：檢查 NPC 碰撞
     void CheckNPCInteraction();  // 新增：檢查 NPC 互動
 };
 
