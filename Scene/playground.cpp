@@ -10,6 +10,8 @@ void Playground::Initialize() {
     
     // 載入字體
     name_font = Engine::Resources::GetInstance().GetFont("font2.ttc", NAME_FONT_SIZE);
+    building_font = Engine::Resources::GetInstance().GetFont("font2.ttc", BUILDING_FONT_SIZE);
+    dialogue_font = Engine::Resources::GetInstance().GetFont("font2.ttc", DIALOGUE_FONT_SIZE);
     
     // 載入建築圖片
     auto anqi_house_normal = Engine::Resources::GetInstance().GetBitmap("playground/anqi_house.png");
@@ -81,24 +83,22 @@ void Playground::Draw() const {
         );
         
         // 繪製建築物名稱
-        if (name_font) {
-            float text_width = al_get_text_width(name_font.get(), building.name.c_str());
-            float text_height = al_get_font_line_height(name_font.get());
-            float padding = 10.0f;  // 文字周圍的內邊距
+        if (building_font) {
+            float text_width = al_get_text_width(building_font.get(), building.name.c_str());
+            float text_height = al_get_font_line_height(building_font.get());
+            float padding = 15.0f;
             
-            // 繪製文字背景
             al_draw_filled_rectangle(
                 draw_x + building.width * scale_x / 2 - text_width/2 - padding,
                 draw_y - text_height - 10 - padding,
                 draw_x + building.width * scale_x / 2 + text_width/2 + padding,
                 draw_y - 10 + padding,
-                al_map_rgba(0, 0, 0, 180)  // 半透明黑色背景
+                al_map_rgba(0, 0, 0, 180)
             );
             
-            // 繪製文字
             al_draw_text(
-                name_font.get(),
-                al_map_rgb(255, 255, 255),  // 白色文字
+                building_font.get(),
+                al_map_rgb(255, 255, 255),
                 draw_x + building.width * scale_x / 2,
                 draw_y - text_height - 10,
                 ALLEGRO_ALIGN_CENTER,
@@ -117,21 +117,19 @@ void Playground::Draw() const {
         if (name_font) {
             float text_width = al_get_text_width(name_font.get(), "沈大師");
             float text_height = al_get_font_line_height(name_font.get());
-            float padding = 10.0f;  // 文字周圍的內邊距
+            float padding = 10.0f;
             
-            // 繪製文字背景
             al_draw_filled_rectangle(
                 draw_x + npc->getSize() * scale_x / 2 - text_width/2 - padding,
                 draw_y - text_height - 10 - padding,
                 draw_x + npc->getSize() * scale_x / 2 + text_width/2 + padding,
                 draw_y - 10 + padding,
-                al_map_rgba(0, 0, 0, 180)  // 半透明黑色背景
+                al_map_rgba(0, 0, 0, 180)
             );
             
-            // 繪製文字
             al_draw_text(
                 name_font.get(),
-                al_map_rgb(255, 255, 255),  // 白色文字
+                al_map_rgb(255, 255, 255),
                 draw_x + npc->getSize() * scale_x / 2,
                 draw_y - text_height - 10,
                 ALLEGRO_ALIGN_CENTER,
@@ -152,26 +150,70 @@ void Playground::Draw() const {
         if (name_font) {
             float text_width = al_get_text_width(name_font.get(), "玩家");
             float text_height = al_get_font_line_height(name_font.get());
-            float padding = 10.0f;  // 文字周圍的內邊距
+            float padding = 10.0f;
             
-            // 繪製文字背景
             al_draw_filled_rectangle(
                 draw_x + sprite_width * scale_x / 2 - text_width/2 - padding,
                 draw_y - text_height - 10 - padding,
                 draw_x + sprite_width * scale_x / 2 + text_width/2 + padding,
                 draw_y - 10 + padding,
-                al_map_rgba(0, 0, 0, 180)  // 半透明黑色背景
+                al_map_rgba(0, 0, 0, 180)
             );
             
-            // 繪製文字
             al_draw_text(
                 name_font.get(),
-                al_map_rgb(255, 255, 255),  // 白色文字
+                al_map_rgb(255, 255, 255),
                 draw_x + sprite_width * scale_x / 2,
                 draw_y - text_height - 10,
                 ALLEGRO_ALIGN_CENTER,
                 "玩家"
             );
+        }
+    }
+
+    // 繪製對話框
+    for (const auto& npc : npcs) {
+        if (npc->getIsTalking() && dialogue_font) {
+            std::string current_dialogue = npc->getCurrentDialogue();
+            if (!current_dialogue.empty()) {
+                // 繪製對話框背景
+                float box_y = SCREEN_BOTTOM - DIALOGUE_BOX_HEIGHT;
+                al_draw_filled_rectangle(
+                    0, box_y,
+                    SCREEN_RIGHT, SCREEN_BOTTOM,
+                    al_map_rgba(0, 0, 0, 230)  // 深色半透明背景
+                );
+
+                // 繪製對話框邊框
+                al_draw_rectangle(
+                    0, box_y,
+                    SCREEN_RIGHT, SCREEN_BOTTOM,
+                    al_map_rgb(255, 255, 255),  // 白色邊框
+                    2.0f
+                );
+
+                // 繪製說話者名稱
+                float name_y = box_y + DIALOGUE_PADDING;
+                al_draw_text(
+                    dialogue_font.get(),
+                    al_map_rgb(255, 255, 255),
+                    DIALOGUE_PADDING,
+                    name_y,
+                    ALLEGRO_ALIGN_LEFT,
+                    "沈大師："
+                );
+
+                // 繪製對話內容
+                float text_y = name_y + al_get_font_line_height(dialogue_font.get()) + DIALOGUE_PADDING;
+                al_draw_text(
+                    dialogue_font.get(),
+                    al_map_rgb(255, 255, 255),
+                    DIALOGUE_PADDING,
+                    text_y,
+                    ALLEGRO_ALIGN_LEFT,
+                    current_dialogue.c_str()
+                );
+            }
         }
     }
 }
