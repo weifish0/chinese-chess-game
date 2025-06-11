@@ -6,7 +6,7 @@
 NPC::NPC(float x, float y, float size, std::shared_ptr<ALLEGRO_BITMAP> img)
     : x(x), y(y), size(size), image(img), current_dialogue_index(0), is_talking(false) {
     // 載入字體
-    font = Engine::Resources::GetInstance().GetFont("pirulen.ttf", DIALOGUE_FONT_SIZE);
+    font = Engine::Resources::GetInstance().GetFont("font2.ttc", DIALOGUE_FONT_SIZE);
 }
 
 NPC::~NPC() {

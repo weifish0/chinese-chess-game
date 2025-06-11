@@ -8,6 +8,9 @@ void Playground::Initialize() {
     // 載入背景圖片
     background = Engine::Resources::GetInstance().GetBitmap("playground/playground.png");
     
+    // 載入字體
+    name_font = Engine::Resources::GetInstance().GetFont("font2.ttc", NAME_FONT_SIZE);
+    
     // 載入建築圖片
     auto anqi_house_normal = Engine::Resources::GetInstance().GetBitmap("playground/anqi_house.png");
     auto anqi_house_pressed = Engine::Resources::GetInstance().GetBitmap("playground/anqi_house_pressed.png");
@@ -16,9 +19,9 @@ void Playground::Initialize() {
     
     // 初始化建築物
     buildings.push_back(Building(ANQI_HOUSE_X, ANQI_HOUSE_Y, HOUSE_SIZE, HOUSE_SIZE, 
-                                anqi_house_normal, anqi_house_pressed, "anqi_house"));
+                                anqi_house_normal, anqi_house_pressed, "暗棋館"));
     buildings.push_back(Building(XIANGQI_HOUSE_X, XIANGQI_HOUSE_Y, HOUSE_SIZE, HOUSE_SIZE, 
-                                xiangqi_house_normal, xiangqi_house_pressed, "xiangqi_house"));
+                                xiangqi_house_normal, xiangqi_house_pressed, "象棋館"));
     
     // 創建玩家
     player = new Player();
@@ -76,6 +79,32 @@ void Playground::Draw() const {
             draw_x, draw_y, building.width * scale_x, building.height * scale_y,
             0
         );
+        
+        // 繪製建築物名稱
+        if (name_font) {
+            float text_width = al_get_text_width(name_font.get(), building.name.c_str());
+            float text_height = al_get_font_line_height(name_font.get());
+            float padding = 10.0f;  // 文字周圍的內邊距
+            
+            // 繪製文字背景
+            al_draw_filled_rectangle(
+                draw_x + building.width * scale_x / 2 - text_width/2 - padding,
+                draw_y - text_height - 10 - padding,
+                draw_x + building.width * scale_x / 2 + text_width/2 + padding,
+                draw_y - 10 + padding,
+                al_map_rgba(0, 0, 0, 180)  // 半透明黑色背景
+            );
+            
+            // 繪製文字
+            al_draw_text(
+                name_font.get(),
+                al_map_rgb(255, 255, 255),  // 白色文字
+                draw_x + building.width * scale_x / 2,
+                draw_y - text_height - 10,
+                ALLEGRO_ALIGN_CENTER,
+                building.name.c_str()
+            );
+        }
     }
     
     // 繪製所有 NPC
@@ -83,6 +112,32 @@ void Playground::Draw() const {
         float draw_x = (npc->getX() - camera_x - npc->getSize()/2) * scale_x;
         float draw_y = (npc->getY() - camera_y - npc->getSize()/2) * scale_y;
         npc->Draw(draw_x, draw_y, scale_x, scale_y);
+        
+        // 繪製 NPC 名稱
+        if (name_font) {
+            float text_width = al_get_text_width(name_font.get(), "沈大師");
+            float text_height = al_get_font_line_height(name_font.get());
+            float padding = 10.0f;  // 文字周圍的內邊距
+            
+            // 繪製文字背景
+            al_draw_filled_rectangle(
+                draw_x + npc->getSize() * scale_x / 2 - text_width/2 - padding,
+                draw_y - text_height - 10 - padding,
+                draw_x + npc->getSize() * scale_x / 2 + text_width/2 + padding,
+                draw_y - 10 + padding,
+                al_map_rgba(0, 0, 0, 180)  // 半透明黑色背景
+            );
+            
+            // 繪製文字
+            al_draw_text(
+                name_font.get(),
+                al_map_rgb(255, 255, 255),  // 白色文字
+                draw_x + npc->getSize() * scale_x / 2,
+                draw_y - text_height - 10,
+                ALLEGRO_ALIGN_CENTER,
+                "沈大師"
+            );
+        }
     }
     
     // 繪製玩家
@@ -92,6 +147,32 @@ void Playground::Draw() const {
         float draw_x = (player->getX() - camera_x - sprite_width / 2) * scale_x;
         float draw_y = (player->getY() - camera_y - sprite_height / 2) * scale_y;
         player->Draw(draw_x, draw_y, scale_x, scale_y);
+        
+        // 繪製玩家名稱
+        if (name_font) {
+            float text_width = al_get_text_width(name_font.get(), "玩家");
+            float text_height = al_get_font_line_height(name_font.get());
+            float padding = 10.0f;  // 文字周圍的內邊距
+            
+            // 繪製文字背景
+            al_draw_filled_rectangle(
+                draw_x + sprite_width * scale_x / 2 - text_width/2 - padding,
+                draw_y - text_height - 10 - padding,
+                draw_x + sprite_width * scale_x / 2 + text_width/2 + padding,
+                draw_y - 10 + padding,
+                al_map_rgba(0, 0, 0, 180)  // 半透明黑色背景
+            );
+            
+            // 繪製文字
+            al_draw_text(
+                name_font.get(),
+                al_map_rgb(255, 255, 255),  // 白色文字
+                draw_x + sprite_width * scale_x / 2,
+                draw_y - text_height - 10,
+                ALLEGRO_ALIGN_CENTER,
+                "玩家"
+            );
+        }
     }
 }
 

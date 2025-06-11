@@ -64,6 +64,7 @@ private:
     float camera_x;  // 鏡頭位置 X
     float camera_y;  // 鏡頭位置 Y
     bool space_key_was_down;  // 新增：追蹤空白鍵的狀態
+    std::shared_ptr<ALLEGRO_FONT> name_font;  // 新增：名稱字體
 
     // 螢幕邊界
     static constexpr float SCREEN_LEFT = 0;
@@ -75,12 +76,15 @@ private:
     static constexpr float VIEWPORT_WIDTH = 800;   // 視窗寬度
     static constexpr float VIEWPORT_HEIGHT = 600;  // 視窗高度
 
+    // 字體相關
+    static constexpr float NAME_FONT_SIZE = 36.0f;  // 新增：名稱字體大小
+
     // 建築位置
     static constexpr float ANQI_HOUSE_X = 600;
     static constexpr float ANQI_HOUSE_Y = 1000;
-    static constexpr float XIANGQI_HOUSE_X = 1400;
-    static constexpr float XIANGQI_HOUSE_Y = 100;
-    static constexpr float HOUSE_SIZE = 400;
+    static constexpr float XIANGQI_HOUSE_X = 1600;
+    static constexpr float XIANGQI_HOUSE_Y = 200;
+    static constexpr float HOUSE_SIZE = 300;
 
 public:
     explicit Playground() : camera_x(0), camera_y(0), space_key_was_down(false) {}
