@@ -46,6 +46,14 @@ add_executable(CHINESE-CHESS-GAME
     Scene/mode_select.hpp
     Scene/play_scene.cpp
     Scene/play_scene.hpp
+    Scene/harmony_scene.cpp
+    Scene/harmony_scene.hpp
+    Scene/red_win_scene.cpp
+    Scene/red_win_scene.hpp
+    Scene/black_win_scene.cpp
+    Scene/black_win_scene.hpp
+    Scene/harmony_scene.hpp
+    Scene/harmony_scene.cpp
 
     UI/Component/Image.cpp
     UI/Component/Image.hpp

@@ -11,6 +11,7 @@
 #include "Engine/IScene.hpp"
 #include "Engine/Point.hpp"
 #include "Chess/chess.hpp"
+//int score;
 namespace Engine {
     class Group;
     class Image;
@@ -33,8 +34,10 @@ public:
     void InitializeRound(ChessColor color);
     void RecordTemp(Chess* chess,int i,int j);
     bool CannonValidEating(int j,int i,int temp_y,int temp_x);
-    void Move(Engine::Point pos,int j,int i);
+    void Go(Engine::Point pos,int j,int i);
     void ConstructUI();
+    void ButtonClick(int id);
+    void Target(int j,int i,int temp_y,int temp_x);
     // void PlayOnClick(int stage);
     // void SettingsOnClick(int stage);
 };

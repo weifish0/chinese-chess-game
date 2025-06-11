@@ -28,10 +28,10 @@ void ModeSelectScene::Initialize(){
     AddNewControlObject(btn);
     AddNewObject(new Engine::Label("單人模式", "font2.ttc", 120, halfW, halfH / 2 - 100, 0, 0, 102, 255, 0.5, 0.5));
 
-    btn = new Engine::ImageButton("start/block.png", "start/dirt.png", halfW - 400, halfH / 2 + 300, 800, 200);
+    btn = new Engine::ImageButton("start/block.png", "start/dirt.png", halfW - 400, halfH / 2 + 250, 800, 200);
     btn->SetOnClickCallback(std::bind(&ModeSelectScene::PlayOnClick, this, 2));
     AddNewControlObject(btn);
-    AddNewObject(new Engine::Label("雙人模式", "font2.ttc", 120, halfW, halfH / 2 + 400, 0, 0, 102, 255, 0.5, 0.5));
+    AddNewObject(new Engine::Label("雙人模式", "font2.ttc", 120, halfW, halfH / 2 + 350, 0, 0, 102, 255, 0.5, 0.5));
 
     // btn = new Engine::ImageButton("start/block.png", "start/dirt.png", halfW - 400, halfH / 2 + 300, 800, 200);
     // btn->SetOnClickCallback(std::bind(&StartScene::PlayOnClick, this, 1));

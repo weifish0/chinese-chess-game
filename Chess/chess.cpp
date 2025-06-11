@@ -15,12 +15,13 @@
 
 std::string close_img = "unknown.png";
 std::string frame_img = "frame.png";
-Chess::Chess(std::string img, float x, float y,ChessType type,ChessColor color): Sprite(close_img, x, y,180,180),frame(frame_img,x,y,180,180){
+Chess::Chess(std::string img, float x, float y,ChessType type,ChessColor color,int number): Sprite(close_img, x, y,180,180),frame(frame_img,x,y,180,180){
     this->img = img;
     this->open = false;
     this->type = type;
     this->color = color;
     this->clicking = false;
+    this->number = number;
 }
 
 // void Chess::Update() {
@@ -71,6 +72,10 @@ void Chess::Click(){
 
 void Chess::ClickCancel(){
     clicking = false;
+}
+
+int Chess::getNumber(){
+    return number;
 }
 
 

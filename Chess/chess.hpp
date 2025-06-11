@@ -29,12 +29,13 @@ protected:
     bool open;
     ChessType type;
     ChessColor color;
+    int number;
     
 
 public:
     bool clicking;
     bool justOpen;
-    Chess(std::string img, float x, float y,ChessType type,ChessColor color);
+    Chess(std::string img, float x, float y,ChessType type,ChessColor color,int number);
     void Open();
     //void Update();
     void Draw() const override;
@@ -44,6 +45,7 @@ public:
     ChessType getType() const ;
     void Click();
     void ClickCancel();
+    int getNumber();
     // static int speed_buff_index;
     // bool Enabled = true;
     // bool Preview = false;
