@@ -35,6 +35,5 @@ bool PawnPiece::IsValidMove(int row, int col, int next_row, int next_col, std::v
         return false;
     }
 
-    std::cout << "[LOG] VALID PAWN NEXT MOVE!" << std::endl;
     return true;    
 }

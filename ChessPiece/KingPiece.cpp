@@ -2,48 +2,48 @@
 
 KingPiece::KingPiece(std::string img, Engine::Point position, PieceColor color, int score)
     : ChessPiece(img, position, color, score) {
-
-    if (this->color == BLACK) {
-        // All the possible palace position for black KingPiece.
-        this->PossiblePalacePosition = {
-            {3, 0}, {4, 0}, {5, 0},
-            {3, 1}, {4, 1}, {5, 1},
-            {3, 2}, {4, 2}, {5, 2}
-        };
-        // Current palace position for black KingPiece.
-        this->currentPalcacePosition = {4, 0};
-
-    } else {
-        // All the possible palace position for red KingPiece.
-        this->PossiblePalacePosition = {
-            {3, 7}, {4, 7}, {5, 7},
-            {3, 8}, {4, 8}, {5, 8},
-            {3, 9}, {4, 9}, {5, 9}
-        };
-        // Current palace position for red KingPiece.
-        this->currentPalcacePosition = {4, 9};
-    }
 }
 
-bool KingPiece::IsValidMove(int y,int x,int next_y,int next_x, std::vector<std::vector<std::pair<int,ChessPiece*>>> ChessboardState) {
+bool KingPiece::IsValidMove(int row, int col, int next_row, int next_col, std::vector<std::vector<std::pair<int,ChessPiece*>>> ChessboardState) {
     
-    if (ChessboardState[y][x].first*ChessboardState[next_y][next_x].first>0){
+    // Of the same color
+    if (ChessboardState[row][col].first * ChessboardState[next_row][next_col].first > 0) {
         return false;
     }
 
-    if(abs(y-next_y)+abs(x-next_x)==1){
-        if(ChessboardState[y][x].first<0){
-            if(!(next_y>=7&&next_y<=9)||!(next_x>=3&&next_x<=5))
+    // Within one step
+    if (abs(row - next_row) + abs(col - next_col) == 1) {
+        if (color == RED) {
+            std::cout << "[DEBUGGER] KingPiece::IsValidMove 001" << std::endl;
+            // Should be inside RED palace
+            if (!(next_row >= 7 && next_row <= 9) || !(next_col >= 3 && next_col <= 5))
                 return false;
             else
                 return true;
-        }
-        else if(ChessboardState[y][x].first>0){
-            if(!(next_y>=0&&next_y<=2)||!(next_x>=3&&next_x<=5))
+
+        } else if (color == BLACK) {
+            std::cout << "[DEBUGGER] KingPiece::IsValidMove 002" << std::endl;
+            // Should be inside BLACK palace
+            if (!(next_row >= 0 && next_row <= 2) || !(next_col >= 3 && next_col <= 5))
                 return false;
             else 
                 return true;
         }
+
+    } else if (col == next_col && ChessboardState[next_row][next_col].first == -color * KING) { // The king of another country (color)
+        std::cout << "[DEBUGGER] KingPiece::IsValidMove 003" << std::endl;
+        int min_r, max_r;
+        min_r = row < next_row ? row : next_row;
+        max_r = row > next_row ? row : next_row;
+        for (int r = min_r + 1; r < max_r; r++) {
+            if (ChessboardState[r][next_col].second != nullptr) { // There IS a piece in between.
+                std::cout << "[DEBUGGER] KingPiece::IsValidMove 004" << std::endl;
+                return false;
+            }
+        }
+        return true;
     }
+
+    // Default
     return false;
 }

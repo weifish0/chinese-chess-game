@@ -319,7 +319,6 @@ void XiangqiScene::OnMouseUp(int button, int mx, int my) {
         if (!PIECES(SelectedRowCol.first, SelectedRowCol.second)->IsValidMove(SelectedRowCol.first, SelectedRowCol.second, _row_mouse, _col_mouse, ChessboardState)) {
             return;
         }
-        std::cout << "[DEBUGGER] VALID!!!!" << std::endl;
 
         // PIECE MOVEMENT & UPDATE        
         // Case 2 and 1: Eat an enemy || Wander to a no man's land.

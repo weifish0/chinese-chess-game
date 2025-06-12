@@ -15,13 +15,6 @@ namespace Engine {
 }
 
 class KingPiece final : public ChessPiece {
-private:
-    /* 
-     * Since KingPiece is confined to the "palace",
-     * we'll just keep track of the "relative" position of the piece in the palace.
-     */
-    std::pair<int, int> currentPalcacePosition;
-    std::set<std::pair<int, int>> PossiblePalacePosition;
 public:
     explicit KingPiece(std::string img, Engine::Point position, PieceColor color, int score);
     ChessPiece* Clone() const override {
