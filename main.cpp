@@ -17,7 +17,7 @@ int main(int argc, char **argv) {
 	game.AddNewScene("xiangqi_win", new XiangqiWinScene()); // Used when a xiangqi game ends.
 
 	// game.Start("start", 60, 1600, 832); // Used for normal gameplay
-	game.Start("xiangqi", 60, 1600, 832);
+	game.Start("xiangqi", 60, 1777, 1000);
 	
 	return 0;
 }

@@ -4,9 +4,11 @@
 #include <iostream>
 #include <set>
 #include <vector>
+#include <cmath>
 
 #include "Engine/Sprite.hpp"
 #include "Engine/Point.hpp"
+#include "Engine/GameEngine.hpp"
 
 enum PieceType { // [RED]     [BLACK]
     NONE,
@@ -22,7 +24,7 @@ enum PieceColor {
     RED = -1, BLACK = 1
 };
 
-const float blockSize = (float) 850 / (float) 11; // Block size on the chessboard.
+extern float blockSize; // Block size on the chessboard.
 
 class ChessPiece : public Engine::Sprite {
 protected:
@@ -31,14 +33,15 @@ protected:
 
 public:
     /* METHOD */
-    virtual ChessPiece* Clone() const {
-        std::cout << "[LOG] ChessPiece Clone!" << std::endl;
-        return new ChessPiece(*this); // Default copy behavior (@chatgpt)
-    }
+    virtual ChessPiece* Clone() const;
     virtual ~ChessPiece() {};  // Always make base destructors virtual - safe default (@chatgpt)
     ChessPiece(std::string img, Engine::Point position, PieceColor color, int score);
-    virtual bool IsValidMove(Engine::Point nextPos, std::vector<std::vector<int>> ChessboardState);
+    virtual bool IsValidMove(int row, int col, int next_row, int next_col, std::vector<std::vector<std::pair<int,ChessPiece*>>> &ChessboardState);
+    bool IsCheckmate(std::vector<std::vector<std::pair<int, ChessPiece*>>> &ChessboardState);
     virtual void OnAnimation(ChessPiece *enemy_piece);
+
+    /* DEVELOP KIT */
+    bool IsInPalace(int row, int col);
 };
 
 #endif // CHESSPIECE_HPP
