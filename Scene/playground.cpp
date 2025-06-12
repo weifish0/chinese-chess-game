@@ -19,6 +19,9 @@ void Playground::Initialize() {
     auto xiangqi_house_normal = Engine::Resources::GetInstance().GetBitmap("playground/xiangqi_house.png");
     auto xiangqi_house_pressed = Engine::Resources::GetInstance().GetBitmap("playground/xiangqi_house_pressed.png");
     
+    // 載入登入圖標
+    login_icon = Engine::Resources::GetInstance().GetBitmap("playground/login_icon.png");
+
     // 初始化建築物
     buildings.push_back(Building(ANQI_HOUSE_X, ANQI_HOUSE_Y, HOUSE_SIZE, HOUSE_SIZE, 
                                 anqi_house_normal, anqi_house_pressed, "暗棋館"));
@@ -83,6 +86,25 @@ void Playground::Draw() const {
             background.get(),
             camera_x, camera_y, VIEWPORT_WIDTH, VIEWPORT_HEIGHT,
             0, 0, SCREEN_RIGHT, SCREEN_BOTTOM,
+            0
+        );
+    }
+    
+    // 繪製登入圖標
+    if (login_icon) {
+        // 設置混合模式
+        al_set_blender(ALLEGRO_ADD, ALLEGRO_ALPHA, ALLEGRO_INVERSE_ALPHA);
+        
+        // 根據懸停狀態設置透明度
+        float alpha = is_login_icon_hovered ? 0.7f : 1.0f;
+        al_draw_tinted_scaled_bitmap(
+            login_icon.get(),
+            al_map_rgba_f(alpha, alpha, alpha, 1.0f),
+            0, 0,
+            al_get_bitmap_width(login_icon.get()),
+            al_get_bitmap_height(login_icon.get()),
+            PADDING, PADDING,
+            ICON_SIZE, ICON_SIZE,
             0
         );
     }
@@ -324,6 +346,10 @@ void Playground::Update(float deltaTime) {
     int mouse_x = mouse_state.x;
     int mouse_y = mouse_state.y;
     
+    // 檢查登入圖標懸停狀態
+    is_login_icon_hovered = (mouse_x >= PADDING && mouse_x <= PADDING + ICON_SIZE &&
+                            mouse_y >= PADDING && mouse_y <= PADDING + ICON_SIZE);
+    
     // 更新建築物的懸停狀態
     float scale_x = SCREEN_RIGHT / VIEWPORT_WIDTH;
     float scale_y = SCREEN_BOTTOM / VIEWPORT_HEIGHT;
@@ -387,6 +413,13 @@ void Playground::Update(float deltaTime) {
 void Playground::OnMouseDown(int button, int mx, int my) {
     float scale_x = SCREEN_RIGHT / VIEWPORT_WIDTH;
     float scale_y = SCREEN_BOTTOM / VIEWPORT_HEIGHT;
+    
+    // 檢查是否點擊了登入圖標
+    if (mx >= PADDING && mx <= PADDING + ICON_SIZE &&
+        my >= PADDING && my <= PADDING + ICON_SIZE) {
+        Engine::GameEngine::GetInstance().ChangeScene("login");
+        return;
+    }
     
     // 檢查是否點擊了建築物
     for (const auto& building : buildings) {

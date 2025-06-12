@@ -67,7 +67,8 @@ private:
     std::shared_ptr<ALLEGRO_FONT> name_font;  // 一般名稱字體
     std::shared_ptr<ALLEGRO_FONT> building_font;  // 建築物名稱字體
     std::shared_ptr<ALLEGRO_FONT> dialogue_font;  // 對話框字體
-
+    std::shared_ptr<ALLEGRO_BITMAP> login_icon;  // 登入圖標
+    bool is_login_icon_hovered;  // 登入圖標懸停狀態
     // 螢幕邊界
     static constexpr float SCREEN_LEFT = 0;
     static constexpr float SCREEN_RIGHT = 2666; 
@@ -93,6 +94,10 @@ private:
     // 對話框相關
     static constexpr float DIALOGUE_BOX_HEIGHT = 350.0f;  // 對話框高度
     static constexpr float DIALOGUE_PADDING = 20.0f;  // 對話框內邊距
+
+    // 登入圖標相關
+    static constexpr float ICON_SIZE = 200.0f;  // 登入圖標大小
+    static constexpr float PADDING = 20.0f;  // 邊距
 
 public:
     explicit Playground() : camera_x(0), camera_y(0), space_key_was_down(false) {}

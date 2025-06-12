@@ -79,6 +79,8 @@ add_executable(CHINESE-CHESS-GAME
     Scene/xiangqi_win_scene.hpp
     Scene/playground.cpp
     Scene/playground.hpp
+    Scene/login.cpp
+    Scene/login.hpp
     Player/player.cpp
     Player/player.hpp
     NPC/npc.cpp
