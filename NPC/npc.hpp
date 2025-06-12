@@ -19,9 +19,10 @@ private:
     bool is_talking;                     // 是否正在對話
     static constexpr float INTERACTION_DISTANCE = 100.0f;  // 互動距離
     static constexpr float DIALOGUE_FONT_SIZE = 24.0f;  // 新增：字體大小
+    std::string name;
 
 public:
-    NPC(float x, float y, float size, std::shared_ptr<ALLEGRO_BITMAP> img);
+    NPC(float x, float y, float size, std::shared_ptr<ALLEGRO_BITMAP> img, std::string name);
     ~NPC();
 
     // 基本屬性
@@ -29,6 +30,7 @@ public:
     float getY() const { return y; }
     float getSize() const { return size; }
     bool getIsTalking() const { return is_talking; }
+    std::string getName() const { return name; }
 
     // 碰撞檢測
     bool IsColliding(float playerX, float playerY, float playerSize) const {

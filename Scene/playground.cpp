@@ -30,12 +30,26 @@ void Playground::Initialize() {
     AddNewObject(player);
 
     // 創建 NPC
-    auto npc_image = Engine::Resources::GetInstance().GetBitmap("playground/xiangqi_NPC.png");
-    NPC* npc = new NPC(700, 350, 65, npc_image);
-    npc->addDialogue("Hello, welcome to the chess world!");
-    npc->addDialogue("There are two games here: anqi and xiangqi.");
-    npc->addDialogue("Please choose a building to enter the game.");
-    npcs.push_back(npc);
+    auto npc1_image = Engine::Resources::GetInstance().GetBitmap("playground/mr_shen_NPC.png");
+    NPC* npc1 = new NPC(700, 350, 65, npc1_image, "沈大師");
+    npc1->addDialogue("Hello, welcome to the chess world!");
+    npc1->addDialogue("There are two games here: anqi and xiangqi.");
+    npc1->addDialogue("Please choose a building to enter the game.");
+    npcs.push_back(npc1);
+
+    auto npc2_image = Engine::Resources::GetInstance().GetBitmap("playground/anqi_NPC.png");
+    NPC* npc2 = new NPC(800, 900, 65, npc2_image, "暗棋高手");
+    npc2->addDialogue("Hello, welcome to the chess world!");
+    npc2->addDialogue("There are two games here: anqi and xiangqi.");
+    npc2->addDialogue("Please choose a building to enter the game.");
+    npcs.push_back(npc2);
+
+    auto npc3_image = Engine::Resources::GetInstance().GetBitmap("playground/xiangqi_NPC.png");
+    NPC* npc3 = new NPC(1450, 350, 65, npc3_image, "象棋高手");
+    npc3->addDialogue("Hello, welcome to the chess world!");
+    npc3->addDialogue("There are two games here: anqi and xiangqi.");
+    npc3->addDialogue("Please choose a building to enter the game.");
+    npcs.push_back(npc3);
 
     // 初始化鏡頭位置到玩家位置
     camera_x = player->getX() - VIEWPORT_WIDTH / 2;
@@ -115,7 +129,7 @@ void Playground::Draw() const {
         
         // 繪製 NPC 名稱
         if (name_font) {
-            float text_width = al_get_text_width(name_font.get(), "沈大師");
+            float text_width = al_get_text_width(name_font.get(), npc->getName().c_str());
             float text_height = al_get_font_line_height(name_font.get());
             float padding = 10.0f;
             
@@ -133,7 +147,7 @@ void Playground::Draw() const {
                 draw_x + npc->getSize() * scale_x / 2 - 20,
                 draw_y - text_height - 10,
                 ALLEGRO_ALIGN_CENTER,
-                "沈大師"
+                npc->getName().c_str()
             );
         }
     }
@@ -200,7 +214,7 @@ void Playground::Draw() const {
                     DIALOGUE_PADDING,
                     name_y,
                     ALLEGRO_ALIGN_LEFT,
-                    "沈大師："
+                    (npc->getName() + "：").c_str()
                 );
 
                 // 繪製對話內容
