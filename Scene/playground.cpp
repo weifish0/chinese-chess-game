@@ -120,9 +120,9 @@ void Playground::Draw() const {
             float padding = 10.0f;
             
             al_draw_filled_rectangle(
-                draw_x + npc->getSize() * scale_x / 2 - text_width/2 - padding,
+                draw_x + npc->getSize() * scale_x / 2 - text_width/2 - padding - 20,
                 draw_y - text_height - 10 - padding,
-                draw_x + npc->getSize() * scale_x / 2 + text_width/2 + padding,
+                draw_x + npc->getSize() * scale_x / 2 + text_width/2 + padding - 20,
                 draw_y - 10 + padding,
                 al_map_rgba(0, 0, 0, 180)
             );
@@ -130,7 +130,7 @@ void Playground::Draw() const {
             al_draw_text(
                 name_font.get(),
                 al_map_rgb(255, 255, 255),
-                draw_x + npc->getSize() * scale_x / 2,
+                draw_x + npc->getSize() * scale_x / 2 - 20,
                 draw_y - text_height - 10,
                 ALLEGRO_ALIGN_CENTER,
                 "沈大師"
@@ -153,9 +153,9 @@ void Playground::Draw() const {
             float padding = 10.0f;
             
             al_draw_filled_rectangle(
-                draw_x + sprite_width * scale_x / 2 - text_width/2 - padding,
+                draw_x + sprite_width * scale_x / 2 - text_width/2 - padding + 30,
                 draw_y - text_height - 10 - padding,
-                draw_x + sprite_width * scale_x / 2 + text_width/2 + padding,
+                draw_x + sprite_width * scale_x / 2 + text_width/2 + padding + 30,
                 draw_y - 10 + padding,
                 al_map_rgba(0, 0, 0, 180)
             );
@@ -163,7 +163,7 @@ void Playground::Draw() const {
             al_draw_text(
                 name_font.get(),
                 al_map_rgb(255, 255, 255),
-                draw_x + sprite_width * scale_x / 2,
+                draw_x + sprite_width * scale_x / 2 + 30,
                 draw_y - text_height - 10,
                 ALLEGRO_ALIGN_CENTER,
                 "玩家"
