@@ -22,8 +22,6 @@ bool ChessPiece::IsValidMove(int row, int col, int next_row, int next_col, std::
     return true;
 }
 bool ChessPiece::IsCheckmate(std::vector<std::vector<std::pair<int,ChessPiece*>>> &ChessboardState) {
-    return true;
-    
     int h = Engine::GameEngine::GetInstance().GetScreenSize().y;
     int w = Engine::GameEngine::GetInstance().GetScreenSize().x;
     int halfW = w / 2;
