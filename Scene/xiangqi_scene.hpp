@@ -67,9 +67,9 @@ public:
     void ReadChessboard();
     void Update(float deltaTime) override;
     void Terminate() override;
-    void OnMouseDown(int button, int mx, int my);
-    void OnMouseMove(int mx, int my);
-    void OnMouseUp(int button, int mx, int my);
+    void OnMouseDown(int button, int mx, int my) override;
+    void OnMouseMove(int mx, int my) override;
+    void OnMouseUp(int button, int mx, int my) override;
     bool PieceWithinRange(int r, int c);
 
     /* DEVELOP KIT */

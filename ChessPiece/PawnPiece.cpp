@@ -9,7 +9,7 @@ bool PawnPiece::IsValidMove(int row, int col, int next_row, int next_col, std::v
     if (std::abs(next_row - row) + std::abs(next_col - col) != 1)
         return false;
     
-    if (color == RED) { // Red pawn
+    if (color == HONG) { // HONG pawn
         // No turning back!
         if (next_row > row) 
             return false;
@@ -19,7 +19,7 @@ bool PawnPiece::IsValidMove(int row, int col, int next_row, int next_col, std::v
             return false;
         }
 
-    } else if (color == BLACK) { // Black pawn
+    } else if (color == HEI) { // HEI pawn
         // No turning back!
         if (next_row < row) 
             return false;

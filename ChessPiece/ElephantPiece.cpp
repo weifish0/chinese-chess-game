@@ -11,7 +11,7 @@ bool ElephantPiece::IsValidMove(int y,int x,int next_y,int next_x, std::vector<s
     }
     
     // If this piece crosses the river:
-    if ((color == RED && next_y < 5) || (color == BLACK && next_y > 4)) {
+    if ((color == HONG && next_y < 5) || (color == HEI && next_y > 4)) {
         return false;
     } 
 

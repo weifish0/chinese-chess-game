@@ -31,7 +31,7 @@ bool ChessPiece::IsCheckmate(std::vector<std::vector<std::pair<int,ChessPiece*>>
     int col = std::floor((Position.y - halfH) / blockSize) + 5;                   // The column of the current king piece.
     std::cout << "(" << row << "," << col << "): ";
 
-    if (abs(ChessboardState[row][col].first) != KING) return false; // No access by other types of pieces. (except KING!)
+    if (abs(ChessboardState[row][col].first) != WANG) return false; // No access by other types of pieces. (except KING!)
 
     // Traverse through all the pieces (smartly).
     int r; // The row of the traversed piece.
@@ -56,11 +56,11 @@ void ChessPiece::OnAnimation(ChessPiece *enemy_piece) {
 }
 
 bool ChessPiece::IsInPalace(int row, int col) {
-    if (color == RED) {
+    if (color == HONG) {
         if (7 <= row && row <= 9 && 3 <= col && col <= 5) return true;
         else return false;
 
-    } else if (color == BLACK) {
+    } else if (color == HEI) {
         if (0 <= row && row <= 2 && 3 <= col && col <= 5) return true;
         else return false;
     }

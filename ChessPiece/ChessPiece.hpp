@@ -10,18 +10,18 @@
 #include "Engine/Point.hpp"
 #include "Engine/GameEngine.hpp"
 
-enum PieceType { // [RED]     [BLACK]
+enum PieceType { // [HONG]     [HEI]
     NONE,
     PAWN,        // 兵 bing   卒 zu
-    CANNON,      // 炮 pao    包 pao
+    PAO,      // 炮 pao    包 pao
     CHARIOT,     // 俥 ju     車 ju
-    HORSE,       // 傌 ma     馬 ma
+    MA,       // 傌 ma     馬 ma
     ELFNT,       // 相 xiang  象 xiang
     GUARD,       // 仕 shi    士 shi
-    KING,        // 帥 shuai  將 jiang    
+    WANG,        // 帥 shuai  將 jiang    
 };
 enum PieceColor {
-    RED = -1, BLACK = 1
+    HONG = -1, HEI = 1
 };
 
 extern float blockSize; // Block size on the chessboard.

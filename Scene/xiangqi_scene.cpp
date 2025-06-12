@@ -33,7 +33,7 @@
 #define STATES(row, col) (ChessboardState[row][col].first)
 #define PIECES(row, col) (ChessboardState[row][col].second)
 
-PieceColor winner = RED;
+PieceColor winner = HONG;
 
 /* DEVELOP KIT */
 int XiangqiScene::x_to_col(float x) {
@@ -99,11 +99,11 @@ void XiangqiScene::Initialize() {
     ChessboardGroup->AddNewObject(chessboard = new Engine::Image("xiangqi/xiangqi_chessboard_albert.jpg", halfW, halfH, blockSize * 10, blockSize * 11, 0.5, 0.5));
     // Round Reminder (color)
     UIGroup->AddNewObject(new Engine::Label("Round:", "pirulen.ttf", 40, halfW / 4, halfH / 8, 255, 255, 255, 255, 0.5, 0.5));
-    UIGroup->AddNewObject(RoundReminder = new Engine::Label("RED", "pirulen.ttf", 40, halfW / 4, halfH / 8 + 40, 255, 255, 255, 255, 0.5, 0.5));
-    RoundReminder->Color = al_map_rgba(255, 0, 0, 255); // Current color: RED
+    UIGroup->AddNewObject(RoundReminder = new Engine::Label("HONG", "pirulen.ttf", 40, halfW / 4, halfH / 8 + 40, 255, 255, 255, 255, 0.5, 0.5));
+    RoundReminder->Color = al_map_rgba(255, 0, 0, 255); // Current color: HONG
     // Round Warning
     UIGroup->AddNewObject(RoundWarning1 = new Engine::Label("Cannot choose", "pirulen.ttf", 30, w - halfW / 4, halfH / 8, 255, 150, 150, 0, 0.5, 0.5));
-    UIGroup->AddNewObject(RoundWarning2 = new Engine::Label("BLACK PIECES", "pirulen.ttf", 36, w - halfW / 4, halfH / 8 + 50, 255, 150, 150, 0, 0.5, 0.5));
+    UIGroup->AddNewObject(RoundWarning2 = new Engine::Label("HEI PIECES", "pirulen.ttf", 36, w - halfW / 4, halfH / 8 + 50, 255, 150, 150, 0, 0.5, 0.5));
     UIGroup->AddNewObject(RoundWarning3 = new Engine::Label("in this round!!", "pirulen.ttf", 30, w - halfW / 4, halfH / 8 + 100, 255, 150, 150, 0, 0.5, 0.5));
     // Checkmate Warning
     UIGroup->AddNewObject(BlackCheckmateWarning = new Engine::Image("xiangqi/black_checkmate.png", halfW, halfH, blockSize * 4, blockSize * 4, 0.5, 0.5));
@@ -111,7 +111,7 @@ void XiangqiScene::Initialize() {
     UIGroup->AddNewObject(RedCheckmateWarning = new Engine::Image("xiangqi/red_checkmate.png", halfW, halfH, blockSize * 4, blockSize * 4, 0.5, 0.5));
     RedCheckmateWarning->Visible = false;
 
-    Round = RED;
+    Round = HONG;
     preview = nullptr;
     SelectFlag = false;
     SwitchFlag = false;
@@ -136,7 +136,7 @@ void XiangqiScene::ReadChessboard() {
         if ('0' <= c && c <= '7') {
             mapData.push_back(c - '0');
 
-        } else if ('8' <= c <= '9') {
+        } else if ('8' <= c && c <= '9') {
             throw std::ios_base::failure("Chessboard data corrupted...");
 
         } else {
@@ -152,58 +152,58 @@ void XiangqiScene::ReadChessboard() {
     
     // Store map in 2D array.
     for (int row = 0; row < ChessboardHeight; row++) {
-        PieceColor color = (row < ChessboardHeight / 2) ? BLACK : RED;
+        PieceColor color = (row < ChessboardHeight / 2) ? HEI : HONG;
 
         for (int col = 0; col < ChessboardWidth; col++) {
             const int num = mapData[row * ChessboardWidth + col];
-            STATES(row, col) = color * num; // Red pieces would generally go up (decrease in y), so I set the state of red pieces to negative.
+            STATES(row, col) = color * num; // HONG pieces would generally go up (decrease in y), so I set the state of HONG pieces to negative.
             
             // Construct all the chess pieces.
-            // BLACK at the top, RED at the bottom.
+            // HEI at the top, HONG at the bottom.
             Engine::Point position(col_to_x(col), row_to_y(row)); // Regular form: i for row, j for column!
             Engine::Point palace_position(col, row);                                            // Palace form
             std::string img = "xiangqi/";
             ChessPiece *new_piece = nullptr;
 
-            if (num == KING) {
-                if (color == RED) {
+            if (num == WANG) {
+                if (color == HONG) {
                     img += "red_piece_shuai.png";
-                    PieceGroup->AddNewObject(new_piece = new KingPiece(img, position, color, KING * 10));
+                    PieceGroup->AddNewObject(new_piece = new KingPiece(img, position, color, WANG * 10));
                     RedKing = new_piece;
 
                 } else {
                     img += "black_piece_jiang.png";
-                    PieceGroup->AddNewObject(new_piece = new KingPiece(img, position, color, KING * 10));
+                    PieceGroup->AddNewObject(new_piece = new KingPiece(img, position, color, WANG * 10));
                     BlackKing = new_piece;
                 }
 
             } else if (num == GUARD) {
-                (color == RED) ? img += "red_" : img += "black_";
+                (color == HONG) ? img += "red_" : img += "black_";
                 img += "piece_shi.png";
                 PieceGroup->AddNewObject(new_piece = new GuardPiece(img, position, color, GUARD * 10));
 
             } else if (num == ELFNT) {
-                (color == RED) ? img += "red_" : img += "black_";
+                (color == HONG) ? img += "red_" : img += "black_";
                 img += "piece_xiang.png";
                 PieceGroup->AddNewObject(new_piece = new ElephantPiece(img, position, color, ELFNT * 10));
 
-            } else if (num == HORSE) {
-                (color == RED) ? img += "red_" : img += "black_";
+            } else if (num == MA) {
+                (color == HONG) ? img += "red_" : img += "black_";
                 img += "piece_ma.png";
-                PieceGroup->AddNewObject(new_piece = new HorsePiece(img, position, color, HORSE * 10));
+                PieceGroup->AddNewObject(new_piece = new HorsePiece(img, position, color, MA * 10));
 
             } else if (num == CHARIOT) {
-                (color == RED) ? img += "red_" : img += "black_";
+                (color == HONG) ? img += "red_" : img += "black_";
                 img += "piece_ju.png";
                 PieceGroup->AddNewObject(new_piece = new ChariotPiece(img, position, color, CHARIOT * 10));
 
-            } else if (num == CANNON) {
-                (color == RED) ? img += "red_" : img += "black_";
+            } else if (num == PAO) {
+                (color == HONG) ? img += "red_" : img += "black_";
                 img += "piece_pao.png";
-                PieceGroup->AddNewObject(new_piece = new CannonPiece(img, position, color, CANNON * 10));
+                PieceGroup->AddNewObject(new_piece = new CannonPiece(img, position, color, PAO * 10));
 
             } else if (num == PAWN) {
-                (color == RED) ? img += "red_piece_bing.png" : img += "black_piece_zu.png";
+                (color == HONG) ? img += "red_piece_bing.png" : img += "black_piece_zu.png";
                 PieceGroup->AddNewObject(new_piece = new PawnPiece(img, position, color, PAWN * 10));
             }
 
@@ -220,7 +220,7 @@ void XiangqiScene::Update(float deltaTime) {
 
     // Winning Condition:
     if ((!RedKing && BlackKing) || (RedKing && !BlackKing)) {
-        winner = (RedKing) ? RED : BLACK;
+        winner = (RedKing) ? HONG : HEI;
         Engine::GameEngine::GetInstance().ChangeScene("xiangqi_win");
     }
 
@@ -238,7 +238,7 @@ void XiangqiScene::Update(float deltaTime) {
     }
 
     // CheckmateWarning
-    if (1 <= checkmate_warning_tick && checkmate_warning_tick <= 60 * ALLEGRO_PI) { // Warning the black!
+    if (1 <= checkmate_warning_tick && checkmate_warning_tick <= 60 * ALLEGRO_PI) { // Warning the HEI!
         BlackCheckmateWarning->Visible = true;
         checkmate_warning_tick++;
         if (checkmate_warning_tick > 60 * ALLEGRO_PI) {
@@ -356,9 +356,9 @@ void XiangqiScene::OnMouseUp(int button, int mx, int my) {
             auto ptr = PIECES(_row_mouse, _col_mouse);
             PieceGroup->RemoveObject(ptr->GetObjectIterator()); // Delete the eaten piece from PieceGroup.
 
-            // Case: Eating a king piece.
-            if (STATES(_row_mouse, _col_mouse) == RED * KING)       RedKing = nullptr;
-            else if (STATES(_row_mouse, _col_mouse) == BLACK *KING) BlackKing = nullptr;
+            // Case: Eating a WANG piece.
+            if (STATES(_row_mouse, _col_mouse) == HONG * WANG)       RedKing = nullptr;
+            else if (STATES(_row_mouse, _col_mouse) == HEI *WANG) BlackKing = nullptr;
         }
 
         // Moved to Target
@@ -372,10 +372,10 @@ void XiangqiScene::OnMouseUp(int button, int mx, int my) {
         PIECES(SelectedRowCol.first, SelectedRowCol.second) = nullptr;
         std::cout << "[DEBUGGER] move selectedPiece to the next place." << std::endl;
         
-        Round = (Round == RED) ? BLACK : RED; // `Round` flip - for RED to BLACK, and vice versa.
-        RoundReminder->Text = ((Round == RED) ? "RED" : "BLACK"); // Change RoundReminder text.
-        RoundReminder->Color = ((Round == RED) ? al_map_rgba(255, 0, 0, 255) : al_map_rgba(100, 100, 150, 255));
-        RoundWarning2->Text = ((Round == RED) ? "BLACK PIECES" : "RED PIECES"); // Change RoundWarning text.
+        Round = (Round == HONG) ? HEI : HONG; // `Round` flip - for HONG to HEI, and vice versa.
+        RoundReminder->Text = ((Round == HONG) ? "HONG" : "HEI"); // Change RoundReminder text.
+        RoundReminder->Color = ((Round == HONG) ? al_map_rgba(255, 0, 0, 255) : al_map_rgba(100, 100, 150, 255));
+        RoundWarning2->Text = ((Round == HONG) ? "HEI PIECES" : "HONG PIECES"); // Change RoundWarning text.
         std::cout << "[DEBUGGER] round == " << Round << std::endl;
     }
     PrintChessboardState();//
@@ -387,11 +387,11 @@ void XiangqiScene::OnMouseUp(int button, int mx, int my) {
         std::cout << "[DEBUGGER] BlackKing at " << ((blackCheckmate = BlackKing->IsCheckmate(ChessboardState)) ? "OMG" : "HUH") << " / RedKing at " << ((redCheckmate = RedKing->IsCheckmate(ChessboardState)) ? "OMG" : "HUH") << std::endl;
         if (blackCheckmate) {
             checkmate_warning_tick = 1;
-            std::cout << "[LOG] Warns the black!" << std::endl;
+            std::cout << "[LOG] Warns the HEI!" << std::endl;
 
         } else if (redCheckmate) {
             checkmate_warning_tick = -1;
-            std::cout << "[LOG] Warns the red!" << std::endl;
+            std::cout << "[LOG] Warns the HONG!" << std::endl;
         }
     }
 

@@ -16,7 +16,7 @@ bool KingPiece::IsValidMove(int row, int col, int next_row, int next_col, std::v
         if (IsInPalace(next_row, next_col)) return true;
         else return false;
 
-    } else if (col == next_col && ChessboardState[next_row][next_col].first == -color * KING) { // The king of another country (color)
+    } else if (col == next_col && ChessboardState[next_row][next_col].first == -color * WANG) { // The king of another country (color)
         int min_r, max_r;
         min_r = row < next_row ? row : next_row;
         max_r = row > next_row ? row : next_row;
