@@ -40,12 +40,12 @@ add_executable(CHINESE-CHESS-GAME
     Engine/Sprite.cpp
     Engine/Sprite.hpp
     
-    Scene/start_scene.cpp
-    Scene/start_scene.hpp
+    Scene/anqi_start_scene.cpp
+    Scene/anqi_start_scene.hpp
     Scene/mode_select.cpp
     Scene/mode_select.hpp
-    Scene/play_scene.cpp
-    Scene/play_scene.hpp
+    Scene/anqi_scene.cpp
+    Scene/anqi_scene.hpp
     Scene/harmony_scene.cpp
     Scene/harmony_scene.hpp
     Scene/red_win_scene.cpp

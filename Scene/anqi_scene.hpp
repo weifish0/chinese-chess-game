@@ -19,13 +19,13 @@ namespace Engine {
     class Sprite;
 }   // namespace Engine
 
-class PlayScene final : public Engine::IScene {
+class AnqiScene final : public Engine::IScene {
 public:
     Group* ChessGroup;
     Group* UIGroup;
     Engine::Label *UIBlack;
     Engine::Label *UIRed;
-    explicit PlayScene() = default;
+    explicit AnqiScene() = default;
     void Initialize() override;
     void Terminate() override;
     void Update(float deltaTime) override;
@@ -35,9 +35,10 @@ public:
     void RecordTemp(Chess* chess,int i,int j);
     bool CannonValidEating(int j,int i,int temp_y,int temp_x);
     void Go(Engine::Point pos,int j,int i);
-    void ConstructUI();
+    void ConstructUI(ChessColor color);
     void ButtonClick(int id);
     void Target(int j,int i,int temp_y,int temp_x);
+    bool Edible(Chess* eater,Chess* prey);
     // void PlayOnClick(int stage);
     // void SettingsOnClick(int stage);
 };

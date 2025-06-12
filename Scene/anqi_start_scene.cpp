@@ -9,12 +9,12 @@
 #include "Engine/Point.hpp"
 #include "Engine/Resources.hpp"
 
-#include "Scene/start_scene.hpp"
+#include "Scene/anqi_start_scene.hpp"
 #include "UI/Component/ImageButton.hpp"
 #include "UI/Component/Label.hpp"
 #include "UI/Component/Slider.hpp"
 
-void StartScene::Initialize() {
+void Anqi_StartScene::Initialize() {
     int w = Engine::GameEngine::GetInstance().GetScreenSize().x;
     int h = Engine::GameEngine::GetInstance().GetScreenSize().y;
     int halfW = w / 2;
@@ -26,21 +26,21 @@ void StartScene::Initialize() {
     // if (!font) std::cerr << "Font load failed!" << std::endl;
 
     btn = new Engine::ImageButton("start/block.png", "start/dirt.png", halfW - 400, halfH / 2 + 300, 800, 200);
-    btn->SetOnClickCallback(std::bind(&StartScene::PlayOnClick, this, 1));
+    btn->SetOnClickCallback(std::bind(&Anqi_StartScene::PlayOnClick, this, 1));
     AddNewControlObject(btn);
     AddNewObject(new Engine::Label("開始", "font2.ttc", 140, halfW, halfH / 2 + 400, 14 , 37 , 67 , 255, 0.5, 0.5));
 
     btn = new Engine::ImageButton("start/block.png", "start/dirt.png", halfW - 400, halfH * 3 / 2 - 50, 800, 200);
-    btn->SetOnClickCallback(std::bind(&StartScene::SettingsOnClick, this, 2));
+    btn->SetOnClickCallback(std::bind(&Anqi_StartScene::SettingsOnClick, this, 2));
     AddNewControlObject(btn);
     AddNewObject(new Engine::Label("設置", "font2.ttc", 140, halfW, halfH * 3 / 2 +50, 14, 37, 67, 255, 0.5, 0.5));
 }
-void StartScene::Terminate() {
+void Anqi_StartScene::Terminate() {
     IScene::Terminate();
 }
-void StartScene::PlayOnClick(int stage) {
+void Anqi_StartScene::PlayOnClick(int stage) {
     Engine::GameEngine::GetInstance().ChangeScene("mode_select");
 }
-void StartScene::SettingsOnClick(int stage) {
+void Anqi_StartScene::SettingsOnClick(int stage) {
     Engine::GameEngine::GetInstance().ChangeScene("setting");
 }

@@ -37,5 +37,5 @@ void Red_Win_Scene::Terminate(){
 
 }
 void Red_Win_Scene::BackOnClick(int stage){
-    Engine::GameEngine::GetInstance().ChangeScene("start");
+    Engine::GameEngine::GetInstance().ChangeScene("anqi_start");
 }

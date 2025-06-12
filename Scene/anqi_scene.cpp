@@ -11,7 +11,7 @@
 #include "Engine/Point.hpp"
 #include "Engine/Resources.hpp"
 
-#include "play_scene.hpp"
+#include "anqi_scene.hpp"
 #include "UI/Component/ImageButton.hpp"
 #include "UI/Component/Label.hpp"
 #include "UI/Component/Slider.hpp"
@@ -53,7 +53,7 @@ enum Turn{
 Turn turn = UNKNOWNED;
 std::vector<std::vector<Chess*>> chessPositions(4, std::vector<Chess*>(8, nullptr));
 
-void PlayScene::Initialize() {
+void AnqiScene::Initialize() {
     
     attack_flag = 0;
     harmony_flag = 0;
@@ -173,7 +173,8 @@ void PlayScene::Initialize() {
 
 
 }
-bool Edible(Chess* eater,Chess* prey){
+
+bool AnqiScene::Edible(Chess* eater,Chess* prey){
     if(eater->getType()==SOLDIER&&prey->getType()==KING){
         return true;
     }
@@ -189,7 +190,7 @@ bool Edible(Chess* eater,Chess* prey){
 
     
 
-bool PlayScene::CannonValidEating(int j,int i,int temp_y,int temp_x){
+bool AnqiScene::CannonValidEating(int j,int i,int temp_y,int temp_x){
     //std::cout << j << " " << i << " " << temp_y << " " << temp_x << " " <<std::endl;
     if((j==temp_y)==(i==temp_x)){
         return false;
@@ -236,29 +237,35 @@ bool PlayScene::CannonValidEating(int j,int i,int temp_y,int temp_x){
     else
         return false;
 }
-void PlayScene::ConstructUI(){
+void AnqiScene::ConstructUI(ChessColor color){
+    
     int w = Engine::GameEngine::GetInstance().GetScreenSize().x;
     int h = Engine::GameEngine::GetInstance().GetScreenSize().y;
     int halfW = w / 2;
     int halfH = h / 2;
     Engine::ImageButton *btn;
+    float rx,bx;
+    rx = color==RED ? 0: w-300;
+    bx = color==BLACK ? 0:w-312.5;
+    AddNewObject(new Engine::Image("black_win.png", bx, 0 , 300 , 300 , 0, 0));
+    AddNewObject(new Engine::Image("red_win.png", rx, 0 , 312.5 , 300 , 0, 0));
     // Button 1
     // btn = new Engine::ImageButton("start/floor.png", "start/dirt.png", halfW - 200, halfH / 2 - 300, 400, 150);
-    // btn->SetOnClickCallback(std::bind(&PlayScene::ButtonClick, this, 1));
+    // btn->SetOnClickCallback(std::bind(&AnqiScene::ButtonClick, this, 1));
     // AddNewControlObject(btn);
     //AddNewObject(new Engine::Label("選項", "font2.ttc", 100, halfW, 140, 255 , 255 ,255 , 255, 0.5, 0.5));
 }
 
-void PlayScene::InitializeRound(ChessColor color){
+void AnqiScene::InitializeRound(ChessColor color){
     turn = color==RED ? BLACK_TURN : RED_TURN;
     if(turn==RED_TURN)
         std::cout << "Red turn!\n";
     else
         std::cout<< "Black turn!\n";
-    ConstructUI();
+    ConstructUI(color);
 }
 
-void PlayScene::ChangeRound(){
+void AnqiScene::ChangeRound(){
     turn = turn==RED_TURN ? BLACK_TURN : RED_TURN;
     if(turn==RED_TURN)
         std::cout << "Red turn!\n";
@@ -267,7 +274,7 @@ void PlayScene::ChangeRound(){
     
 }
 
-void PlayScene::RecordTemp(Chess* chess,int i,int j){
+void AnqiScene::RecordTemp(Chess* chess,int i,int j){
     chess->Click();
     temp = chess;
     temp_x = i;
@@ -275,7 +282,7 @@ void PlayScene::RecordTemp(Chess* chess,int i,int j){
 }
 
 
-void PlayScene::Go(Engine::Point pos,int j,int i){                         
+void AnqiScene::Go(Engine::Point pos,int j,int i){                         
     temp->Move(pos);
     chessPositions[j][i] = temp;
     chessPositions[temp_y][temp_x] = nullptr;
@@ -286,7 +293,7 @@ void PlayScene::Go(Engine::Point pos,int j,int i){
 
 
 
-void PlayScene::Update(float deltaTime) {
+void AnqiScene::Update(float deltaTime) {
     //std::cout << attack_tick << std::endl;
     attack_tick++;
     harmony_tick++;
@@ -297,7 +304,7 @@ void PlayScene::Update(float deltaTime) {
         attack_tick = 0;
     }
     int cur_step = (turn==RED_TURN)?black_attack_step:red_attack_step;
-    if((cur_step>=5&&cur_step<=10||attack_mark)&&harmony_step<25){
+    if((cur_step>=5&&cur_step<=10||attack_mark)){
         if(!attack_flag){
             attack_tick = 0;
             attack_flag = 1;
@@ -322,7 +329,7 @@ void PlayScene::Update(float deltaTime) {
         attack_warn->Color = al_map_rgba(255,255,255,0);
     }
     
-    if(harmony_step>=25&&harmony_step<50){
+    if(harmony_step>=25&&harmony_step<50&&!(cur_step>=5&&cur_step<=10)){
         if(!harmony_flag){
             harmony_tick = 0;
             harmony_flag = 1;
@@ -467,7 +474,7 @@ void PlayScene::Update(float deltaTime) {
 
 }
 
-void PlayScene::Target(int j,int i,int temp_y,int temp_x){
+void AnqiScene::Target(int j,int i,int temp_y,int temp_x){
     std::cout << "200\n";
     int color = temp->getColor();
     std::vector<std::pair<int,int>> direction = {
@@ -529,18 +536,18 @@ void PlayScene::Target(int j,int i,int temp_y,int temp_x){
 
 }
 
-void PlayScene::ButtonClick(int id){
+void AnqiScene::ButtonClick(int id){
     //std:: << id <<std::endl;
 }
 
 
 
 
-void PlayScene::Terminate() {
+void AnqiScene::Terminate() {
     IScene::Terminate();
 }
 
-bool PlayScene::ClickCheck(Engine::Point pos){
+bool AnqiScene::ClickCheck(Engine::Point pos){
     // Check if the chess piece is clicked
     ALLEGRO_MOUSE_STATE mouse;
     al_get_mouse_state(&mouse);

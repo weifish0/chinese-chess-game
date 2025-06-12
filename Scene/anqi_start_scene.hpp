@@ -1,13 +1,13 @@
-#ifndef STARTSCENE_HPP
-#define STARTSCENE_HPP
+#ifndef ANQI_STARTSCENE_HPP
+#define ANQI_STARTSCENE_HPP
 
 #include <allegro5/allegro_audio.h>
 #include <memory>
 
 #include "Engine/IScene.hpp"
-class StartScene final : public Engine::IScene {
+class Anqi_StartScene final : public Engine::IScene {
 public:
-    explicit StartScene() = default;
+    explicit Anqi_StartScene() = default;
     void Initialize() override;
     void Terminate() override;
     void PlayOnClick(int stage);

@@ -9,7 +9,7 @@
 #include "Engine/Point.hpp"
 #include "Engine/Resources.hpp"
 
-#include "Scene/start_scene.hpp"
+#include "Scene/anqi_scene.hpp"
 #include "UI/Component/ImageButton.hpp"
 #include "UI/Component/Label.hpp"
 #include "UI/Component/Slider.hpp"
@@ -51,5 +51,5 @@ void ModeSelectScene::PlayOnClick(int stage){
     Engine::GameEngine::GetInstance().ChangeScene("play");
 }
 void ModeSelectScene::BackOnClick(int stage){
-    Engine::GameEngine::GetInstance().ChangeScene("start");
+    Engine::GameEngine::GetInstance().ChangeScene("anqi_start");
 }
