@@ -31,21 +31,24 @@ void Playground::Initialize() {
 
     // 創建 NPC
     auto npc1_image = Engine::Resources::GetInstance().GetBitmap("playground/mr_shen_NPC.png");
-    NPC* npc1 = new NPC(700, 350, 65, npc1_image, "沈大師");
+    auto npc1_dialogue_image = Engine::Resources::GetInstance().GetBitmap("playground/mr_shen_NPC_dialogue.png");
+    NPC* npc1 = new NPC(700, 350, 65, npc1_image, "沈大師", npc1_dialogue_image);
     npc1->addDialogue("Hello, welcome to the chess world!");
     npc1->addDialogue("There are two games here: anqi and xiangqi.");
     npc1->addDialogue("Please choose a building to enter the game.");
     npcs.push_back(npc1);
 
     auto npc2_image = Engine::Resources::GetInstance().GetBitmap("playground/anqi_NPC.png");
-    NPC* npc2 = new NPC(800, 900, 65, npc2_image, "暗棋高手");
+    auto npc2_dialogue_image = Engine::Resources::GetInstance().GetBitmap("playground/anqi_NPC_dialogue.png");
+    NPC* npc2 = new NPC(800, 900, 65, npc2_image, "暗棋高手", npc2_dialogue_image);
     npc2->addDialogue("Hello, welcome to the chess world!");
     npc2->addDialogue("There are two games here: anqi and xiangqi.");
     npc2->addDialogue("Please choose a building to enter the game.");
     npcs.push_back(npc2);
 
     auto npc3_image = Engine::Resources::GetInstance().GetBitmap("playground/xiangqi_NPC.png");
-    NPC* npc3 = new NPC(1450, 350, 65, npc3_image, "象棋高手");
+    auto npc3_dialogue_image = Engine::Resources::GetInstance().GetBitmap("playground/xiangqi_NPC_dialogue.png");
+    NPC* npc3 = new NPC(1450, 350, 65, npc3_image, "象棋高手", npc3_dialogue_image);
     npc3->addDialogue("Hello, welcome to the chess world!");
     npc3->addDialogue("There are two games here: anqi and xiangqi.");
     npc3->addDialogue("Please choose a building to enter the game.");
@@ -190,6 +193,25 @@ void Playground::Draw() const {
         if (npc->getIsTalking() && dialogue_font) {
             std::string current_dialogue = npc->getCurrentDialogue();
             if (!current_dialogue.empty()) {
+                // 繪製 NPC 對話圖片
+                auto dialogue_image = npc->getDialogueImage();
+                if (dialogue_image) {
+                    float image_width = al_get_bitmap_width(dialogue_image.get());
+                    float image_height = al_get_bitmap_height(dialogue_image.get());
+                    float image_x = 0;
+                    float image_y = 50;
+                    
+                    al_draw_scaled_bitmap(
+                        dialogue_image.get(),
+                        0, 0,
+                        al_get_bitmap_width(dialogue_image.get()),
+                        al_get_bitmap_height(dialogue_image.get()),
+                        image_x, image_y,
+                        image_width, image_height,
+                        0
+                    );
+                }
+
                 // 繪製對話框背景
                 float box_y = SCREEN_BOTTOM - DIALOGUE_BOX_HEIGHT;
                 al_draw_filled_rectangle(

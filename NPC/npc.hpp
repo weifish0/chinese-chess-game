@@ -13,6 +13,7 @@ private:
     float y;
     float size;
     std::shared_ptr<ALLEGRO_BITMAP> image;
+    std::shared_ptr<ALLEGRO_BITMAP> dialogue_image;
     std::shared_ptr<ALLEGRO_FONT> font;  // 新增：字體
     std::vector<std::string> dialogues;  // 對話內容列表
     size_t current_dialogue_index;       // 當前對話索引
@@ -22,7 +23,7 @@ private:
     std::string name;
 
 public:
-    NPC(float x, float y, float size, std::shared_ptr<ALLEGRO_BITMAP> img, std::string name);
+    NPC(float x, float y, float size, std::shared_ptr<ALLEGRO_BITMAP> img, std::string name, std::shared_ptr<ALLEGRO_BITMAP> dialogue_image);
     ~NPC();
 
     // 基本屬性
@@ -31,6 +32,7 @@ public:
     float getSize() const { return size; }
     bool getIsTalking() const { return is_talking; }
     std::string getName() const { return name; }
+    std::shared_ptr<ALLEGRO_BITMAP> getDialogueImage() const { return dialogue_image; }
 
     // 碰撞檢測
     bool IsColliding(float playerX, float playerY, float playerSize) const {

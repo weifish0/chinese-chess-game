@@ -3,8 +3,8 @@
 #include <allegro5/allegro_primitives.h>
 #include <cmath>
 
-NPC::NPC(float x, float y, float size, std::shared_ptr<ALLEGRO_BITMAP> img, std::string name)
-    : x(x), y(y), size(size), image(img), current_dialogue_index(0), is_talking(false), name(name) {
+NPC::NPC(float x, float y, float size, std::shared_ptr<ALLEGRO_BITMAP> img, std::string name, std::shared_ptr<ALLEGRO_BITMAP> dialogue_image)
+    : x(x), y(y), size(size), image(img), dialogue_image(dialogue_image), current_dialogue_index(0), is_talking(false), name(name) {
     // 載入字體
     font = Engine::Resources::GetInstance().GetFont("font2.ttc", DIALOGUE_FONT_SIZE);
 }
