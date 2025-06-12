@@ -181,14 +181,14 @@ void Playground::Draw() const {
                 al_draw_filled_rectangle(
                     0, box_y,
                     SCREEN_RIGHT, SCREEN_BOTTOM,
-                    al_map_rgba(0, 0, 0, 230)  // 深色半透明背景
+                    al_map_rgb(210, 180, 140)  // 棕色
                 );
 
                 // 繪製對話框邊框
                 al_draw_rectangle(
                     0, box_y,
                     SCREEN_RIGHT, SCREEN_BOTTOM,
-                    al_map_rgb(255, 255, 255),  // 白色邊框
+                    al_map_rgb(0, 0, 0),  // 黑色邊框
                     2.0f
                 );
 
@@ -196,7 +196,7 @@ void Playground::Draw() const {
                 float name_y = box_y + DIALOGUE_PADDING;
                 al_draw_text(
                     dialogue_font.get(),
-                    al_map_rgb(255, 255, 255),
+                    al_map_rgb(0, 0, 0),
                     DIALOGUE_PADDING,
                     name_y,
                     ALLEGRO_ALIGN_LEFT,
@@ -207,7 +207,7 @@ void Playground::Draw() const {
                 float text_y = name_y + al_get_font_line_height(dialogue_font.get()) + DIALOGUE_PADDING;
                 al_draw_text(
                     dialogue_font.get(),
-                    al_map_rgb(255, 255, 255),
+                    al_map_rgb(0, 0, 0),  // 黑色文字
                     DIALOGUE_PADDING,
                     text_y,
                     ALLEGRO_ALIGN_LEFT,
