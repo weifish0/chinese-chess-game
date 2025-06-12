@@ -29,7 +29,7 @@ public:
         return new KingPiece(*this);
     }
     
-   bool KingPiece::IsValidMove(int y,int x,int next_y,int next_x, std::vector<std::vector<std::pair<int,ChessPiece*>>> ChessboardState);
+   bool IsValidMove(int row, int col, int next_row, int next_col, std::vector<std::vector<std::pair<int,ChessPiece*>>> ChessboardState) override;
     // void OnAnimation(ChessPiece *enemy_chess);
 };
 

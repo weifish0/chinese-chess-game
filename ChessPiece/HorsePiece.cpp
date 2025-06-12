@@ -13,7 +13,7 @@ bool HorsePiece::IsValidMove(int y,int x,int next_y,int next_x, std::vector<std:
         if(x>next_x&&abs(x-next_x)==2&&ChessboardState[y][x-1].second==nullptr){
             return true;
         }
-        else if(abs(x-next_x)==2&&ChessboardState[y][x+1].second==nullptr){
+        else if(x<next_x&&abs(x-next_x)==2&&ChessboardState[y][x+1].second==nullptr){
             return true;
         }
         return false;
@@ -23,7 +23,7 @@ bool HorsePiece::IsValidMove(int y,int x,int next_y,int next_x, std::vector<std:
         if(y>next_y&&abs(y-next_y)==2&&ChessboardState[y-1][x].second==nullptr){
             return true;
         }
-        else if(abs(y-next_y)==2&&ChessboardState[y+1][x].second==nullptr){
+        else if(y<next_y&&abs(y-next_y)==2&&ChessboardState[y+1][x].second==nullptr){
             return true;
         }
         return false;

@@ -12,7 +12,6 @@ ChessPiece::ChessPiece(std::string img, Engine::Point position, PieceColor color
     : Sprite(img, position.x, position.y, 90, 90), color(color), score(score) {
 }
 bool ChessPiece::IsValidMove(int y,int x,int next_y,int next_x, std::vector<std::vector<std::pair<int,ChessPiece*>>> ChessboardState) {
-
     return true;
 }
 void ChessPiece::OnAnimation(ChessPiece *enemy_piece) {

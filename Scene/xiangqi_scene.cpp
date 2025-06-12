@@ -76,6 +76,10 @@ void XiangqiScene::PrintChessboardState() {
     }
 }
 
+bool XiangqiScene::PieceWithinRange(int r, int c) {
+    return (0 <= r && r < ChessboardHeight && 0 <= c && c < ChessboardWidth);
+}
+
 /* METHODS */
 void XiangqiScene::Initialize() {
     int h = Engine::GameEngine::GetInstance().GetScreenSize().y;
@@ -241,28 +245,20 @@ void XiangqiScene::OnMouseDown(int button, int mx, int my) {
     if ((button & 1) && !SelectFlag) { 
         const int _col_mouse = x_to_col(mx), _row_mouse = y_to_row(my);
         // Check if (x, y) is valid:
-        std::cout << "[DEBUGGER] OnMouseDown: " << _row_mouse << "," << _col_mouse << std::endl;//
         if (_row_mouse < 0 || ChessboardHeight <= _row_mouse || _col_mouse < 0 || ChessboardWidth <= _col_mouse) return;
-
-        std::cout << "[DEBUGGER] OnMouseDown: STATES[" << _row_mouse << "][" << _col_mouse << "] == " << STATES(_row_mouse, _col_mouse) << std::endl;//
 
         if (STATES(_row_mouse, _col_mouse) * Round > 0) { // If not empty && with correct color:
             SelectedRowCol = std::pair(_row_mouse, _col_mouse); // Jot down the original row and column of the player-selected piece.
             auto selectedPiece = PIECES(_row_mouse, _col_mouse);
             assert(selectedPiece != nullptr);
-            std::cout << "[DEBUG] selectedPiece is type: " << typeid(*selectedPiece).name() << std::endl;
             preview = selectedPiece->Clone(); // Deep copy of the selected piece!
-            
             UIGroup->AddNewObject(preview);
-            std::cout << "[DEBUGGER] Preview created!" << std::endl;
-
             SelectFlag = true;
 
         } else if (STATES(_row_mouse, _col_mouse) * Round < 0) { // Of a different color.
             SelectFlag = false;
             WrongPiece = true;
             warning_tick = 1;
-            std::cout << "[DEBUGGER] OnMouseDown: START TO SELECT A PIECE (IF THERE IS ONE) --> OF A DIFFERENT COLOR" << std::endl;
         }
 
     } else if ((button & 1) && SelectFlag) { // ATTEMPT TO PUT DOWN THE PIECE
@@ -280,14 +276,25 @@ void XiangqiScene::OnMouseMove(int mx, int my) {
     int halfH = h / 2;
 
     IScene::OnMouseMove(mx, my);
-    const int _col = x_to_col(mx), _row = y_to_row(my);
+    const int _col_mouse = x_to_col(mx), _row_mouse = y_to_row(my);
 
-    if (!preview || _col < 0 || _col >= ChessboardWidth || _row < 0 || _row >= ChessboardHeight) {
+    if (!preview || !PieceWithinRange(_row_mouse, _col_mouse) || (SelectedRowCol.first == _row_mouse && SelectedRowCol.second == _col_mouse)) {
         return;
     }
-    preview->Visible = true;
-    preview->Tint = al_map_rgba(255, 255, 255, 100);
-    preview->Position.x = col_to_x(_col), preview->Position.y = row_to_y(_row);
+
+    if (preview && PieceWithinRange(SelectedRowCol.first, SelectedRowCol.second) && PIECES(SelectedRowCol.first, SelectedRowCol.second)) {    
+        preview->Visible = true;
+        preview->Position.x = col_to_x(_col_mouse), preview->Position.y = row_to_y(_row_mouse);
+        preview->Tint = al_map_rgba(255, 255, 255, 150);//
+
+        // Change preview color if invalid:
+        bool temp = PIECES(SelectedRowCol.first, SelectedRowCol.second)->IsValidMove(SelectedRowCol.first, SelectedRowCol.second, _row_mouse, _col_mouse, ChessboardState);
+        if (!temp) {
+            preview->Tint = al_map_rgba(255, 100, 100, 150); // Redish
+        } else {
+            preview->Tint = al_map_rgba(100, 255, 100, 150); // Greenish
+        }
+    }
 }
 
 void XiangqiScene::OnMouseUp(int button, int mx, int my) {
@@ -309,53 +316,41 @@ void XiangqiScene::OnMouseUp(int button, int mx, int my) {
         int state_selected = STATES(SelectedRowCol.first, SelectedRowCol.second);
 
         // Check if valid. (Call the method of the chess to see if valid.)
-        // if (!selectedPiece->IsValidMove(_target)) return;
+        if (!PIECES(SelectedRowCol.first, SelectedRowCol.second)->IsValidMove(SelectedRowCol.first, SelectedRowCol.second, _row_mouse, _col_mouse, ChessboardState)) {
+            return;
+        }
+        std::cout << "[DEBUGGER] VALID!!!!" << std::endl;
 
         // PIECE MOVEMENT & UPDATE        
-        // Case 3: If the target block is occupied by a piece of the same color, CHANGE `selectedPiece`.
-        if (STATES(_row_mouse, _col_mouse) * Round > 0) { // Of the same color.
-            auto selectedPiece = PIECES(_row_mouse, _col_mouse);
-            preview = nullptr;
-            std::cout << "[DEBUGGER] OnMouseUp: Case 3-3" << std::endl;
-            assert(selectedPiece != nullptr);
-            std::cout << "[DEBUG] selectedPiece is type: " << typeid(*selectedPiece).name() << std::endl;
-            preview = selectedPiece->Clone();
-            std::cout << "[DEBUGGER] OnMouseUp: Case 3-4" << std::endl;
-            SelectFlag = true;
-            std::cout << "[DEBUGGER] OnMouseUp: Case 3-5" << std::endl;
-        }
-
         // Case 2 and 1: Eat an enemy || Wander to a no man's land.
-        else {
-            // Case 2: If the target block is occupied by a piece of different color, EAT it!
-            std::cout << "[DEBUGGER] Case 2 in OnMouseUp: ";
-            std::cout << STATES(_row_mouse, _col_mouse) << " * " << Round << std::endl;
-            if (STATES(_row_mouse, _col_mouse) * Round < 0) { // Of different color.
-                // Eat the target
-                auto ptr = PIECES(_row_mouse, _col_mouse);
-                PieceGroup->RemoveObject(ptr->GetObjectIterator()); // Delete the eaten piece from PieceGroup.
+        // Case 2: If the target block is occupied by a piece of different color, EAT it!
+        std::cout << "[DEBUGGER] Case 2 in OnMouseUp: ";
+        std::cout << STATES(_row_mouse, _col_mouse) << " * " << Round << std::endl;
+        if (STATES(_row_mouse, _col_mouse) * Round < 0) { // Of different color.
+            // Eat the target
+            auto ptr = PIECES(_row_mouse, _col_mouse);
+            PieceGroup->RemoveObject(ptr->GetObjectIterator()); // Delete the eaten piece from PieceGroup.
 
-                // Case: Eating a king piece.
-                if (STATES(_row_mouse, _col_mouse) == RED * KING)       RedKing = false;
-                else if (STATES(_row_mouse, _col_mouse) == BLACK *KING) BlackKing = false;
-            }
-
-            // Moved to Target
-            STATES(_row_mouse, _col_mouse) = state_selected; // Move the selected piece (state) to the target position.
-            PIECES(_row_mouse, _col_mouse) = PIECES(SelectedRowCol.first, SelectedRowCol.second);
-            PIECES(_row_mouse, _col_mouse)->Position.x = col_to_x(_col_mouse); // As for the actual selectedPiece pointer, change its x.
-            PIECES(_row_mouse, _col_mouse)->Position.y = row_to_y(_row_mouse); // As for the actual selectedPiece pointer, change its y.
-
-            // Deleted from Selected Place
-            STATES(SelectedRowCol.first, SelectedRowCol.second) = NONE;       // Clear the original selected position's state.
-            PIECES(SelectedRowCol.first, SelectedRowCol.second) = nullptr;
-            std::cout << "[DEBUGGER] move selectedPiece to the next place." << std::endl;
-            
-            Round = (Round == RED) ? BLACK : RED; // `Round` flip - for RED to BLACK, and vice versa.
-            RoundReminder->Text = ((Round == RED) ? "RED" : "BLACK"); // Change RoundReminder text.
-            RoundReminder->Color = ((Round == RED) ? al_map_rgba(255, 0, 0, 255) : al_map_rgba(100, 100, 150, 255));
-            RoundWarning2->Text = ((Round == RED) ? "BLACK PIECES" : "RED PIECES"); // Change RoundWarning text.
+            // Case: Eating a king piece.
+            if (STATES(_row_mouse, _col_mouse) == RED * KING)       RedKing = false;
+            else if (STATES(_row_mouse, _col_mouse) == BLACK *KING) BlackKing = false;
         }
+
+        // Moved to Target
+        STATES(_row_mouse, _col_mouse) = state_selected; // Move the selected piece (state) to the target position.
+        PIECES(_row_mouse, _col_mouse) = PIECES(SelectedRowCol.first, SelectedRowCol.second);
+        PIECES(_row_mouse, _col_mouse)->Position.x = col_to_x(_col_mouse); // As for the actual selectedPiece pointer, change its x.
+        PIECES(_row_mouse, _col_mouse)->Position.y = row_to_y(_row_mouse); // As for the actual selectedPiece pointer, change its y.
+
+        // Deleted from Selected Place
+        STATES(SelectedRowCol.first, SelectedRowCol.second) = NONE;       // Clear the original selected position's state.
+        PIECES(SelectedRowCol.first, SelectedRowCol.second) = nullptr;
+        std::cout << "[DEBUGGER] move selectedPiece to the next place." << std::endl;
+        
+        Round = (Round == RED) ? BLACK : RED; // `Round` flip - for RED to BLACK, and vice versa.
+        RoundReminder->Text = ((Round == RED) ? "RED" : "BLACK"); // Change RoundReminder text.
+        RoundReminder->Color = ((Round == RED) ? al_map_rgba(255, 0, 0, 255) : al_map_rgba(100, 100, 150, 255));
+        RoundWarning2->Text = ((Round == RED) ? "BLACK PIECES" : "RED PIECES"); // Change RoundWarning text.
         std::cout << "[DEBUGGER] round == " << Round << std::endl;
     }
     PrintChessboardState();//

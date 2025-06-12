@@ -26,7 +26,8 @@ KingPiece::KingPiece(std::string img, Engine::Point position, PieceColor color, 
 }
 
 bool KingPiece::IsValidMove(int y,int x,int next_y,int next_x, std::vector<std::vector<std::pair<int,ChessPiece*>>> ChessboardState) {
-    if(ChessboardState[y][x].first*ChessboardState[next_y][next_x].first>0){
+    
+    if (ChessboardState[y][x].first*ChessboardState[next_y][next_x].first>0){
         return false;
     }
 
