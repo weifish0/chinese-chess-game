@@ -4,7 +4,7 @@ PawnPiece::PawnPiece(std::string img, Engine::Point position, PieceColor color, 
     : ChessPiece(img, position, color, score) {
 }
 
-bool PawnPiece::IsValidMove(int row, int col, int next_row, int next_col, std::vector<std::vector<std::pair<int,ChessPiece*>>> ChessboardState) {
+bool PawnPiece::IsValidMove(int row, int col, int next_row, int next_col, std::vector<std::vector<std::pair<int,ChessPiece*>>> &ChessboardState) {
     // One step away only!
     if (std::abs(next_row - row) + std::abs(next_col - col) != 1)
         return false;

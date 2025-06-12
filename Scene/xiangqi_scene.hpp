@@ -31,10 +31,16 @@ public:
     Engine::Group *UIGroup;         // UI interface: Surrender flag, Back-to-main btn, Preview of chess pieces. UI 介面（投降、回主畫面、預覽）。
 
     Engine::Image *chessboard;
-    bool RedKing, BlackKing;
+    ChessPiece *RedKing, *BlackKing;
+
     Engine::Label *RoundReminder;    // To show the enabled color for the round.
     Engine::Label *RoundWarning1, *RoundWarning2, *RoundWarning3;
-    int warning_tick;                // Animation tick for RoundWarning.
+    int round_warning_tick;          // Animation tick for RoundWarning.
+
+    Engine::Image *BlackCheckmateWarning;
+    Engine::Image *RedCheckmateWarning;
+    // Engine::Label *CheckmateWarning; // To show whether the king not of the round is under threat.
+    int checkmate_warning_tick;      // Animation tick for CheckmateWarning.
     bool WrongPiece = false;
 
     // ChessboardState Storer.

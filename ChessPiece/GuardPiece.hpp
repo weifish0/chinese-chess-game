@@ -15,7 +15,7 @@ public:
         return new GuardPiece(*this);
     }
     explicit GuardPiece(std::string img, Engine::Point position, PieceColor color, int score);
-    bool IsValidMove(int y,int x,int next_y,int next_x, std::vector<std::vector<std::pair<int,ChessPiece*>>> ChessboardState);
+    bool IsValidMove(int y,int x,int next_y,int next_x, std::vector<std::vector<std::pair<int,ChessPiece*>>> &ChessboardState);
     
     // void OnAnimation(ChessPiece *enemy_chess);
 };

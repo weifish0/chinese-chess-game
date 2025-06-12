@@ -105,7 +105,11 @@ void XiangqiScene::Initialize() {
     UIGroup->AddNewObject(RoundWarning1 = new Engine::Label("Cannot choose", "pirulen.ttf", 30, w - halfW / 4, halfH / 8, 255, 150, 150, 0, 0.5, 0.5));
     UIGroup->AddNewObject(RoundWarning2 = new Engine::Label("BLACK PIECES", "pirulen.ttf", 36, w - halfW / 4, halfH / 8 + 50, 255, 150, 150, 0, 0.5, 0.5));
     UIGroup->AddNewObject(RoundWarning3 = new Engine::Label("in this round!!", "pirulen.ttf", 30, w - halfW / 4, halfH / 8 + 100, 255, 150, 150, 0, 0.5, 0.5));
-    std::cout << "[DEBUGGER] 003" << std::endl;
+    // Checkmate Warning
+    UIGroup->AddNewObject(BlackCheckmateWarning = new Engine::Image("xiangqi/black_checkmate.png", halfW, halfH, blockSize * 4, blockSize * 4, 0.5, 0.5));
+    BlackCheckmateWarning->Visible = false;
+    UIGroup->AddNewObject(RedCheckmateWarning = new Engine::Image("xiangqi/red_checkmate.png", halfW, halfH, blockSize * 4, blockSize * 4, 0.5, 0.5));
+    RedCheckmateWarning->Visible = false;
 
     Round = RED;
     preview = nullptr;
@@ -113,7 +117,6 @@ void XiangqiScene::Initialize() {
     SwitchFlag = false;
 
     // bgmId = AudioHelper::PlayBGM("play.ogg");
-    std::cout << "[DEBUGGER] 004" << std::endl;
 }
 
 void XiangqiScene::ReadChessboard() {
@@ -166,12 +169,12 @@ void XiangqiScene::ReadChessboard() {
                 if (color == RED) {
                     img += "red_piece_shuai.png";
                     PieceGroup->AddNewObject(new_piece = new KingPiece(img, position, color, KING * 10));
-                    RedKing = true;
+                    RedKing = new_piece;
 
                 } else {
                     img += "black_piece_jiang.png";
                     PieceGroup->AddNewObject(new_piece = new KingPiece(img, position, color, KING * 10));
-                    BlackKing = true;
+                    BlackKing = new_piece;
                 }
 
             } else if (num == GUARD) {
@@ -210,6 +213,11 @@ void XiangqiScene::ReadChessboard() {
 }
 
 void XiangqiScene::Update(float deltaTime) {
+    int h = Engine::GameEngine::GetInstance().GetScreenSize().y;
+    int w = Engine::GameEngine::GetInstance().GetScreenSize().x;
+    int halfW = w / 2;
+    int halfH = h / 2;
+
     // Winning Condition:
     if ((!RedKing && BlackKing) || (RedKing && !BlackKing)) {
         winner = (RedKing) ? RED : BLACK;
@@ -217,16 +225,34 @@ void XiangqiScene::Update(float deltaTime) {
     }
 
     // RoundWarnings
-    if (1 <= warning_tick && warning_tick <= 30 * ALLEGRO_PI) {
-        RoundWarning1->Color = al_map_rgba(255, 150, 150, 150 * std::sin(warning_tick / (10 * ALLEGRO_PI)));
-        RoundWarning2->Color = al_map_rgba(255, 150, 150, 255 * std::sin(warning_tick / (10 * ALLEGRO_PI)));
-        RoundWarning3->Color = al_map_rgba(255, 150, 150, 150 * std::sin(warning_tick / (10 * ALLEGRO_PI)));
-        warning_tick++;
+    if (1 <= round_warning_tick && round_warning_tick <= 60 * ALLEGRO_PI) {
+        RoundWarning1->Color = al_map_rgba(255, 150, 150, 150 * std::sin(round_warning_tick / (20 * ALLEGRO_PI)));
+        RoundWarning2->Color = al_map_rgba(255, 150, 150, 255 * std::sin(round_warning_tick / (20 * ALLEGRO_PI)));
+        RoundWarning3->Color = al_map_rgba(255, 150, 150, 150 * std::sin(round_warning_tick / (20 * ALLEGRO_PI)));
+        round_warning_tick++;
     } else {
         RoundWarning1->Color = al_map_rgba(255, 150, 150, 0);
         RoundWarning2->Color = al_map_rgba(255, 150, 150, 0);
         RoundWarning3->Color = al_map_rgba(255, 150, 150, 0);
-        warning_tick = 0; // Rest warning_tick
+        round_warning_tick = 0; // Rest warning_tick
+    }
+
+    // CheckmateWarning
+    if (1 <= checkmate_warning_tick && checkmate_warning_tick <= 60 * ALLEGRO_PI) { // Warning the black!
+        BlackCheckmateWarning->Visible = true;
+        checkmate_warning_tick++;
+        if (checkmate_warning_tick > 60 * ALLEGRO_PI) {
+            BlackCheckmateWarning->Visible = false;
+            checkmate_warning_tick = 0;
+        }
+
+    } else if (-1 >= checkmate_warning_tick && checkmate_warning_tick >= -60 * ALLEGRO_PI) {
+        RedCheckmateWarning->Visible = true;
+        checkmate_warning_tick--;
+        if (checkmate_warning_tick < -60 * ALLEGRO_PI) {
+            RedCheckmateWarning->Visible = false;
+            checkmate_warning_tick = 0;
+        }
     }
 }
 
@@ -258,7 +284,7 @@ void XiangqiScene::OnMouseDown(int button, int mx, int my) {
         } else if (STATES(_row_mouse, _col_mouse) * Round < 0) { // Of a different color.
             SelectFlag = false;
             WrongPiece = true;
-            warning_tick = 1;
+            round_warning_tick = 1;
         }
 
     } else if ((button & 1) && SelectFlag) { // ATTEMPT TO PUT DOWN THE PIECE
@@ -331,8 +357,8 @@ void XiangqiScene::OnMouseUp(int button, int mx, int my) {
             PieceGroup->RemoveObject(ptr->GetObjectIterator()); // Delete the eaten piece from PieceGroup.
 
             // Case: Eating a king piece.
-            if (STATES(_row_mouse, _col_mouse) == RED * KING)       RedKing = false;
-            else if (STATES(_row_mouse, _col_mouse) == BLACK *KING) BlackKing = false;
+            if (STATES(_row_mouse, _col_mouse) == RED * KING)       RedKing = nullptr;
+            else if (STATES(_row_mouse, _col_mouse) == BLACK *KING) BlackKing = nullptr;
         }
 
         // Moved to Target
@@ -354,5 +380,20 @@ void XiangqiScene::OnMouseUp(int button, int mx, int my) {
     }
     PrintChessboardState();//
     WrongPiece = false; // Reset `WrongPiece` to default: false.
+
+    // Checkmate warning!
+    if (RedKing && BlackKing) {
+        bool blackCheckmate, redCheckmate;
+        std::cout << "[DEBUGGER] BlackKing at " << ((blackCheckmate = BlackKing->IsCheckmate(ChessboardState)) ? "OMG" : "HUH") << " / RedKing at " << ((redCheckmate = RedKing->IsCheckmate(ChessboardState)) ? "OMG" : "HUH") << std::endl;
+        if (blackCheckmate) {
+            checkmate_warning_tick = 1;
+            std::cout << "[LOG] Warns the black!" << std::endl;
+
+        } else if (redCheckmate) {
+            checkmate_warning_tick = -1;
+            std::cout << "[LOG] Warns the red!" << std::endl;
+        }
+    }
+
     OnMouseMove(mx, my);
 }

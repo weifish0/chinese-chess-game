@@ -4,7 +4,7 @@ ChariotPiece::ChariotPiece(std::string img, Engine::Point position, PieceColor c
     : ChessPiece(img, position, color, score) {
 }
 
-bool ChariotPiece::IsValidMove(int row,int col,int next_row,int next_col, std::vector<std::vector<std::pair<int,ChessPiece*>>> ChessboardState){
+bool ChariotPiece::IsValidMove(int row,int col,int next_row,int next_col, std::vector<std::vector<std::pair<int,ChessPiece*>>> &ChessboardState){
     // If the piece is of the same color
     if (ChessboardState[row][col].first * ChessboardState[next_row][next_col].first > 0) {
         return false;

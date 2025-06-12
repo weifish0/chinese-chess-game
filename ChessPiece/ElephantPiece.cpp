@@ -4,7 +4,7 @@ ElephantPiece::ElephantPiece(std::string img, Engine::Point position, PieceColor
     : ChessPiece(img, position, color, score) {
 }
 
-bool ElephantPiece::IsValidMove(int y,int x,int next_y,int next_x, std::vector<std::vector<std::pair<int,ChessPiece*>>> ChessboardState){    
+bool ElephantPiece::IsValidMove(int y,int x,int next_y,int next_x, std::vector<std::vector<std::pair<int,ChessPiece*>>> &ChessboardState){    
     // If it is of the same color:
     if(ChessboardState[y][x].first*ChessboardState[next_y][next_x].first>0){
         return false;
