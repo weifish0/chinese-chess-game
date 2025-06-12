@@ -7,7 +7,7 @@ void XiangqiWinScene::Initialize() {
     int halfH = h / 2;
 
     // Winning Label (Text)
-    std::string win_str = (winner == HONG) ? "HONG" : "HEI";
+    std::string win_str = (winner == HONG) ? "RED" : "BLACK";
     win_str += " wins!! :D";
     Engine::Label *lbl;
     AddNewObject(lbl = new Engine::Label(win_str, "pirulen.ttf", 40, halfW, halfH, 0, 0, 0, 255, 0.5, 0.5));

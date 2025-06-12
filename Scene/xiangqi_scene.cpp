@@ -76,8 +76,10 @@ void XiangqiScene::PrintChessboardState() {
     }
 }
 
-bool XiangqiScene::PieceWithinRange(int r, int c) {
-    return (0 <= r && r < ChessboardHeight && 0 <= c && c < ChessboardWidth);
+bool XiangqiScene::PieceWithinChessboard(int r, int c) {
+    bool ans = (0 <= r && r < ChessboardHeight && 0 <= c && c < ChessboardWidth);
+    std::cout << "[DEBUGGER] PieceWithinRange: Piece " << (ans ? "IS" : "ISN'T") << " within range." << std::endl;
+    return ans;
 }
 
 /* METHODS */
@@ -304,11 +306,11 @@ void XiangqiScene::OnMouseMove(int mx, int my) {
     IScene::OnMouseMove(mx, my);
     const int _col_mouse = x_to_col(mx), _row_mouse = y_to_row(my);
 
-    if (!preview || !PieceWithinRange(_row_mouse, _col_mouse) || (SelectedRowCol.first == _row_mouse && SelectedRowCol.second == _col_mouse)) {
+    if (!preview || !PieceWithinChessboard(_row_mouse, _col_mouse) || (SelectedRowCol.first == _row_mouse && SelectedRowCol.second == _col_mouse)) {
         return;
     }
 
-    if (preview && PieceWithinRange(SelectedRowCol.first, SelectedRowCol.second) && PIECES(SelectedRowCol.first, SelectedRowCol.second)) {    
+    if (preview && PieceWithinChessboard(SelectedRowCol.first, SelectedRowCol.second) && PIECES(SelectedRowCol.first, SelectedRowCol.second)) {    
         preview->Visible = true;
         preview->Position.x = col_to_x(_col_mouse), preview->Position.y = row_to_y(_row_mouse);
         preview->Tint = al_map_rgba(255, 255, 255, 150);//
@@ -334,17 +336,28 @@ void XiangqiScene::OnMouseUp(int button, int mx, int my) {
 
     if (button & 1 && preview && !SelectFlag && !WrongPiece) { // ABOUT TO DONE MOVING A PIECE!
         // Check if the target position (in terms of row-col)
-        if (_row_mouse < 0 || ChessboardHeight <= _row_mouse || _col_mouse < 0 || ChessboardWidth <= _col_mouse)
+        if (!PieceWithinChessboard(_row_mouse, _col_mouse))
             return;
+        // if (!PieceWithinChessboard(_row_mouse, _col_mouse));
+        //     return;
         
         // blockSize * (col-4) + halfW, blockSize * (row-4.5) + halfH
         std::cout << "[DEBUGGER] _row_selected, _col_selected = " <<  SelectedRowCol.first << "," << SelectedRowCol.second << std::endl;
         int state_selected = STATES(SelectedRowCol.first, SelectedRowCol.second);
 
         // Check if valid. (Call the method of the chess to see if valid.)
-        if (!PIECES(SelectedRowCol.first, SelectedRowCol.second)->IsValidMove(SelectedRowCol.first, SelectedRowCol.second, _row_mouse, _col_mouse, ChessboardState)) {
+        if (PieceWithinChessboard(SelectedRowCol.first, SelectedRowCol.second)\
+            && PIECES(SelectedRowCol.first, SelectedRowCol.second)\
+            && !PIECES(SelectedRowCol.first, SelectedRowCol.second)->IsValidMove(SelectedRowCol.first, SelectedRowCol.second, _row_mouse, _col_mouse, ChessboardState)) {
+            
+            std::cout << "[DEBUGGER] OnMouseUp: return right after valid check" << std::endl;
             return;
         }
+
+        // Do nothing in the short time period
+        // Where SelectedRowCol remains the same, yet the pointer for SelectedRowCol is already set as a nullptr.
+        if (!PIECES(SelectedRowCol.first, SelectedRowCol.second))
+            return;
 
         // PIECE MOVEMENT & UPDATE        
         // Case 2 and 1: Eat an enemy || Wander to a no man's land.
@@ -373,9 +386,9 @@ void XiangqiScene::OnMouseUp(int button, int mx, int my) {
         std::cout << "[DEBUGGER] move selectedPiece to the next place." << std::endl;
         
         Round = (Round == HONG) ? HEI : HONG; // `Round` flip - for HONG to HEI, and vice versa.
-        RoundReminder->Text = ((Round == HONG) ? "HONG" : "HEI"); // Change RoundReminder text.
+        RoundReminder->Text = ((Round == HONG) ? "RED" : "BLACK"); // Change RoundReminder text.
         RoundReminder->Color = ((Round == HONG) ? al_map_rgba(255, 0, 0, 255) : al_map_rgba(100, 100, 150, 255));
-        RoundWarning2->Text = ((Round == HONG) ? "HEI PIECES" : "HONG PIECES"); // Change RoundWarning text.
+        RoundWarning2->Text = ((Round == HONG) ? "RED PIECES" : "BLACK PIECES"); // Change RoundWarning text.
         std::cout << "[DEBUGGER] round == " << Round << std::endl;
     }
     PrintChessboardState();//

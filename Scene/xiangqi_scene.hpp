@@ -70,7 +70,7 @@ public:
     void OnMouseDown(int button, int mx, int my) override;
     void OnMouseMove(int mx, int my) override;
     void OnMouseUp(int button, int mx, int my) override;
-    bool PieceWithinRange(int r, int c);
+    bool PieceWithinChessboard(int r, int c);
 
     /* DEVELOP KIT */
     int x_to_col(float x);

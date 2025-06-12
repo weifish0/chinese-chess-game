@@ -37,11 +37,13 @@ bool ChessPiece::IsCheckmate(std::vector<std::vector<std::pair<int,ChessPiece*>>
     int r; // The row of the traversed piece.
     int c; // The column of the traversed piece.
     for (int r = 0; r < ChessboardState.size(); r++) {
+        std::cout << "[LOG] ChessboardState.size() = " << ChessboardState.size() << std::endl;//
         for (int c = 0; c < ChessboardState[r].size(); c++) {
+            std::cout << "[LOG] ChessboardState[r].size() = " << ChessboardState[r].size() << std::endl;//
             auto state = ChessboardState[r][c].first;
             auto piece = ChessboardState[r][c].second;
 
-            if (abs(state) == NONE || abs(state) == GUARD || abs(state) == ELFNT || state * color > 0) // Ignore GUARD and ELFNT, and ignore those of the same color.
+            if (abs(state) == NONE || abs(state) == GUARD || abs(state) == ELFNT || state * color > 0) // Ignore PieceType NONE, GUARD and ELFNT, and ignore those of the same color.
                 continue;
 
             if (piece->IsValidMove(r, c, row, col, ChessboardState)) { // If it is possible for the traversed piece to attack itself:
@@ -52,6 +54,7 @@ bool ChessPiece::IsCheckmate(std::vector<std::vector<std::pair<int,ChessPiece*>>
 
     return false;
 }
+
 void ChessPiece::OnAnimation(ChessPiece *enemy_piece) {
 }
 
