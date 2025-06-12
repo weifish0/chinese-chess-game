@@ -22,6 +22,12 @@ namespace Engine {
     Point Point::operator/(const float &rhs) const {
         return Point(x / rhs, y / rhs);
     }
+    
+    // "Comparing" function
+    bool Point::operator<(const Point &rhs) const {
+        return ( std::sqrt(x*x + y*y) < std::sqrt(rhs.x*rhs.x + rhs.y*rhs.y) );
+    }
+
     Point Point::Normalize() const {
         if (Magnitude() == 0)
             return Point();

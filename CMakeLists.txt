@@ -13,6 +13,24 @@ file(COPY Resource DESTINATION ${CMAKE_CURRENT_BINARY_DIR})
 file(COPY allegro_monolith-5.2.dll DESTINATION ${CMAKE_CURRENT_BINARY_DIR})
 
 add_executable(CHINESE-CHESS-GAME
+
+    ChessPiece/ChessPiece.cpp
+    ChessPiece/ChessPiece.hpp
+    ChessPiece/CannonPiece.cpp
+    ChessPiece/CannonPiece.hpp
+    ChessPiece/ChariotPiece.cpp
+    ChessPiece/ChariotPiece.hpp
+    ChessPiece/ElephantPiece.cpp
+    ChessPiece/ElephantPiece.hpp
+    ChessPiece/GuardPiece.cpp
+    ChessPiece/GuardPiece.hpp
+    ChessPiece/HorsePiece.cpp
+    ChessPiece/HorsePiece.hpp
+    ChessPiece/KingPiece.cpp
+    ChessPiece/KingPiece.hpp
+    ChessPiece/PawnPiece.cpp
+    ChessPiece/PawnPiece.hpp
+
     Engine/Allegro5Exception.cpp
     Engine/Allegro5Exception.hpp
     Engine/AudioHelper.cpp
@@ -38,6 +56,7 @@ add_executable(CHINESE-CHESS-GAME
     Engine/Sprite.cpp
     Engine/Sprite.hpp
     
+    
     Scene/anqi_start_scene.cpp
     Scene/anqi_start_scene.hpp
     Scene/mode_select.cpp
@@ -54,6 +73,10 @@ add_executable(CHINESE-CHESS-GAME
     Scene/harmony_scene.cpp
     Scene/start_scene.cpp
     Scene/start_scene.hpp
+    Scene/xiangqi_scene.cpp
+    Scene/xiangqi_scene.hpp
+    Scene/xiangqi_win_scene.cpp
+    Scene/xiangqi_win_scene.hpp
     Scene/playground.cpp
     Scene/playground.hpp
     Player/player.cpp

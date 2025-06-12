@@ -52,6 +52,14 @@ namespace Engine {
         /// Make point act like vector and get the normalized vector.
         /// </summary>
         /// <returns>The normalized vector.</returns>
+
+        bool operator<(const Point &rhs) const;
+        /// <summary>
+        /// "Compare" the points according to their "RADIUS" -
+        ///           RADIUS = sqrt( Point.x ^ 2 + Point.y ^ 2 )
+        /// </summary>
+        /// <returns> lhs.RADIUS == rhs.RADIUS
+        
         Point Normalize() const;
         /// <summary>
         /// Make point act like vector and get the inner product.

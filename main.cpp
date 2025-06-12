@@ -10,6 +10,8 @@
 #include "Scene/black_win_scene.hpp"
 #include "Scene/harmony_scene.hpp"
 #include "Scene/start_scene.hpp"
+#include "Scene/xiangqi_scene.hpp"
+#include "Scene/xiangqi_win_scene.hpp"
 #include "Scene/playground.hpp"
 
 int main(int argc, char **argv) {
@@ -26,6 +28,10 @@ int main(int argc, char **argv) {
     game.AddNewScene("start", new StartScene());
     game.AddNewScene("playground", new Playground());
 
+	// Register the scenes here!
+
+	game.AddNewScene("xiangqi", new XiangqiScene()); // Used for xiangqi branch development
+	game.AddNewScene("xiangqi_win", new XiangqiWinScene()); // Used when a xiangqi game ends.
 
 	game.Start("start", 60, 2666, 1500);
 	

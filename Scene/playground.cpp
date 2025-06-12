@@ -395,7 +395,7 @@ void Playground::OnMouseDown(int button, int mx, int my) {
             return;
         }
         if (building.IsMouseOver(mx, my, camera_x, camera_y, scale_x, scale_y) && building.name == "象棋館") {
-            Engine::GameEngine::GetInstance().ChangeScene("start");
+            Engine::GameEngine::GetInstance().ChangeScene("xiangqi");
             return;
         }
     }
