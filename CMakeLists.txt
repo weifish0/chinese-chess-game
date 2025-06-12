@@ -9,12 +9,10 @@ include_directories(Resource)
 # file(COPY Resource/audios DESTINATION ${CMAKE_CURRENT_BINARY_DIR})
 file(COPY Resource/fonts DESTINATION ${CMAKE_CURRENT_BINARY_DIR})
 file(COPY Resource/images DESTINATION ${CMAKE_CURRENT_BINARY_DIR})
-# file(COPY Resource DESTINATION ${CMAKE_CURRENT_BINARY_DIR})
+file(COPY Resource DESTINATION ${CMAKE_CURRENT_BINARY_DIR})
 file(COPY allegro_monolith-5.2.dll DESTINATION ${CMAKE_CURRENT_BINARY_DIR})
 
 add_executable(CHINESE-CHESS-GAME
-
-
     Engine/Allegro5Exception.cpp
     Engine/Allegro5Exception.hpp
     Engine/AudioHelper.cpp
@@ -37,7 +35,23 @@ add_executable(CHINESE-CHESS-GAME
     Engine/Point.hpp
     Engine/Resources.cpp
     Engine/Resources.hpp
+    Engine/Sprite.cpp
+    Engine/Sprite.hpp
     
+    Scene/anqi_start_scene.cpp
+    Scene/anqi_start_scene.hpp
+    Scene/mode_select.cpp
+    Scene/mode_select.hpp
+    Scene/anqi_scene.cpp
+    Scene/anqi_scene.hpp
+    Scene/harmony_scene.cpp
+    Scene/harmony_scene.hpp
+    Scene/red_win_scene.cpp
+    Scene/red_win_scene.hpp
+    Scene/black_win_scene.cpp
+    Scene/black_win_scene.hpp
+    Scene/harmony_scene.hpp
+    Scene/harmony_scene.cpp
     Scene/start_scene.cpp
     Scene/start_scene.hpp
     Scene/playground.cpp
@@ -55,6 +69,9 @@ add_executable(CHINESE-CHESS-GAME
     UI/Component/Label.hpp
     UI/Component/Slider.cpp
     UI/Component/Slider.hpp
+
+    Chess/chess.cpp
+    Chess/chess.hpp
     
     main.cpp
 )

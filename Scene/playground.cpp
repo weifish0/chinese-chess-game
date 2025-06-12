@@ -354,7 +354,11 @@ void Playground::OnMouseDown(int button, int mx, int my) {
     
     // 檢查是否點擊了建築物
     for (const auto& building : buildings) {
-        if (building.IsMouseOver(mx, my, camera_x, camera_y, scale_x, scale_y)) {
+        if (building.IsMouseOver(mx, my, camera_x, camera_y, scale_x, scale_y) && building.name == "暗棋館") {
+            Engine::GameEngine::GetInstance().ChangeScene("anqi_start");
+            return;
+        }
+        if (building.IsMouseOver(mx, my, camera_x, camera_y, scale_x, scale_y) && building.name == "象棋館") {
             Engine::GameEngine::GetInstance().ChangeScene("start");
             return;
         }
