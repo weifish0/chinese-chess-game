@@ -55,6 +55,7 @@ public:
     void Recover(Record* first,Record* second);
     void RecoverValid(int& regret_time);
     std::string GetImage(ChessColor color,ChessType type);
+    void StopSign();
     // void PlayOnClick(int stage);
     // void SettingsOnClick(int stage);
 };

@@ -418,7 +418,14 @@ void AnqiScene::Go(Engine::Point pos,int j,int i){
     ChangeRound();
 }
 
-
+void AnqiScene::StopSign(){
+    sign->harmony_warn->Color = al_map_rgba(255,255,255,0);
+    sign->attack_warn->Color = al_map_rgba(255,255,255,0);
+    sign->peace_warn->Color = al_map_rgba(255,255,255,0);
+    sign->prolong_warn->Color = al_map_rgba(255,255,255,0);
+    sign->regret_invalid->Color = al_map_rgba(255,255,255,0);
+    sign->regret_warn->Color = al_map_rgba(255,255,255,0);
+}
 
 void AnqiScene::Update(float deltaTime) {
     
@@ -465,6 +472,7 @@ void AnqiScene::Update(float deltaTime) {
     tick->regret_invalid_tick++;
     tick->regret_tick++;
     if(tick->regret_tick<30&&flag->regret_flag){
+        StopSign();
         sign->regret_warn->Color = al_map_rgba(255,255,255,255);
     }
     else{
@@ -472,21 +480,24 @@ void AnqiScene::Update(float deltaTime) {
         flag->regret_flag = 0;
     }
 
-    if(tick->regret_invalid_tick<30&&!flag->regret_flag&&flag->regret_invalid_flag){
+    if(tick->regret_invalid_tick<30&&flag->regret_invalid_flag){
+        StopSign();
         sign->regret_invalid->Color = al_map_rgba(255,255,255,255);
     }
     else{
         sign->regret_invalid->Color = al_map_rgba(255,255,255,0);
         flag->regret_invalid_flag = 0;
     }
-    if(tick->peace_tick<30&&flag->peace_flag&&!flag->regret_flag&&!flag->regret_invalid_flag){
+    if(tick->peace_tick<30&&flag->peace_flag){
+        StopSign();
         sign->peace_warn->Color = al_map_rgba(255,255,255,255);
     }
     else{
         sign->peace_warn->Color = al_map_rgba(255,255,255,0);
         flag->peace_flag = 0;
     }
-    if(tick->prolong_tick<30&&flag->prolong_mark&&!flag->peace_flag&&!flag->regret_flag&&!flag->regret_invalid_flag){
+    if(tick->prolong_tick<30&&flag->prolong_mark){
+        StopSign();
         sign->prolong_warn->Color = al_map_rgba(255,255,255,255);
     }
     else{
@@ -512,7 +523,7 @@ void AnqiScene::Update(float deltaTime) {
         tick->prolong_tick = 0;
     }
     int cur_step = (turn==RED_TURN)?black->attack_step:red->attack_step;
-    if(!flag->peace_flag&&!flag->prolong_mark&&(cur_step>=5&&cur_step<=10||flag->attack_mark)){
+    if((cur_step>=5&&cur_step<=10||flag->attack_mark)){
         if(!flag->attack_flag){
             tick->attack_tick = 0;
             flag->attack_flag = 1;
@@ -523,6 +534,7 @@ void AnqiScene::Update(float deltaTime) {
             if(cur_step==10||flag->attack_mark){
                 sign->attack_warn->Text = "長捉禁手10/10,請移動其他旗子!"; 
             }
+            StopSign();
             sign->attack_warn->Color = al_map_rgba(255,255,255,255);
         }
         else{
@@ -534,13 +546,14 @@ void AnqiScene::Update(float deltaTime) {
         sign->attack_warn->Color = al_map_rgba(255,255,255,0);
     }
     
-    if(!flag->peace_flag&&!flag->prolong_mark&&harmony_step>=25&&harmony_step<50&&!(cur_step>=5&&cur_step<=10)){
+    if(harmony_step>=25&&harmony_step<50&&!(cur_step>=5&&cur_step<=10)){
         if(!flag->harmony_flag){
             tick->harmony_tick = 0;
             flag->harmony_flag = 1;
         }
         if(tick->harmony_tick<45){
             sign->harmony_warn->Text = "空步判和" + std::to_string(harmony_step) + "/50";
+            StopSign();
             sign->harmony_warn->Color = al_map_rgba(255 , 255, 255, 255);
         }
         else{
@@ -872,13 +885,13 @@ void AnqiScene::RecoverValid(int& regret_time){
 
 
 void AnqiScene::ButtonClick(int id){
-    if(id==1){
+    if(id==1&&!flag->peace_mark){
         if(turn == RED_TURN)
             Engine::GameEngine::GetInstance().ChangeScene("black_win");
         else
             Engine::GameEngine::GetInstance().ChangeScene("red_win");
     }
-    else if(id==2){
+    else if(id==2&&!flag->peace_mark){
         int& request_time = turn==RED_TURN?red->request_time:black->request_time;
 
         if(request_time<2){
@@ -891,7 +904,7 @@ void AnqiScene::ButtonClick(int id){
             tick->peace_tick = 0;
         }
     }
-    else if(id==3){
+    else if(id==3&&!flag->peace_mark){
         int& regret_time = turn==RED_TURN?red->regret_time:black->regret_time;
         if(regret_time<3){
             RecoverValid(regret_time);
@@ -901,7 +914,7 @@ void AnqiScene::ButtonClick(int id){
             tick->regret_tick = 0;
         }
     }
-    else if(id==4){
+    else if(id==4&&!flag->peace_mark){
         int &prolong_time = turn==RED_TURN?red->prolong_time:black->prolong_time;
         
         if(prolong_time<3){
@@ -918,7 +931,7 @@ void AnqiScene::ButtonClick(int id){
     else if(id==5){
         Engine::GameEngine::GetInstance().ChangeScene("harmony");
     }
-        else if(id==6){
+    else if(id==6){
         ALLEGRO_MOUSE_STATE mouse;
         al_get_mouse_state(&mouse);
         bool mouseNowDown = al_mouse_button_down(&mouse, 1); // Left mouse button
