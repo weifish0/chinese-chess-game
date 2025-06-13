@@ -58,6 +58,10 @@ private:
     bool is_back_button_hovered;  // 返回按鈕懸停狀態
     std::shared_ptr<ALLEGRO_BITMAP> back_icon;  // 返回圖標
     
+    // 新增錯誤訊息變數
+    std::string error_message;
+    bool show_error;           // 控制是否顯示錯誤訊息
+    
     // 初始化 UI 元素
     void InitializeUI();
     void DrawInputBox(const InputBox& box) const;

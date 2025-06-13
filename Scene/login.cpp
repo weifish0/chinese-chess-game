@@ -3,7 +3,7 @@
 #include "Engine/Resources.hpp"
 #include <iostream>
 
-Login::Login() : show_login_ui(true), is_register_mode(false), active_input_box(-1) {
+Login::Login() : show_login_ui(true), is_register_mode(false), active_input_box(-1), show_error(false) {
     // 初始化 CURL
     curl_global_init(CURL_GLOBAL_DEFAULT);
 }
@@ -91,30 +91,113 @@ void Login::Draw() const {
             al_map_rgba(0, 0, 0, 128)
         );
         
-        // 繪製標題
-        if (title_font) {
-            const char* title = is_register_mode ? "註冊" : "登入";
-            float title_width = al_get_text_width(title_font.get(), title);
-            al_draw_text(
-                title_font.get(),
-                al_map_rgb(255, 255, 255),
-                screen_width / 2,
-                screen_height / 4 - TITLE_FONT_SIZE - PADDING,
-                ALLEGRO_ALIGN_CENTER,
-                title
-            );
+        // 檢查是否已登入
+        if (!current_user.username.empty()) {
+            // 已登入，顯示用戶資料
+            if (title_font) {
+                // 繪製標題
+                al_draw_text(
+                    title_font.get(),
+                    al_map_rgb(255, 255, 255),
+                    screen_width / 2,
+                    screen_height / 4 - TITLE_FONT_SIZE - PADDING,
+                    ALLEGRO_ALIGN_CENTER,
+                    "帳號資料"
+                );
+            }
+            
+            if (font) {
+                // 計算文字寬度
+                float text_width = std::max({
+                    al_get_text_width(font.get(), ("用戶名：" + current_user.username).c_str()),
+                    al_get_text_width(font.get(), ("電子郵件：" + current_user.email).c_str())
+                });
+                
+                // 繪製背景
+                float box_x = screen_width / 2 - text_width / 2 - PADDING;
+                float box_y = screen_height / 4;
+                float box_width = text_width + PADDING * 2;
+                float box_height = FONT_SIZE * 3 + PADDING * 2;
+                
+                al_draw_filled_rectangle(
+                    box_x, box_y,
+                    box_x + box_width, box_y + box_height,
+                    al_map_rgba(0, 0, 0, 180)
+                );
+                
+                // 繪製用戶資料
+                float text_y = box_y + PADDING;
+                al_draw_text(
+                    font.get(),
+                    al_map_rgb(255, 255, 255),
+                    screen_width / 2,
+                    text_y,
+                    ALLEGRO_ALIGN_CENTER,
+                    ("使用者名稱：" + current_user.username).c_str()
+                );
+                
+                text_y += FONT_SIZE + PADDING;
+                al_draw_text(
+                    font.get(),
+                    al_map_rgb(255, 255, 255),
+                    screen_width / 2,
+                    text_y,
+                    ALLEGRO_ALIGN_CENTER,
+                    ("電子郵件：" + current_user.email).c_str()
+                );
+            }
+        } else {
+            // 未登入，顯示登入/註冊介面
+            // 繪製標題
+            if (title_font) {
+                const char* title = is_register_mode ? "註冊" : "登入";
+                float title_width = al_get_text_width(title_font.get(), title);
+                al_draw_text(
+                    title_font.get(),
+                    al_map_rgb(255, 255, 255),
+                    screen_width / 2,
+                    screen_height / 4 - TITLE_FONT_SIZE - PADDING,
+                    ALLEGRO_ALIGN_CENTER,
+                    title
+                );
+            }
+            
+            // 繪製輸入框
+            for (const auto& box : input_boxes) {
+                DrawInputBox(box);
+            }
         }
         
-        // 繪製輸入框
-        for (const auto& box : input_boxes) {
-            DrawInputBox(box);
+        // 在輸入框下方顯示錯誤訊息
+        if (show_error && font) {
+            float error_y = 50;
+            
+            float text_width = al_get_text_width(font.get(), error_message.c_str());
+            float box_x = screen_width / 2 - text_width / 2 - PADDING;
+            float box_y = error_y;
+            float box_width = text_width + PADDING * 2;
+            float box_height = FONT_SIZE + PADDING;
+            
+            al_draw_filled_rectangle(
+                box_x, box_y,
+                box_x + box_width, box_y + box_height,
+                al_map_rgba(255, 0, 0, 180)  // 紅色半透明背景
+            );
+            
+            al_draw_text(
+                font.get(),
+                al_map_rgb(255, 255, 255),  // 白色文字
+                screen_width / 2,
+                box_y + PADDING / 2,
+                ALLEGRO_ALIGN_CENTER,
+                error_message.c_str()
+            );
         }
         
         // 繪製按鈕
         for (const auto& button : buttons) {
             DrawButton(button);
         }
-        
     }
 }
 
@@ -228,38 +311,39 @@ void Login::DrawButton(const Button& button) const {
         }
         return;
     }
-    
-    if (button.text == "還沒有帳號？點我註冊") {
-        // 繪製文字按鈕
-        if (font) {
-            ALLEGRO_COLOR text_color = button.is_hovered ? al_map_rgb(0, 120, 255) : al_map_rgb(255, 255, 255);
-            al_draw_text(
-                font.get(),
-                text_color,
-                button.x + button.width / 2,
-                button.y,
-                ALLEGRO_ALIGN_CENTER,
-                button.text.c_str()
+    if (current_user.username.empty()){
+        if (button.text == "還沒有帳號？點我註冊") {
+            // 繪製文字按鈕
+            if (font) {
+                ALLEGRO_COLOR text_color = button.is_hovered ? al_map_rgb(0, 120, 255) : al_map_rgb(255, 255, 255);
+                al_draw_text(
+                    font.get(),
+                    text_color,
+                    button.x + button.width / 2,
+                    button.y,
+                    ALLEGRO_ALIGN_CENTER,
+                    button.text.c_str()
+                );
+            }
+        } else {
+            // 繪製一般按鈕
+            al_draw_filled_rectangle(
+                button.x, button.y,
+                button.x + button.width, button.y + button.height,
+                button.is_hovered ? al_map_rgb(0, 120, 255) : al_map_rgb(200, 200, 200)
             );
-        }
-    } else {
-        // 繪製一般按鈕
-        al_draw_filled_rectangle(
-            button.x, button.y,
-            button.x + button.width, button.y + button.height,
-            button.is_hovered ? al_map_rgb(0, 120, 255) : al_map_rgb(200, 200, 200)
-        );
-        
-        // 繪製按鈕文字
-        if (font) {
-            al_draw_text(
-                font.get(),
-                al_map_rgb(0, 0, 0),
-                button.x + button.width / 2,
-                button.y + (button.height - FONT_SIZE) / 2,
-                ALLEGRO_ALIGN_CENTER,
-                button.text.c_str()
-            );
+            
+            // 繪製按鈕文字
+            if (font) {
+                al_draw_text(
+                    font.get(),
+                    al_map_rgb(0, 0, 0),
+                    button.x + button.width / 2,
+                    button.y + (button.height - FONT_SIZE) / 2,
+                    ALLEGRO_ALIGN_CENTER,
+                    button.text.c_str()
+                );
+            }
         }
     }
 }
@@ -357,6 +441,7 @@ void Login::HandleButtonClick(float mouse_x, float mouse_y) {
                 // 清空所有輸入框和按鈕
                 input_boxes.clear();
                 buttons.clear();
+                show_error = false;
                 
                 // 切換模式
                 is_register_mode = !is_register_mode;
@@ -420,14 +505,24 @@ std::string Login::MakeHttpRequest(const std::string& endpoint, const std::strin
     
     if (curl) {
         std::string url = std::string(API_BASE_URL) + endpoint;
-        std::string data_str = data.dump();
         
         struct curl_slist* headers = NULL;
-        headers = curl_slist_append(headers, "Content-Type: application/json");
+        headers = curl_slist_append(headers, "Content-Type: application/x-www-form-urlencoded");
         
         if (!auth_token.empty()) {
             std::string auth_header = "Authorization: Bearer " + auth_token;
             headers = curl_slist_append(headers, auth_header.c_str());
+        }
+        
+        // 將 JSON 數據轉換為 form-urlencoded 格式
+        std::string form_data;
+        if (!data.empty()) {
+            for (auto it = data.begin(); it != data.end(); ++it) {
+                if (!form_data.empty()) {
+                    form_data += "&";
+                }
+                form_data += it.key() + "=" + it.value().get<std::string>();
+            }
         }
         
         curl_easy_setopt(curl, CURLOPT_URL, url.c_str());
@@ -436,8 +531,8 @@ std::string Login::MakeHttpRequest(const std::string& endpoint, const std::strin
         curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, WriteCallback);
         curl_easy_setopt(curl, CURLOPT_WRITEDATA, &response);
         
-        if (!data_str.empty()) {
-            curl_easy_setopt(curl, CURLOPT_POSTFIELDS, data_str.c_str());
+        if (!form_data.empty()) {
+            curl_easy_setopt(curl, CURLOPT_POSTFIELDS, form_data.c_str());
         }
         
         CURLcode res = curl_easy_perform(curl);
@@ -456,7 +551,7 @@ std::string Login::MakeHttpRequest(const std::string& endpoint, const std::strin
 // 修改 LoginUser 函數
 bool Login::LoginUser(const std::string& email, const std::string& password) {
     nlohmann::json data = {
-        {"email", email},  // 修改為使用 email
+        {"username", email},
         {"password", password}
     };
     
@@ -467,38 +562,38 @@ bool Login::LoginUser(const std::string& email, const std::string& password) {
         if (json_response.contains("access_token")) {
             auth_token = json_response["access_token"];
             
-            // 保存用戶資料
             if (json_response.contains("user")) {
                 auto user_data = json_response["user"];
                 current_user.username = user_data["username"];
                 current_user.email = user_data["email"];
                 current_user.created_at = user_data["created_at"];
             }
+            show_error = false;
             return true;
-        }
-    } catch (const std::exception& e) {
-        std::cerr << "Error parsing response: " << e.what() << std::endl;
-        // 添加錯誤信息顯示
-        if (response.find("detail") != std::string::npos) {
-            try {
-                auto error_json = nlohmann::json::parse(response);
-                if (error_json.contains("detail")) {
-                    std::cerr << "Error: " << error_json["detail"].get<std::string>() << std::endl;
-                }
-            } catch (...) {
-                std::cerr << "Error response: " << response << std::endl;
+        } else {
+            if (json_response.contains("detail")) {
+                error_message = "登入失敗：" + json_response["detail"].get<std::string>();
+            } else {
+                error_message = "登入失敗：無效的回應格式";
             }
+            show_error = true;
+            return false;
         }
+    } catch (const nlohmann::json::parse_error& e) {
+        error_message = "登入失敗：無法解析伺服器回應";
+        show_error = true;
+        return false;
+    } catch (const std::exception& e) {
+        error_message = "登入失敗：" + std::string(e.what());
+        show_error = true;
+        return false;
     }
-    
-    return false;
 }
 
 // 修改 RegisterUser 函數
 bool Login::RegisterUser(const std::string& username, const std::string& email, const std::string& password) {
     nlohmann::json data = {
-        {"username", username},
-        {"email", email},
+        {"username", email},
         {"password", password}
     };
     
@@ -509,31 +604,32 @@ bool Login::RegisterUser(const std::string& username, const std::string& email, 
         if (json_response.contains("access_token")) {
             auth_token = json_response["access_token"];
             
-            // 保存用戶資料
             if (json_response.contains("user")) {
                 auto user_data = json_response["user"];
                 current_user.username = user_data["username"];
                 current_user.email = user_data["email"];
                 current_user.created_at = user_data["created_at"];
             }
+            show_error = false;
             return true;
-        }
-    } catch (const std::exception& e) {
-        std::cerr << "Error parsing response: " << e.what() << std::endl;
-        // 添加錯誤信息顯示
-        if (response.find("detail") != std::string::npos) {
-            try {
-                auto error_json = nlohmann::json::parse(response);
-                if (error_json.contains("detail")) {
-                    std::cerr << "Error: " << error_json["detail"].get<std::string>() << std::endl;
-                }
-            } catch (...) {
-                std::cerr << "Error response: " << response << std::endl;
+        } else {
+            if (json_response.contains("detail")) {
+                error_message = "註冊失敗：" + json_response["detail"].get<std::string>();
+            } else {
+                error_message = "註冊失敗：無效的回應格式";
             }
+            show_error = true;
+            return false;
         }
+    } catch (const nlohmann::json::parse_error& e) {
+        error_message = "註冊失敗：無法解析伺服器回應";
+        show_error = true;
+        return false;
+    } catch (const std::exception& e) {
+        error_message = "註冊失敗：" + std::string(e.what());
+        show_error = true;
+        return false;
     }
-    
-    return false;
 }
 
 // 修改 SubmitForm 函數
@@ -574,6 +670,7 @@ void Login::SubmitForm() {
             }
         }
     }
+    std::cout << "Error: " << error_message << std::endl;
 }
 
 std::string Login::GetCurrentUserEmail() const {
