@@ -3,12 +3,16 @@
 #include "Engine/Resources.hpp"
 #include <iostream>
 
-Login::Login() : show_login_ui(true), is_register_mode(false), active_input_box(-1) {}
+Login::Login() : show_login_ui(true), is_register_mode(false), active_input_box(-1) {
+    // 初始化 CURL
+    curl_global_init(CURL_GLOBAL_DEFAULT);
+}
 
 void Login::Initialize() {
     // 載入資源
     font = Engine::Resources::GetInstance().GetFont("font2.ttc", FONT_SIZE);
     title_font = Engine::Resources::GetInstance().GetFont("font2.ttc", TITLE_FONT_SIZE);
+    back_icon = Engine::Resources::GetInstance().GetBitmap("back-icon.png");  // 載入返回圖標
     
     InitializeUI();
 }
@@ -16,6 +20,8 @@ void Login::Initialize() {
 void Login::Terminate() {
     input_boxes.clear();
     buttons.clear();
+    // 清理 CURL
+    curl_global_cleanup();
 }
 
 void Login::InitializeUI() {
@@ -25,6 +31,16 @@ void Login::InitializeUI() {
     // 清空現有的 UI 元素
     input_boxes.clear();
     buttons.clear();
+    
+    // 添加返回按鈕
+    buttons.push_back({
+        BACK_BUTTON_PADDING,  // x
+        BACK_BUTTON_PADDING,  // y
+        BACK_BUTTON_SIZE,     // width
+        BACK_BUTTON_SIZE,     // height
+        "",                   // text (不需要文字)
+        false                 // is_hovered
+    });
     
     if (show_login_ui) {
         float center_x = screen_width / 2;
@@ -98,6 +114,7 @@ void Login::Draw() const {
         for (const auto& button : buttons) {
             DrawButton(button);
         }
+        
     }
 }
 
@@ -186,6 +203,32 @@ void Login::DrawInputBox(const InputBox& box) const {
 }
 
 void Login::DrawButton(const Button& button) const {
+    // 檢查是否為返回按鈕（通過比較按鈕的位置和大小）
+    if (button.x == BACK_BUTTON_PADDING && 
+        button.y == BACK_BUTTON_PADDING && 
+        button.width == BACK_BUTTON_SIZE && 
+        button.height == BACK_BUTTON_SIZE) {
+        // 返回按鈕的繪製
+        if (back_icon) {
+            // 設置混合模式
+            al_set_blender(ALLEGRO_ADD, ALLEGRO_ALPHA, ALLEGRO_INVERSE_ALPHA);
+            
+            // 根據懸停狀態設置透明度
+            float alpha = button.is_hovered ? 0.7f : 1.0f;
+            al_draw_tinted_scaled_bitmap(
+                back_icon.get(),
+                al_map_rgba_f(alpha, alpha, alpha, 1.0f),
+                0, 0,
+                al_get_bitmap_width(back_icon.get()),
+                al_get_bitmap_height(back_icon.get()),
+                button.x, button.y,
+                BACK_BUTTON_SIZE, BACK_BUTTON_SIZE,
+                0
+            );
+        }
+        return;
+    }
+    
     if (button.text == "還沒有帳號？點我註冊") {
         // 繪製文字按鈕
         if (font) {
@@ -233,12 +276,21 @@ void Login::Update(float deltaTime) {
         button.is_hovered = false;
     }
     
-    // 更新按鈕懸停狀態
-    for (auto& button : buttons) {
+    // 更新返回按鈕懸停狀態
+    if (mouse_x >= BACK_BUTTON_PADDING && 
+        mouse_x <= BACK_BUTTON_PADDING + BACK_BUTTON_SIZE &&
+        mouse_y >= BACK_BUTTON_PADDING && 
+        mouse_y <= BACK_BUTTON_PADDING + BACK_BUTTON_SIZE) {
+        buttons[0].is_hovered = true;  // 返回按鈕是第一個按鈕
+    }
+    
+    // 更新其他按鈕懸停狀態
+    for (size_t i = 1; i < buttons.size(); ++i) {  // 從第二個按鈕開始
+        auto& button = buttons[i];
         if (mouse_x >= button.x && mouse_x <= button.x + button.width &&
             mouse_y >= button.y && mouse_y <= button.y + button.height) {
             button.is_hovered = true;
-            break;  // 一次只懸停一個按鈕
+            break;
         }
     }
 }
@@ -285,7 +337,18 @@ void Login::HandleInputBoxClick(float mouse_x, float mouse_y) {
 }
 
 void Login::HandleButtonClick(float mouse_x, float mouse_y) {
-    for (const auto& button : buttons) {
+    // 檢查是否點擊返回按鈕
+    if (mouse_x >= BACK_BUTTON_PADDING && 
+        mouse_x <= BACK_BUTTON_PADDING + BACK_BUTTON_SIZE &&
+        mouse_y >= BACK_BUTTON_PADDING && 
+        mouse_y <= BACK_BUTTON_PADDING + BACK_BUTTON_SIZE) {
+        Engine::GameEngine::GetInstance().ChangeScene("playground");
+        return;
+    }
+    
+    // 處理其他按鈕點擊
+    for (size_t i = 1; i < buttons.size(); ++i) {  // 從第二個按鈕開始
+        const auto& button = buttons[i];
         if (mouse_x >= button.x && mouse_x <= button.x + button.width &&
             mouse_y >= button.y && mouse_y <= button.y + button.height) {
             if (button.text == "註冊" || button.text == "登入") {
@@ -343,6 +406,137 @@ void Login::HandleKeyInput(int keycode) {
     }
 }
 
+// HTTP 回調函數
+size_t Login::WriteCallback(void* contents, size_t size, size_t nmemb, std::string* userp) {
+    size_t realsize = size * nmemb;
+    userp->append((char*)contents, realsize);
+    return realsize;
+}
+
+// 發送 HTTP 請求
+std::string Login::MakeHttpRequest(const std::string& endpoint, const std::string& method, const nlohmann::json& data) {
+    CURL* curl = curl_easy_init();
+    std::string response;
+    
+    if (curl) {
+        std::string url = std::string(API_BASE_URL) + endpoint;
+        std::string data_str = data.dump();
+        
+        struct curl_slist* headers = NULL;
+        headers = curl_slist_append(headers, "Content-Type: application/json");
+        
+        if (!auth_token.empty()) {
+            std::string auth_header = "Authorization: Bearer " + auth_token;
+            headers = curl_slist_append(headers, auth_header.c_str());
+        }
+        
+        curl_easy_setopt(curl, CURLOPT_URL, url.c_str());
+        curl_easy_setopt(curl, CURLOPT_CUSTOMREQUEST, method.c_str());
+        curl_easy_setopt(curl, CURLOPT_HTTPHEADER, headers);
+        curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, WriteCallback);
+        curl_easy_setopt(curl, CURLOPT_WRITEDATA, &response);
+        
+        if (!data_str.empty()) {
+            curl_easy_setopt(curl, CURLOPT_POSTFIELDS, data_str.c_str());
+        }
+        
+        CURLcode res = curl_easy_perform(curl);
+        
+        if (res != CURLE_OK) {
+            std::cerr << "curl_easy_perform() failed: " << curl_easy_strerror(res) << std::endl;
+        }
+        
+        curl_slist_free_all(headers);
+        curl_easy_cleanup(curl);
+    }
+    
+    return response;
+}
+
+// 修改 LoginUser 函數
+bool Login::LoginUser(const std::string& email, const std::string& password) {
+    nlohmann::json data = {
+        {"email", email},  // 修改為使用 email
+        {"password", password}
+    };
+    
+    std::string response = MakeHttpRequest("/token", "POST", data);
+    
+    try {
+        auto json_response = nlohmann::json::parse(response);
+        if (json_response.contains("access_token")) {
+            auth_token = json_response["access_token"];
+            
+            // 保存用戶資料
+            if (json_response.contains("user")) {
+                auto user_data = json_response["user"];
+                current_user.username = user_data["username"];
+                current_user.email = user_data["email"];
+                current_user.created_at = user_data["created_at"];
+            }
+            return true;
+        }
+    } catch (const std::exception& e) {
+        std::cerr << "Error parsing response: " << e.what() << std::endl;
+        // 添加錯誤信息顯示
+        if (response.find("detail") != std::string::npos) {
+            try {
+                auto error_json = nlohmann::json::parse(response);
+                if (error_json.contains("detail")) {
+                    std::cerr << "Error: " << error_json["detail"].get<std::string>() << std::endl;
+                }
+            } catch (...) {
+                std::cerr << "Error response: " << response << std::endl;
+            }
+        }
+    }
+    
+    return false;
+}
+
+// 修改 RegisterUser 函數
+bool Login::RegisterUser(const std::string& username, const std::string& email, const std::string& password) {
+    nlohmann::json data = {
+        {"username", username},
+        {"email", email},
+        {"password", password}
+    };
+    
+    std::string response = MakeHttpRequest("/register", "POST", data);
+    
+    try {
+        auto json_response = nlohmann::json::parse(response);
+        if (json_response.contains("access_token")) {
+            auth_token = json_response["access_token"];
+            
+            // 保存用戶資料
+            if (json_response.contains("user")) {
+                auto user_data = json_response["user"];
+                current_user.username = user_data["username"];
+                current_user.email = user_data["email"];
+                current_user.created_at = user_data["created_at"];
+            }
+            return true;
+        }
+    } catch (const std::exception& e) {
+        std::cerr << "Error parsing response: " << e.what() << std::endl;
+        // 添加錯誤信息顯示
+        if (response.find("detail") != std::string::npos) {
+            try {
+                auto error_json = nlohmann::json::parse(response);
+                if (error_json.contains("detail")) {
+                    std::cerr << "Error: " << error_json["detail"].get<std::string>() << std::endl;
+                }
+            } catch (...) {
+                std::cerr << "Error response: " << response << std::endl;
+            }
+        }
+    }
+    
+    return false;
+}
+
+// 修改 SubmitForm 函數
 void Login::SubmitForm() {
     if (is_register_mode) {
         // 處理註冊
@@ -351,8 +545,19 @@ void Login::SubmitForm() {
             std::string email = input_boxes[1].text;
             std::string password = input_boxes[2].text;
             
-            // TODO: 發送註冊請求到後端
-            std::cout << "註冊: " << username << ", " << email << ", " << password << std::endl;
+            if (RegisterUser(username, email, password)) {
+                std::cout << "註冊成功！" << std::endl;
+                // 註冊成功後自動登入
+                if (LoginUser(email, password)) {
+                    std::cout << "自動登入成功！" << std::endl;
+                    // 切換到遊戲場景
+                    Engine::GameEngine::GetInstance().ChangeScene("playground");
+                } else {
+                    std::cout << "自動登入失敗！" << std::endl;
+                }
+            } else {
+                std::cout << "註冊失敗！" << std::endl;
+            }
         }
     } else {
         // 處理登入
@@ -360,8 +565,25 @@ void Login::SubmitForm() {
             std::string email = input_boxes[0].text;
             std::string password = input_boxes[1].text;
             
-            // TODO: 發送登入請求到後端
-            std::cout << "登入: " << email << ", " << password << std::endl;
+            if (LoginUser(email, password)) {
+                std::cout << "登入成功！" << std::endl;
+                // 切換到遊戲場景
+                Engine::GameEngine::GetInstance().ChangeScene("playground");
+            } else {
+                std::cout << "登入失敗！" << std::endl;
+            }
         }
     }
-} 
+}
+
+std::string Login::GetCurrentUserEmail() const {
+    return current_user.email;
+}
+
+std::string Login::GetCurrentUsername() const {
+    return current_user.username;
+}
+
+std::string Login::GetCurrentUserCreatedAt() const {
+    return current_user.created_at;
+}

@@ -9,6 +9,7 @@
 #include "Engine/IScene.hpp"
 #include "Player/player.hpp"
 #include "NPC/npc.hpp"
+#include "login.hpp"
 
 // 建築物結構
 struct Building {

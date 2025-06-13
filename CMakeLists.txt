@@ -12,6 +12,17 @@ file(COPY Resource/images DESTINATION ${CMAKE_CURRENT_BINARY_DIR})
 file(COPY Resource DESTINATION ${CMAKE_CURRENT_BINARY_DIR})
 file(COPY allegro_monolith-5.2.dll DESTINATION ${CMAKE_CURRENT_BINARY_DIR})
 
+# 添加 libcurl 依賴
+find_package(CURL REQUIRED)
+
+# 添加 nlohmann/json 依賴
+include(FetchContent)
+FetchContent_Declare(
+    json
+    URL https://github.com/nlohmann/json/releases/download/v3.11.3/json.tar.xz
+)
+FetchContent_MakeAvailable(json)
+
 add_executable(CHINESE-CHESS-GAME
 
     ChessPiece/ChessPiece.cpp
@@ -105,13 +116,21 @@ IF (WIN32)
     target_include_directories(CHINESE-CHESS-GAME PUBLIC C:/allegro/include)
     target_link_directories(CHINESE-CHESS-GAME PUBLIC C:/allegro/lib)
     target_compile_options(CHINESE-CHESS-GAME PUBLIC ${ALLEGRO5_CFLAGS_OTHER})
-    target_link_libraries(CHINESE-CHESS-GAME liballegro_monolith)
+    target_link_libraries(CHINESE-CHESS-GAME 
+        liballegro_monolith
+        CURL::libcurl
+        nlohmann_json::nlohmann_json
+    )
 ELSE()
     find_package(PkgConfig)
     pkg_check_modules(ALLEGRO5 REQUIRED allegro-5 allegro_main-5 allegro_font-5 allegro_dialog-5 allegro_primitives-5 allegro_image-5 allegro_ttf-5 allegro_audio-5 allegro_acodec-5)
     target_include_directories(CHINESE-CHESS-GAME PUBLIC lib)
     target_include_directories(CHINESE-CHESS-GAME PUBLIC ${ALLEGRO5_INCLUDE_DIRS})
     target_compile_options(CHINESE-CHESS-GAME PUBLIC ${ALLEGRO5_CFLAGS_OTHER})
-    target_link_libraries(CHINESE-CHESS-GAME ${ALLEGRO5_LIBRARIES})
+    target_link_libraries(CHINESE-CHESS-GAME 
+        ${ALLEGRO5_LIBRARIES}
+        CURL::libcurl
+        nlohmann_json::nlohmann_json
+    )
     target_link_directories(CHINESE-CHESS-GAME PUBLIC ${ALLEGRO5_LIBRARY_DIRS})
 ENDIF()

@@ -30,12 +30,18 @@ class User(BaseModel):
 class Token(BaseModel):
     access_token: str
     token_type: str
+    user: User
+
+# 登入請求模型
+class LoginRequest(BaseModel):
+    email: str
+    password: str
 
 # 路由
-@app.post("/register", response_model=User)
+@app.post("/register", response_model=Token)
 def register_user(user: UserCreate, db: Session = Depends(database.get_db)):
     # 檢查用戶名是否已存在
-    db_user = auth.get_user(db, username=user.username)
+    db_user = auth.get_user_by_username(db, username=user.username)
     if db_user:
         raise HTTPException(
             status_code=400,
@@ -43,7 +49,7 @@ def register_user(user: UserCreate, db: Session = Depends(database.get_db)):
         )
     
     # 檢查郵箱是否已存在
-    db_user = db.query(models.User).filter(models.User.email == user.email).first()
+    db_user = auth.get_user_by_email(db, email=user.email)
     if db_user:
         raise HTTPException(
             status_code=400,
@@ -60,18 +66,34 @@ def register_user(user: UserCreate, db: Session = Depends(database.get_db)):
     db.add(db_user)
     db.commit()
     db.refresh(db_user)
-    return db_user
+    
+    # 生成 token
+    access_token_expires = timedelta(minutes=auth.ACCESS_TOKEN_EXPIRE_MINUTES)
+    access_token = auth.create_access_token(
+        data={"sub": db_user.username}, expires_delta=access_token_expires
+    )
+    
+    # 返回 token 和用戶資料
+    return {
+        "access_token": access_token,
+        "token_type": "bearer",
+        "user": {
+            "username": db_user.username,
+            "email": db_user.email,
+            "created_at": db_user.created_at
+        }
+    }
 
 @app.post("/token", response_model=Token)
 async def login_for_access_token(
-    form_data: OAuth2PasswordRequestForm = Depends(),
+    login_data: LoginRequest,
     db: Session = Depends(database.get_db)
 ):
-    user = auth.authenticate_user(db, form_data.username, form_data.password)
+    user = auth.authenticate_user(db, login_data.email, login_data.password)
     if not user:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Incorrect username or password",
+            detail="Incorrect email or password",
             headers={"WWW-Authenticate": "Bearer"},
         )
     
@@ -83,7 +105,17 @@ async def login_for_access_token(
     access_token = auth.create_access_token(
         data={"sub": user.username}, expires_delta=access_token_expires
     )
-    return {"access_token": access_token, "token_type": "bearer"}
+    
+    # 返回 token 和用戶資料
+    return {
+        "access_token": access_token,
+        "token_type": "bearer",
+        "user": {
+            "username": user.username,
+            "email": user.email,
+            "created_at": user.created_at
+        }
+    }
 
 @app.get("/users/me", response_model=User)
 async def read_users_me(current_user: models.User = Depends(auth.get_current_user)):

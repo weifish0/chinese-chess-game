@@ -187,26 +187,82 @@ void Playground::Draw() const {
         
         // 繪製玩家名稱
         if (name_font) {
+            // 獲取當前場景
+            auto login_scene = dynamic_cast<Login*>(Engine::GameEngine::GetInstance().GetScene("login"));
             float text_width = al_get_text_width(name_font.get(), "玩家");
             float text_height = al_get_font_line_height(name_font.get());
             float padding = 10.0f;
             
-            al_draw_filled_rectangle(
-                draw_x + sprite_width * scale_x / 2 - text_width/2 - padding + 30,
-                draw_y - text_height - 10 - padding,
-                draw_x + sprite_width * scale_x / 2 + text_width/2 + padding + 30,
-                draw_y - 10 + padding,
-                al_map_rgba(0, 0, 0, 180)
-            );
-            
-            al_draw_text(
-                name_font.get(),
-                al_map_rgb(255, 255, 255),
-                draw_x + sprite_width * scale_x / 2 + 30,
-                draw_y - text_height - 10,
-                ALLEGRO_ALIGN_CENTER,
-                "玩家"
-            );
+            if (login_scene && !login_scene->GetCurrentUsername().empty()) {
+                // 用戶已登入，顯示用戶資料
+                std::string username = login_scene->GetCurrentUsername();
+                std::string email = login_scene->GetCurrentUserEmail();
+                std::string created_at = login_scene->GetCurrentUserCreatedAt();
+                
+                // 計算文字寬度（使用最長的文字來計算寬度）
+                text_width = std::max({
+                    al_get_text_width(name_font.get(), username.c_str()),
+                    al_get_text_width(name_font.get(), email.c_str()),
+                    al_get_text_width(name_font.get(), created_at.c_str())
+                });
+                
+                // 繪製背景
+                al_draw_filled_rectangle(
+                    draw_x + sprite_width * scale_x / 2 - text_width/2 - padding + 30,
+                    draw_y - text_height - 10 - padding,
+                    draw_x + sprite_width * scale_x / 2 + text_width/2 + padding + 30,
+                    draw_y - 10 + padding + (text_height + 5) * 2,  // 增加背景高度以容納三行文字
+                    al_map_rgba(0, 0, 0, 180)
+                );
+                
+                // 繪製用戶名
+                al_draw_text(
+                    name_font.get(),
+                    al_map_rgb(255, 255, 255),
+                    draw_x + sprite_width * scale_x / 2 + 30,
+                    draw_y - text_height - 10,
+                    ALLEGRO_ALIGN_CENTER,
+                    username.c_str()
+                );
+                
+                // 繪製電子郵件
+                al_draw_text(
+                    name_font.get(),
+                    al_map_rgb(255, 255, 255),
+                    draw_x + sprite_width * scale_x / 2 + 30,
+                    draw_y - text_height - 10 + text_height + 5,
+                    ALLEGRO_ALIGN_CENTER,
+                    email.c_str()
+                );
+                
+                // 繪製創建時間
+                al_draw_text(
+                    name_font.get(),
+                    al_map_rgb(255, 255, 255),
+                    draw_x + sprite_width * scale_x / 2 + 30,
+                    draw_y - text_height - 10 + (text_height + 5) * 2,
+                    ALLEGRO_ALIGN_CENTER,
+                    created_at.c_str()
+                );
+            } else {
+                // 用戶未登入，只顯示"玩家"
+                al_draw_filled_rectangle(
+                    draw_x + sprite_width * scale_x / 2 - text_width/2 - padding + 30,
+                    draw_y - text_height - 10 - padding,
+                    draw_x + sprite_width * scale_x / 2 + text_width/2 + padding + 30,
+                    draw_y - 10 + padding,
+                    al_map_rgba(0, 0, 0, 180)
+                );
+                
+                al_draw_text(
+                    name_font.get(),
+                    al_map_rgb(255, 255, 255),
+                    draw_x + sprite_width * scale_x / 2 + 30,
+                    draw_y - text_height - 10,
+                    ALLEGRO_ALIGN_CENTER,
+                    "玩家"
+                );
+            }
         }
     }
 
