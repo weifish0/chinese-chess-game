@@ -3,6 +3,10 @@
 #include "Engine/Resources.hpp"
 #include <iostream>
 
+// 初始化靜態成員變數
+float Playground::saved_player_x = 0.0f;
+float Playground::saved_player_y = 0.0f;
+bool Playground::has_saved_position = false;
 
 void Playground::Initialize() {
     // 載入背景圖片
@@ -30,6 +34,12 @@ void Playground::Initialize() {
     
     // 創建玩家
     player = new Player();
+    
+    // 如果有保存的位置，則恢復玩家位置
+    if (has_saved_position) {
+        player->setPosition(saved_player_x, saved_player_y);
+    }
+    
     AddNewObject(player);
 
     // 創建 NPC
@@ -63,6 +73,13 @@ void Playground::Initialize() {
 }
 
 void Playground::Terminate() {
+    // 保存玩家位置
+    if (player) {
+        saved_player_x = player->getX();
+        saved_player_y = player->getY();
+        has_saved_position = true;
+    }
+    
     // 清理建築物資源
     buildings.clear();
     

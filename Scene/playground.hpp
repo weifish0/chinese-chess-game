@@ -70,6 +70,12 @@ private:
     std::shared_ptr<ALLEGRO_FONT> dialogue_font;  // 對話框字體
     std::shared_ptr<ALLEGRO_BITMAP> login_icon;  // 登入圖標
     bool is_login_icon_hovered;  // 登入圖標懸停狀態
+    
+    // 保存玩家位置
+    static float saved_player_x;
+    static float saved_player_y;
+    static bool has_saved_position;
+
     // 螢幕邊界
     static constexpr float SCREEN_LEFT = 0;
     static constexpr float SCREEN_RIGHT = 2666; 
@@ -97,7 +103,7 @@ private:
     static constexpr float DIALOGUE_PADDING = 20.0f;  // 對話框內邊距
 
     // 登入圖標相關
-    static constexpr float ICON_SIZE = 200.0f;  // 登入圖標大小
+    static constexpr float ICON_SIZE = 100.0f;  // 登入圖標大小
     static constexpr float PADDING = 20.0f;  // 邊距
 
 public:
