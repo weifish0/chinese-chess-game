@@ -20,6 +20,7 @@
 class XiangqiScene final : public Engine::IScene {
 private:
     ALLEGRO_SAMPLE_ID bgmId;
+    std::shared_ptr<ALLEGRO_SAMPLE_INSTANCE> dropSample;
     const int ChessboardHeight = 10;
     const int ChessboardWidth = 9;
     
@@ -33,22 +34,26 @@ public:
     Engine::Image *chessboard;
     ChessPiece *RedKing, *BlackKing;
 
-    Engine::Label *RoundReminder;    // To show the enabled color for the round.
+    Engine::Label *RoundReminder;    // To show the enabled country for the round.
     Engine::Label *RoundWarning1, *RoundWarning2, *RoundWarning3;
     int round_warning_tick;          // Animation tick for RoundWarning.
 
     Engine::Image *BlackCheckmateWarning;
     Engine::Image *RedCheckmateWarning;
-    // Engine::Label *CheckmateWarning; // To show whether the king not of the round is under threat.
     int checkmate_warning_tick;      // Animation tick for CheckmateWarning.
+
+    Engine::Image *FlyingGeneralImg;
+    int flying_general_tick;         // Animation tick for flying general execution. (Positive: black wins/flies; Negative: red wins/flies)
+    float general_dist;
+
     bool WrongPiece = false;
 
-    // ChessboardState Storer.
+    // Chessboard Storer.
     // >>> Use row-col system (aka. palace position system) as indices to access
     // >>> Content: std::pair<int, ChessPiece*>
     // >>> first: <COLOR> * <PIECETYPE>
     // >>> second: <CHESSPIECE POINTER>
-    std::vector<std::vector<std::pair<int, ChessPiece*>>> ChessboardState;
+    std::vector<std::vector<std::pair<int, ChessPiece*>>> Chessboard;
 
     // Row and Column of the piece previously selected by the user.
     // >>> first: <ROW>, second: <COL>
@@ -67,10 +72,10 @@ public:
     void ReadChessboard();
     void Update(float deltaTime) override;
     void Terminate() override;
-    void OnMouseDown(int button, int mx, int my);
-    void OnMouseMove(int mx, int my);
-    void OnMouseUp(int button, int mx, int my);
-    bool PieceWithinRange(int r, int c);
+    void OnMouseDown(int button, int mx, int my) override;
+    void OnMouseMove(int mx, int my) override;
+    void OnMouseUp(int button, int mx, int my) override;
+    bool PieceWithinChessboard(int r, int c);
 
     /* DEVELOP KIT */
     int x_to_col(float x);
