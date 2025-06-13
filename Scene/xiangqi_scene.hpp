@@ -20,6 +20,7 @@
 class XiangqiScene final : public Engine::IScene {
 private:
     ALLEGRO_SAMPLE_ID bgmId;
+    std::shared_ptr<ALLEGRO_SAMPLE_INSTANCE> dropSample;
     const int ChessboardHeight = 10;
     const int ChessboardWidth = 9;
     

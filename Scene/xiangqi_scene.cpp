@@ -116,6 +116,9 @@ void XiangqiScene::Initialize() {
     UIGroup->AddNewObject(FlyingGeneralImg = new Engine::Image(black_general_img, halfW, halfH, blockSize * 8, blockSize * 8, 0.5, 0.5));
     FlyingGeneralImg->Visible = false;
     
+    // Game BGM
+    bgmId = AudioHelper::PlayBGM("xiangqi.ogg");
+    dropSample = Engine::Resources::GetInstance().GetSampleInstance("chesspiece_drop.wav");
 
     Round = HONG;
     preview = nullptr;
@@ -288,7 +291,9 @@ void XiangqiScene::Update(float deltaTime) {
 }
 
 void XiangqiScene::Terminate() {
-    // AudioHelper::StopBGM(bgmId);
+    AudioHelper::StopBGM(bgmId);
+    AudioHelper::StopSample(dropSample);
+    dropSample = std::shared_ptr<ALLEGRO_SAMPLE_INSTANCE>();
     IScene::Terminate();
 }
 
@@ -391,15 +396,14 @@ void XiangqiScene::OnMouseUp(int button, int mx, int my) {
         // PIECE MOVEMENT & UPDATE        
         // Case 2 and 1: Eat an enemy || Wander to a no man's land.
         // Case 2: If the target block is occupied by a piece of different country, EAT it!
-        std::cout << "[DEBUGGER] Case 2 in OnMouseUp: ";
-        std::cout << STATES(_row_mouse, _col_mouse) << " * " << Round << std::endl;
+        dropSample = AudioHelper::PlaySample("chesspiece_drop.wav", false, AudioHelper::BGMVolume * 2, 0);
         if (STATES(_row_mouse, _col_mouse) * Round < 0) { // Of different country.
             // Eat the target
             auto ptr = PIECES(_row_mouse, _col_mouse);
             PieceGroup->RemoveObject(ptr->GetObjectIterator()); // Delete the eaten piece from PieceGroup.
 
             // Case: Eating a WANG piece.
-            if (STATES(_row_mouse, _col_mouse) == HONG * WANG)       RedKing = nullptr;
+            if (STATES(_row_mouse, _col_mouse) == HONG * WANG)    RedKing = nullptr;
             else if (STATES(_row_mouse, _col_mouse) == HEI *WANG) BlackKing = nullptr;
         }
 
