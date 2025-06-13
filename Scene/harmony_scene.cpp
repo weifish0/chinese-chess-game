@@ -37,5 +37,5 @@ void HarmonyScene::Terminate(){
     
 }
 void HarmonyScene::BackOnClick(int stage){
-    Engine::GameEngine::GetInstance().ChangeScene("start");
+    Engine::GameEngine::GetInstance().ChangeScene("anqi_start");
 }

@@ -13,13 +13,15 @@ namespace Engine {
     protected:
         // The iterator of controls linked-list when added to scene.
         // Can make removing controls faster.
-        std::list<std::pair<bool, IControl *>>::iterator controlIterator{};
+        //modify
+        //std::list<std::pair<bool, IControl *>>::iterator controlIterator{};
         /// <summary>
         /// The interface cannot be instantiated directly, must be inherited.
         /// </summary>
         explicit IControl() = default;
 
     public:
+        std::list<std::pair<bool, IControl *>>::iterator controlIterator{};
         /// <summary>
         /// The default virtual destructor to support polymorphism destruction.
         /// </summary>

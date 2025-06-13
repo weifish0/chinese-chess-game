@@ -11,7 +11,18 @@
 #include "Engine/IScene.hpp"
 #include "Engine/Point.hpp"
 #include "Chess/chess.hpp"
-//int score;
+extern bool mouseJustClicked;
+extern bool lastMouseDown;
+class Record{
+    public:
+        ChessColor color;
+        ChessType type;
+        int operation;
+        ChessColor target_color;
+        ChessType target_type;
+        std::pair<int,int> start;
+        std::pair<int,int> destination;  
+};
 namespace Engine {
     class Group;
     class Image;
@@ -21,6 +32,7 @@ namespace Engine {
 
 class AnqiScene final : public Engine::IScene {
 public:
+    ALLEGRO_SAMPLE_ID bgmId;
     Group* ChessGroup;
     Group* UIGroup;
     Engine::Label *UIBlack;
@@ -39,6 +51,10 @@ public:
     void ButtonClick(int id);
     void Target(int j,int i,int temp_y,int temp_x);
     bool Edible(Chess* eater,Chess* prey);
+    void ShowPeace();
+    void Recover(Record* first,Record* second);
+    void RecoverValid(int& regret_time);
+    std::string GetImage(ChessColor color,ChessType type);
     // void PlayOnClick(int stage);
     // void SettingsOnClick(int stage);
 };
