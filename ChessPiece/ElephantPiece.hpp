@@ -10,8 +10,8 @@ public:
         std::cout << "[LOG] Elfnt Clone!" << std::endl;
         return new ElephantPiece(*this);
     }
-    explicit ElephantPiece(std::string img, Engine::Point position, PieceColor color, int score);
-    bool IsValidMove(int y,int x,int next_y,int next_x, std::vector<std::vector<std::pair<int,ChessPiece*>>> &ChessboardState) override;
+    explicit ElephantPiece(std::string img, Engine::Point position, PieceColor country, int score);
+    bool IsValidMove(int y,int x,int next_y,int next_x, std::vector<std::vector<std::pair<int,ChessPiece*>>> &Chessboard) override;
     // void OnAnimation(ChessPiece *enemy_chess);
 };
 

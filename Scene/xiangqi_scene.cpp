@@ -30,10 +30,12 @@
 
 #include "UI/Component/Image.hpp"
 
-#define STATES(row, col) (ChessboardState[row][col].first)
-#define PIECES(row, col) (ChessboardState[row][col].second)
+#define STATES(row, col) (Chessboard[row][col].first)
+#define PIECES(row, col) (Chessboard[row][col].second)
 
 PieceColor winner = HONG;
+std::string black_general_img = "xiangqi/black_general.png";
+std::string red_general_img = "xiangqi/red_general.png";
 
 /* DEVELOP KIT */
 int XiangqiScene::x_to_col(float x) {
@@ -71,14 +73,13 @@ float XiangqiScene::row_to_y(int row) {
 
 void XiangqiScene::PrintChessboardState() {
     for (int row = 0; row < ChessboardHeight; row++) {
-        for (int col = 0; col < ChessboardWidth; col++) std::cout << std::setw(2) << std::setfill(' ') << ChessboardState[row][col].first << " ";
+        for (int col = 0; col < ChessboardWidth; col++) std::cout << std::setw(2) << std::setfill(' ') << Chessboard[row][col].first << " ";
         std::cout << std::endl;
     }
 }
 
 bool XiangqiScene::PieceWithinChessboard(int r, int c) {
     bool ans = (0 <= r && r < ChessboardHeight && 0 <= c && c < ChessboardWidth);
-    std::cout << "[DEBUGGER] PieceWithinRange: Piece " << (ans ? "IS" : "ISN'T") << " within range." << std::endl;
     return ans;
 }
 
@@ -96,22 +97,25 @@ void XiangqiScene::Initialize() {
 
     // Read Chessboard txt file
     ReadChessboard();
-    std::cout << "[DEBUGGER] 002" << std::endl;
 
     ChessboardGroup->AddNewObject(chessboard = new Engine::Image("xiangqi/xiangqi_chessboard_albert.jpg", halfW, halfH, blockSize * 10, blockSize * 11, 0.5, 0.5));
-    // Round Reminder (color)
+    // Round Reminder (country)
     UIGroup->AddNewObject(new Engine::Label("Round:", "pirulen.ttf", 40, halfW / 4, halfH / 8, 255, 255, 255, 255, 0.5, 0.5));
-    UIGroup->AddNewObject(RoundReminder = new Engine::Label("HONG", "pirulen.ttf", 40, halfW / 4, halfH / 8 + 40, 255, 255, 255, 255, 0.5, 0.5));
-    RoundReminder->Color = al_map_rgba(255, 0, 0, 255); // Current color: HONG
+    UIGroup->AddNewObject(RoundReminder = new Engine::Label("RED", "pirulen.ttf", 40, halfW / 4, halfH / 8 + 40, 255, 255, 255, 255, 0.5, 0.5));
+    RoundReminder->Color = al_map_rgba(255, 0, 0, 255); // Current country: HONG
     // Round Warning
     UIGroup->AddNewObject(RoundWarning1 = new Engine::Label("Cannot choose", "pirulen.ttf", 30, w - halfW / 4, halfH / 8, 255, 150, 150, 0, 0.5, 0.5));
-    UIGroup->AddNewObject(RoundWarning2 = new Engine::Label("HEI PIECES", "pirulen.ttf", 36, w - halfW / 4, halfH / 8 + 50, 255, 150, 150, 0, 0.5, 0.5));
+    UIGroup->AddNewObject(RoundWarning2 = new Engine::Label("BLACK PIECES", "pirulen.ttf", 36, w - halfW / 4, halfH / 8 + 50, 255, 150, 150, 0, 0.5, 0.5));
     UIGroup->AddNewObject(RoundWarning3 = new Engine::Label("in this round!!", "pirulen.ttf", 30, w - halfW / 4, halfH / 8 + 100, 255, 150, 150, 0, 0.5, 0.5));
     // Checkmate Warning
     UIGroup->AddNewObject(BlackCheckmateWarning = new Engine::Image("xiangqi/black_checkmate.png", halfW, halfH, blockSize * 4, blockSize * 4, 0.5, 0.5));
     BlackCheckmateWarning->Visible = false;
     UIGroup->AddNewObject(RedCheckmateWarning = new Engine::Image("xiangqi/red_checkmate.png", halfW, halfH, blockSize * 4, blockSize * 4, 0.5, 0.5));
     RedCheckmateWarning->Visible = false;
+    // Flying General Image
+    UIGroup->AddNewObject(FlyingGeneralImg = new Engine::Image(black_general_img, halfW, halfH, blockSize * 8, blockSize * 8, 0.5, 0.5));
+    FlyingGeneralImg->Visible = false;
+    
 
     Round = HONG;
     preview = nullptr;
@@ -126,8 +130,8 @@ void XiangqiScene::ReadChessboard() {
     int w = Engine::GameEngine::GetInstance().GetScreenSize().x;
     int halfW = w / 2;
     int halfH = h / 2;
-    ChessboardState.clear();
-    ChessboardState = std::vector<std::vector<std::pair<int, ChessPiece*>>>(ChessboardHeight, std::vector<std::pair<int, ChessPiece*>>(ChessboardWidth, {0, nullptr}));
+    Chessboard.clear();
+    Chessboard = std::vector<std::vector<std::pair<int, ChessPiece*>>>(ChessboardHeight, std::vector<std::pair<int, ChessPiece*>>(ChessboardWidth, {0, nullptr}));
     
     std::string filename = "Resource/xiangqi_chessboard.txt";
     // Read chessboard file.
@@ -154,11 +158,11 @@ void XiangqiScene::ReadChessboard() {
     
     // Store map in 2D array.
     for (int row = 0; row < ChessboardHeight; row++) {
-        PieceColor color = (row < ChessboardHeight / 2) ? HEI : HONG;
+        PieceColor country = (row < ChessboardHeight / 2) ? HEI : HONG;
 
         for (int col = 0; col < ChessboardWidth; col++) {
             const int num = mapData[row * ChessboardWidth + col];
-            STATES(row, col) = color * num; // HONG pieces would generally go up (decrease in y), so I set the state of HONG pieces to negative.
+            STATES(row, col) = country * num; // HONG pieces would generally go up (decrease in y), so I set the state of HONG pieces to negative.
             
             // Construct all the chess pieces.
             // HEI at the top, HONG at the bottom.
@@ -168,45 +172,45 @@ void XiangqiScene::ReadChessboard() {
             ChessPiece *new_piece = nullptr;
 
             if (num == WANG) {
-                if (color == HONG) {
+                if (country == HONG) {
                     img += "red_piece_shuai.png";
-                    PieceGroup->AddNewObject(new_piece = new KingPiece(img, position, color, WANG * 10));
+                    PieceGroup->AddNewObject(new_piece = new KingPiece(img, position, country, WANG * 10));
                     RedKing = new_piece;
 
                 } else {
                     img += "black_piece_jiang.png";
-                    PieceGroup->AddNewObject(new_piece = new KingPiece(img, position, color, WANG * 10));
+                    PieceGroup->AddNewObject(new_piece = new KingPiece(img, position, country, WANG * 10));
                     BlackKing = new_piece;
                 }
 
             } else if (num == GUARD) {
-                (color == HONG) ? img += "red_" : img += "black_";
+                (country == HONG) ? img += "red_" : img += "black_";
                 img += "piece_shi.png";
-                PieceGroup->AddNewObject(new_piece = new GuardPiece(img, position, color, GUARD * 10));
+                PieceGroup->AddNewObject(new_piece = new GuardPiece(img, position, country, GUARD * 10));
 
             } else if (num == ELFNT) {
-                (color == HONG) ? img += "red_" : img += "black_";
+                (country == HONG) ? img += "red_" : img += "black_";
                 img += "piece_xiang.png";
-                PieceGroup->AddNewObject(new_piece = new ElephantPiece(img, position, color, ELFNT * 10));
+                PieceGroup->AddNewObject(new_piece = new ElephantPiece(img, position, country, ELFNT * 10));
 
             } else if (num == MA) {
-                (color == HONG) ? img += "red_" : img += "black_";
+                (country == HONG) ? img += "red_" : img += "black_";
                 img += "piece_ma.png";
-                PieceGroup->AddNewObject(new_piece = new HorsePiece(img, position, color, MA * 10));
+                PieceGroup->AddNewObject(new_piece = new HorsePiece(img, position, country, MA * 10));
 
             } else if (num == CHARIOT) {
-                (color == HONG) ? img += "red_" : img += "black_";
+                (country == HONG) ? img += "red_" : img += "black_";
                 img += "piece_ju.png";
-                PieceGroup->AddNewObject(new_piece = new ChariotPiece(img, position, color, CHARIOT * 10));
+                PieceGroup->AddNewObject(new_piece = new ChariotPiece(img, position, country, CHARIOT * 10));
 
             } else if (num == PAO) {
-                (color == HONG) ? img += "red_" : img += "black_";
+                (country == HONG) ? img += "red_" : img += "black_";
                 img += "piece_pao.png";
-                PieceGroup->AddNewObject(new_piece = new CannonPiece(img, position, color, PAO * 10));
+                PieceGroup->AddNewObject(new_piece = new CannonPiece(img, position, country, PAO * 10));
 
             } else if (num == PAWN) {
-                (color == HONG) ? img += "red_piece_bing.png" : img += "black_piece_zu.png";
-                PieceGroup->AddNewObject(new_piece = new PawnPiece(img, position, color, PAWN * 10));
+                (country == HONG) ? img += "red_piece_bing.png" : img += "black_piece_zu.png";
+                PieceGroup->AddNewObject(new_piece = new PawnPiece(img, position, country, PAWN * 10));
             }
 
             if (new_piece) PIECES(row, col) = new_piece; // Store the piece pointer into the Chessboard.
@@ -240,7 +244,7 @@ void XiangqiScene::Update(float deltaTime) {
     }
 
     // CheckmateWarning
-    if (1 <= checkmate_warning_tick && checkmate_warning_tick <= 60 * ALLEGRO_PI) { // Warning the HEI!
+    if (1 <= checkmate_warning_tick && checkmate_warning_tick <= 60 * ALLEGRO_PI && !flying_general_tick) { // Warning the HEI!
         BlackCheckmateWarning->Visible = true;
         checkmate_warning_tick++;
         if (checkmate_warning_tick > 60 * ALLEGRO_PI) {
@@ -248,12 +252,30 @@ void XiangqiScene::Update(float deltaTime) {
             checkmate_warning_tick = 0;
         }
 
-    } else if (-1 >= checkmate_warning_tick && checkmate_warning_tick >= -60 * ALLEGRO_PI) {
+    } else if (-1 >= checkmate_warning_tick && checkmate_warning_tick >= -60 * ALLEGRO_PI && !flying_general_tick) {
         RedCheckmateWarning->Visible = true;
         checkmate_warning_tick--;
         if (checkmate_warning_tick < -60 * ALLEGRO_PI) {
             RedCheckmateWarning->Visible = false;
             checkmate_warning_tick = 0;
+        }
+    }
+
+    // Flying General
+    if (1 <= flying_general_tick && flying_general_tick <= 600) {
+        flying_general_tick++;
+        BlackKing->Position.y += ((general_dist - blockSize) / 600);
+        if (flying_general_tick > 600) {
+            winner = HEI;
+            Engine::GameEngine::GetInstance().ChangeScene("xiangqi_win");
+        }
+    
+    } else if (-1 >= flying_general_tick && flying_general_tick >= -600) {
+        flying_general_tick--;
+        RedKing->Position.y -= ((general_dist - blockSize) / 600);
+        if (flying_general_tick < -600) {
+            winner = HONG;
+            Engine::GameEngine::GetInstance().ChangeScene("xiangqi_win");
         }
     }
 }
@@ -275,7 +297,7 @@ void XiangqiScene::OnMouseDown(int button, int mx, int my) {
         // Check if (x, y) is valid:
         if (_row_mouse < 0 || ChessboardHeight <= _row_mouse || _col_mouse < 0 || ChessboardWidth <= _col_mouse) return;
 
-        if (STATES(_row_mouse, _col_mouse) * Round > 0) { // If not empty && with correct color:
+        if (STATES(_row_mouse, _col_mouse) * Round > 0) { // If not empty && with correct country:
             SelectedRowCol = std::pair(_row_mouse, _col_mouse); // Jot down the original row and column of the player-selected piece.
             auto selectedPiece = PIECES(_row_mouse, _col_mouse);
             assert(selectedPiece != nullptr);
@@ -283,7 +305,7 @@ void XiangqiScene::OnMouseDown(int button, int mx, int my) {
             UIGroup->AddNewObject(preview);
             SelectFlag = true;
 
-        } else if (STATES(_row_mouse, _col_mouse) * Round < 0) { // Of a different color.
+        } else if (STATES(_row_mouse, _col_mouse) * Round < 0) { // Of a different country.
             SelectFlag = false;
             WrongPiece = true;
             round_warning_tick = 1;
@@ -315,8 +337,8 @@ void XiangqiScene::OnMouseMove(int mx, int my) {
         preview->Position.x = col_to_x(_col_mouse), preview->Position.y = row_to_y(_row_mouse);
         preview->Tint = al_map_rgba(255, 255, 255, 150);//
 
-        // Change preview color if invalid:
-        bool temp = PIECES(SelectedRowCol.first, SelectedRowCol.second)->IsValidMove(SelectedRowCol.first, SelectedRowCol.second, _row_mouse, _col_mouse, ChessboardState);
+        // Change preview country if invalid:
+        bool temp = PIECES(SelectedRowCol.first, SelectedRowCol.second)->IsValidMove(SelectedRowCol.first, SelectedRowCol.second, _row_mouse, _col_mouse, Chessboard);
         if (!temp) {
             preview->Tint = al_map_rgba(255, 100, 100, 150); // Redish
         } else {
@@ -348,7 +370,7 @@ void XiangqiScene::OnMouseUp(int button, int mx, int my) {
         // Check if valid. (Call the method of the chess to see if valid.)
         if (PieceWithinChessboard(SelectedRowCol.first, SelectedRowCol.second)\
             && PIECES(SelectedRowCol.first, SelectedRowCol.second)\
-            && !PIECES(SelectedRowCol.first, SelectedRowCol.second)->IsValidMove(SelectedRowCol.first, SelectedRowCol.second, _row_mouse, _col_mouse, ChessboardState)) {
+            && !PIECES(SelectedRowCol.first, SelectedRowCol.second)->IsValidMove(SelectedRowCol.first, SelectedRowCol.second, _row_mouse, _col_mouse, Chessboard)) {
             
             std::cout << "[DEBUGGER] OnMouseUp: return right after valid check" << std::endl;
             return;
@@ -361,10 +383,10 @@ void XiangqiScene::OnMouseUp(int button, int mx, int my) {
 
         // PIECE MOVEMENT & UPDATE        
         // Case 2 and 1: Eat an enemy || Wander to a no man's land.
-        // Case 2: If the target block is occupied by a piece of different color, EAT it!
+        // Case 2: If the target block is occupied by a piece of different country, EAT it!
         std::cout << "[DEBUGGER] Case 2 in OnMouseUp: ";
         std::cout << STATES(_row_mouse, _col_mouse) << " * " << Round << std::endl;
-        if (STATES(_row_mouse, _col_mouse) * Round < 0) { // Of different color.
+        if (STATES(_row_mouse, _col_mouse) * Round < 0) { // Of different country.
             // Eat the target
             auto ptr = PIECES(_row_mouse, _col_mouse);
             PieceGroup->RemoveObject(ptr->GetObjectIterator()); // Delete the eaten piece from PieceGroup.
@@ -388,7 +410,7 @@ void XiangqiScene::OnMouseUp(int button, int mx, int my) {
         Round = (Round == HONG) ? HEI : HONG; // `Round` flip - for HONG to HEI, and vice versa.
         RoundReminder->Text = ((Round == HONG) ? "RED" : "BLACK"); // Change RoundReminder text.
         RoundReminder->Color = ((Round == HONG) ? al_map_rgba(255, 0, 0, 255) : al_map_rgba(100, 100, 150, 255));
-        RoundWarning2->Text = ((Round == HONG) ? "RED PIECES" : "BLACK PIECES"); // Change RoundWarning text.
+        RoundWarning2->Text = ((Round == HONG) ? "BLACK PIECES" : "RED PIECES"); // Change RoundWarning text.
         std::cout << "[DEBUGGER] round == " << Round << std::endl;
     }
     PrintChessboardState();//
@@ -397,14 +419,29 @@ void XiangqiScene::OnMouseUp(int button, int mx, int my) {
     // Checkmate warning!
     if (RedKing && BlackKing) {
         bool blackCheckmate, redCheckmate;
-        std::cout << "[DEBUGGER] BlackKing at " << ((blackCheckmate = BlackKing->IsCheckmate(ChessboardState)) ? "OMG" : "HUH") << " / RedKing at " << ((redCheckmate = RedKing->IsCheckmate(ChessboardState)) ? "OMG" : "HUH") << std::endl;
-        if (blackCheckmate) {
+        std::cout << "[DEBUGGER] BlackKing at " << ((blackCheckmate = BlackKing->IsCheckmate(Chessboard)) ? "OMG" : "HUH") << " / RedKing at " << ((redCheckmate = RedKing->IsCheckmate(Chessboard)) ? "OMG" : "HUH") << std::endl;
+        // Checkmate
+        if (blackCheckmate && !SelectFlag) {
             checkmate_warning_tick = 1;
-            std::cout << "[LOG] Warns the HEI!" << std::endl;
+            std::cout << "[LOG] Warns the BLACK!" << std::endl;
 
-        } else if (redCheckmate) {
+        } else if (redCheckmate && !SelectFlag) {
             checkmate_warning_tick = -1;
-            std::cout << "[LOG] Warns the HONG!" << std::endl;
+            std::cout << "[LOG] Warns the RED!" << std::endl;
+        }
+
+        // Flying General
+        int flyingGeneral = RedKing->GeneralFlies(y_to_row(RedKing->Position.y), x_to_col(RedKing->Position.x), y_to_row(BlackKing->Position.y), x_to_col(BlackKing->Position.x), Chessboard, Round);
+        if (flyingGeneral != 0) {
+            FlyingGeneralImg->bmp = Engine::Resources::GetInstance().GetBitmap(((flyingGeneral == HONG) ? red_general_img : black_general_img));
+            // Update FlyingGeneralImg.
+            // The mechanism of Anchor and Position is currently unknown, so do NOT modify the settings below unless it's necessary to do so.
+            FlyingGeneralImg->Anchor = Engine::Point(0.5, 0.5);
+            FlyingGeneralImg->Position.x = halfW + blockSize * 3;
+            FlyingGeneralImg->Position.y = halfH + blockSize * 3;
+            FlyingGeneralImg->Visible = true;
+            general_dist = abs(BlackKing->Position.y - RedKing->Position.y);
+            flying_general_tick = flyingGeneral;
         }
     }
 

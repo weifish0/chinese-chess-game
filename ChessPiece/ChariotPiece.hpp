@@ -10,8 +10,8 @@ public:
         std::cout << "[LOG] Chariot Clone!" << std::endl;
         return new ChariotPiece(*this);
     }
-    ChariotPiece(std::string img, Engine::Point position, PieceColor color, int score);
-    bool IsValidMove(int y,int x,int next_y,int next_x, std::vector<std::vector<std::pair<int,ChessPiece*>>> &ChessboardState) override;
+    ChariotPiece(std::string img, Engine::Point position, PieceColor country, int score);
+    bool IsValidMove(int y,int x,int next_y,int next_x, std::vector<std::vector<std::pair<int,ChessPiece*>>> &Chessboard) override;
     // void OnAnimation(ChessPiece* enemy_piece);
 };
 
