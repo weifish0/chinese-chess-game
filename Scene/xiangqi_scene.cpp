@@ -30,8 +30,10 @@
 
 #include "UI/Component/Image.hpp"
 
-#define STATES(row, col) (Chessboard[row][col].first)
-#define PIECES(row, col) (Chessboard[row][col].second)
+/* RECORD OPERATOR<< OVERLOAD */
+std::ostream &operator<<(std::ostream &out, Record &rcd) {
+    return out << "Type: " << rcd.Type << ", OldRowCol: " << rcd.OldRowCol.first << "," << rcd.OldRowCol.second << ", NewRowCol: " << rcd.NewRowCol.first << "," << rcd.NewRowCol.second << ", Action: " << rcd.Action;
+};
 
 PieceColor winner = HONG;
 std::string black_general_img = "xiangqi/black_general.png";
@@ -115,6 +117,12 @@ void XiangqiScene::Initialize() {
     // Flying General Image
     UIGroup->AddNewObject(FlyingGeneralImg = new Engine::Image(black_general_img, halfW, halfH, blockSize * 8, blockSize * 8, 0.5, 0.5));
     FlyingGeneralImg->Visible = false;
+
+    // Regret Button
+    RegretBtn = new Engine::ImageButton("xiangqi/floor.png", "xiangqi/dirt.png", halfW * 1.5, halfH * 1.5, blockSize * 4, blockSize, 0.5, 0.5);
+    RegretBtn->SetOnClickCallback(std::bind(&XiangqiScene::RegretOnClick, this));
+    UIGroup->AddNewControlObject(RegretBtn);
+    UIGroup->AddNewObject(RegretLbl = new Engine::Label("Move Regret " + std::to_string(RegretCount) + "/3", "pirulen.ttf", 36, halfW * 1.5, halfH * 1.5, 255, 255, 255, 255, 0.5, 0.5)); 
     
     // Game BGM
     bgmId = AudioHelper::PlayBGM("xiangqi.ogg");
@@ -129,6 +137,8 @@ void XiangqiScene::Initialize() {
     checkmate_warning_tick = 0;
     flying_general_tick = 0;
     general_dist = 0.0;
+
+    RegretDeq.clear();
 
     WrongPiece = false;
 
@@ -408,15 +418,7 @@ void XiangqiScene::OnMouseUp(int button, int mx, int my) {
         }
 
         // Moved to Target
-        STATES(_row_mouse, _col_mouse) = state_selected; // Move the selected piece (state) to the target position.
-        PIECES(_row_mouse, _col_mouse) = PIECES(SelectedRowCol.first, SelectedRowCol.second);
-        PIECES(_row_mouse, _col_mouse)->Position.x = col_to_x(_col_mouse); // As for the actual selectedPiece pointer, change its x.
-        PIECES(_row_mouse, _col_mouse)->Position.y = row_to_y(_row_mouse); // As for the actual selectedPiece pointer, change its y.
-
-        // Deleted from Selected Place
-        STATES(SelectedRowCol.first, SelectedRowCol.second) = NONE;       // Clear the original selected position's state.
-        PIECES(SelectedRowCol.first, SelectedRowCol.second) = nullptr;
-        std::cout << "[DEBUGGER] move selectedPiece to the next place." << std::endl;
+        MoveOnChessboard(SelectedRowCol.first, SelectedRowCol.second, _row_mouse, _col_mouse);
         
         Round = (Round == HONG) ? HEI : HONG; // `Round` flip - for HONG to HEI, and vice versa.
         RoundReminder->Text = ((Round == HONG) ? "RED" : "BLACK"); // Change RoundReminder text.
@@ -457,4 +459,69 @@ void XiangqiScene::OnMouseUp(int button, int mx, int my) {
     }
 
     OnMouseMove(mx, my);
+}
+
+void XiangqiScene::MoveOnChessboard(int ro, int co, int rf, int cf) {
+    if (!PieceWithinChessboard(ro, co) && !PieceWithinChessboard(rf, cf)) return;
+
+    int act_temp = Action::EMPTY;
+    // If the state at the target row-col is NONE (aka. empty), then the previous piece there is "killed" (i.e., it "DIE"s)
+    if (STATES(rf, cf) != NONE) {
+        act_temp = Action::DIE;
+        // Insert this record into regret deque.
+        InsertRegret(STATES(rf, cf), PIECES(rf, cf), {rf, cf}, {-1, -1}, Action::DIE);
+    }
+
+    // Moved to Target
+    STATES(rf, cf) = STATES(ro, co); // Move the selected piece (state) to the target position.
+    PIECES(rf, cf) = PIECES(ro, co);
+    PIECES(rf, cf)->Position.x = col_to_x(cf); // As for the actual selectedPiece pointer, change its x.
+    PIECES(rf, cf)->Position.y = row_to_y(rf); // As for the actual selectedPiece pointer, change its y.
+
+    // Insert this record into the deque.
+    InsertRegret(STATES(ro, co), PIECES(ro, co), {ro, co}, {rf, cf}, ((act_temp == Action::DIE) ? Action::EAT : Action::MOVE));
+    // Deleted from Selected Place
+    STATES(ro, co) = NONE;       // Clear the original selected position's state.
+    PIECES(ro, co) = nullptr;
+
+    std::cout << "[DEBUGGER] CHESSPIECE MOVED!! (In MoveOnChessboard())" << std::endl;
+}
+
+void XiangqiScene::InsertRegret(int Type, ChessPiece *Piece, RowCol Old, RowCol New, int Action) {
+    Record rcd(Type, Piece, Old, New, Action);
+    RegretDeq.push_back(rcd);
+}
+
+void XiangqiScene::RegretOnClick() {
+    if (!RegretDeq.empty()) return;
+
+    Record *back = &RegretDeq.back();
+    RegretDeq.pop_back();
+
+    // Change content in the chessboard.
+    STATES(back->OldRowCol.first, back->OldRowCol.second) = back->Type;
+    PIECES(back->OldRowCol.first, back->OldRowCol.second) = back->Piece;
+    // Change the position of the chesspiece. (through its pointer.)
+    back->Piece->Position.y = row_to_y(back->OldRowCol.first);
+    back->Piece->Position.x = col_to_x(back->OldRowCol.second);
+
+    if (back->Action == Action::MOVE) {
+        // Reset new row-col on the chessboard with {Piecetype::NONE, nullptr}.
+        STATES(back->NewRowCol.first, back->NewRowCol.second) = PieceType::NONE;
+        PIECES(back->NewRowCol.first, back->NewRowCol.second) = nullptr;
+
+    } else if (back->Action == Action::EAT) {
+        Record *eaten = &RegretDeq.back();
+        RegretDeq.pop_back();
+        assert(eaten->Action == Action::DIE); // The action status of the previous record must be Action::DIE
+        assert(eaten->OldRowCol == back->NewRowCol); // The place the eaten piece died is where the newest piece moved to.
+        // Rest new row-col on the chessboard with the previous chesspiece.
+        STATES(eaten->OldRowCol.first, eaten->OldRowCol.second) = eaten->Type;
+        PIECES(eaten->OldRowCol.first, eaten->OldRowCol.second) = eaten->Piece;
+
+    } else {
+        std::cout << "[DEBUGGER] Error occurs in Regret & Chessboard! Revise needed!" << std::endl;
+    }
+
+    RegretCount--; // Decrease the count of remaining regrets.
 }

@@ -1,21 +1,52 @@
 #ifndef XIANGQISCENE_HPP
 #define XIANGQISCENE_HPP
 #include <allegro5/allegro_audio.h>
+#include <iostream>
 #include <map>
 #include <list>
 #include <memory>
 #include <utility>
 #include <vector>
+#include <deque>
+
+#include "ChessPiece/ChessPiece.hpp"
 
 #include "Engine/AudioHelper.hpp"
 #include "Engine/Collider.hpp"
 #include "Engine/IScene.hpp"
-#include "ChessPiece/ChessPiece.hpp"
+
+#include "UI/Component/ImageButton.hpp"
 #include "UI/Component/Label.hpp"
+
+using RowCol = std::pair<int, int>;
+
+#define STATES(row, col) (Chessboard[row][col].first)
+#define PIECES(row, col) (Chessboard[row][col].second)
 
 // Engine::Collider collider; // Collider in XiangqiScene.
 //                            // Due to the constructor of the collider, it is deemed as a non-static, const variable.
 //                            // Hence not allowed to put inside XiangqiScene.
+
+enum Action {
+    EMPTY, MOVE, EAT, DIE
+};
+// RECORD (FOR MOVE RETRACTION/REGRET)
+class Record {
+private:
+    int Type; // <PieceColor> * <PieceType>
+    ChessPiece *Piece;
+    RowCol OldRowCol;
+    RowCol NewRowCol; // If the piece "dies", the NewRowCol would be {-1, -1}.
+    int Action;
+
+public:
+    Record(int Type, ChessPiece *Piece, RowCol Old, RowCol New, int Action) 
+        : Type(Type), Piece(Piece), OldRowCol(Old), NewRowCol(New), Action(Action) {
+    }
+
+    friend std::ostream &operator<<(std::ostream &out, Record &rcd);
+    friend class XiangqiScene;
+};
 
 class XiangqiScene final : public Engine::IScene {
 private:
@@ -66,6 +97,11 @@ public:
     bool SwitchFlag;
     bool SelectFlag;
 
+    std::deque<Record> RegretDeq;
+    Engine::ImageButton *RegretBtn;
+    Engine::Label *RegretLbl;
+    int RegretCount = 3;
+
     /* METHODS */
     explicit XiangqiScene() = default;
     void Initialize() override;
@@ -76,6 +112,15 @@ public:
     void OnMouseMove(int mx, int my) override;
     void OnMouseUp(int button, int mx, int my) override;
     bool PieceWithinChessboard(int r, int c);
+
+    /* CHESSBOARD KIT */
+    // Moving pieces using this function!
+    // ro, co: original row & column
+    // rf, cf: final row & column
+    void MoveOnChessboard(int ro, int co, int rf, int cf);
+    /* MOVE REGRET KIT */
+    void InsertRegret(int Type, ChessPiece *Piece, RowCol Old, RowCol New, int Action);
+    void RegretOnClick();
 
     /* DEVELOP KIT */
     int x_to_col(float x);
