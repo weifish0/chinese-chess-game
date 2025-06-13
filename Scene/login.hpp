@@ -47,6 +47,7 @@ private:
     static constexpr float BUTTON_HEIGHT = 120.0f;
     static constexpr float PADDING = 60.0f;
     static constexpr float SHOW_PASSWORD_BUTTON_SIZE = 100.0f;
+    static constexpr float LOGOUT_BUTTON_WIDTH = 360.0f;  // 登出按鈕寬度
     
     // API 相關
     static constexpr const char* API_BASE_URL = "http://localhost:8000";
@@ -86,6 +87,13 @@ private:
     
     // 儲存當前用戶資料
     UserData current_user;
+
+    // 日期格式轉換函數
+    std::string FormatDate(const std::string& iso_date) const;
+    
+    // 登出功能
+    void Logout();
+
 public:
     Login();
     void Initialize() override;

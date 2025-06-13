@@ -1,7 +1,7 @@
 from datetime import datetime, timedelta
 from typing import Optional
 from fastapi import FastAPI, Depends, HTTPException, status
-from fastapi.security import OAuth2PasswordRequestForm, OAuth2PasswordBearer
+from fastapi.security import OAuth2PasswordBearer
 from sqlalchemy.orm import Session
 from pydantic import BaseModel
 import models
@@ -62,10 +62,10 @@ def register(user: UserCreate, db: Session = Depends(database.get_db)):
         )
 
 @app.post("/token")
-def login(form_data: OAuth2PasswordRequestForm = Depends(), db: Session = Depends(database.get_db)):
+def login(login_data: LoginRequest, db: Session = Depends(database.get_db)):
     try:
         print("login")
-        user = auth.authenticate_user(db, form_data.username, form_data.password)
+        user = auth.authenticate_user(db, login_data.email, login_data.password)
         access_token = auth.create_access_token(data={"sub": user.email})
         return {
             "access_token": access_token,
