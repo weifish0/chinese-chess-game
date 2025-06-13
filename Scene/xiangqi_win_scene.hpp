@@ -12,6 +12,7 @@
 #include "Engine/GameEngine.hpp"
 #include "Engine/IScene.hpp"
 #include "ChessPiece/ChessPiece.hpp"
+#include "UI/Component/ImageButton.hpp"
 #include "UI/Component/Label.hpp"
 
 #include "xiangqi_scene.hpp"
@@ -26,6 +27,8 @@ class XiangqiWinScene final : public Engine::IScene {
 private:
 public:
     /* PROPERTIES */
+    Engine::ImageButton *PlaygroundBtn;
+    Engine::ImageButton *AgainBtn;
 
     /* METHODS */
     explicit XiangqiWinScene() = default;
@@ -33,5 +36,7 @@ public:
     void ReadChessboard();
     void Update(float deltaTime) override;
     void Terminate() override;
+    void PlaygroundOnClick();
+    void AgainOnClick();
 };
 #endif   // XIANGQIWINSCENE_HPP

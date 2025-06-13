@@ -122,6 +122,13 @@ void XiangqiScene::Initialize() {
     SelectFlag = false;
     SwitchFlag = false;
 
+    round_warning_tick = 0;
+    checkmate_warning_tick = 0;
+    flying_general_tick = 0;
+    general_dist = 0.0;
+
+    WrongPiece = false;
+
     // bgmId = AudioHelper::PlayBGM("play.ogg");
 }
 
@@ -437,8 +444,8 @@ void XiangqiScene::OnMouseUp(int button, int mx, int my) {
             // Update FlyingGeneralImg.
             // The mechanism of Anchor and Position is currently unknown, so do NOT modify the settings below unless it's necessary to do so.
             FlyingGeneralImg->Anchor = Engine::Point(0.5, 0.5);
-            FlyingGeneralImg->Position.x = halfW + blockSize * 3;
-            FlyingGeneralImg->Position.y = halfH + blockSize * 3;
+            FlyingGeneralImg->Position.x = halfW;
+            FlyingGeneralImg->Position.y = halfH;
             FlyingGeneralImg->Visible = true;
             general_dist = abs(BlackKing->Position.y - RedKing->Position.y);
             flying_general_tick = flyingGeneral;
