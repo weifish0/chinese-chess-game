@@ -33,6 +33,7 @@ void HarmonyScene::Initialize(){
 }
 
 void HarmonyScene::Terminate(){
+    AudioHelper::StopBGM(bgmId);
     IScene::Terminate();
     
 }

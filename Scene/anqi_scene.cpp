@@ -144,7 +144,7 @@ void AnqiScene::Initialize() {
     //tick
     tick->regret_invalid_tick = 0;
     tick->regret_tick = 0;
-    tick->turn_tick = 7200;
+    tick->turn_tick = 1259;
     tick->pointer_tick = -30;
     tick->prolong_tick = 0;
     tick->peace_tick = 0;
@@ -427,7 +427,7 @@ void AnqiScene::InitializeRound(ChessColor color){
 }
 
 void AnqiScene::ChangeRound(){
-    tick->turn_tick = 7200;
+    tick->turn_tick = 1259;
     turn = turn==RED_TURN ? BLACK_TURN : RED_TURN;
     if(turn==RED_TURN)
         std::cout << "Red turn!\n";
