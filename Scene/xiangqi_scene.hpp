@@ -102,14 +102,16 @@ public:
 
     std::deque<Record> RegretDeq;
     Engine::ImageButton *RegretBtn;
-    Engine::Label *RegretLbl;
+    Engine::Label *RegretBtnLbl;
     int RegretCount = 3;
     int RegretFlag = 0;
-    Engine::Label *TooLateLbl;
+    int regret_tick = 0;
+    Engine::Label *RegretWarning;
 
     /* METHODS */
     explicit XiangqiScene() = default;
     void Initialize() override;
+    void ConstructUI();
     void ReadChessboard();
     void Update(float deltaTime) override;
     void Terminate() override;
