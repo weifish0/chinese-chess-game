@@ -29,7 +29,7 @@ void StartScene::Initialize() {
 }
 
 void StartScene::PlayOnClick() {
-    Engine::GameEngine::GetInstance().ChangeScene("anqi_start");//playground
+    Engine::GameEngine::GetInstance().ChangeScene("playground");//playground
 }
 
 void StartScene::Terminate() {

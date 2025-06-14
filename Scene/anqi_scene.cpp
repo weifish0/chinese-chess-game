@@ -16,6 +16,7 @@
 #include "UI/Component/Label.hpp"
 #include "UI/Component/Slider.hpp"
 #include "Chess/chess.hpp"
+#include "setting_scene.hpp"
 
 #include <algorithm>  // for std::shuffle
 #include <random>     // for std::default_random_engine
@@ -177,79 +178,93 @@ void AnqiScene::Initialize() {
 
     
     //sign->peace_ask->Color = al_map_rgba(255,255,255,255);
-
+    std::string s;
     std::vector<int> black_num(7,0);
     std::vector<int> red_num(7,0);
     for(int j=0;j<4;j++){
         for(int i=0;i<8;i++){
             int temp = order[j*8+i];
             if(temp == 1){
-                ChessGroup->AddNewObject(chess = new Chess("black_king.png", 635 + i * 200, 600 + j * 200, KING , BLACK,black_num[0]));
+                s = GetImage(BLACK,KING);
+                ChessGroup->AddNewObject(chess = new Chess(s, 635 + i * 200, 600 + j * 200, KING , BLACK,black_num[0]));
                 chessPositions[j][i] = chess;  
                 black_num[0]++;
             }
             else if(temp >=2 && temp<=3){
-                ChessGroup->AddNewObject(chess = new Chess("black_knight.png", 635 + i * 200, 600 + j * 200 ,KNIGHT, BLACK,black_num[1]));
+                s = GetImage(BLACK,KNIGHT);
+                ChessGroup->AddNewObject(chess = new Chess(s, 635 + i * 200, 600 + j * 200 ,KNIGHT, BLACK,black_num[1]));
                 chessPositions[j][i] = chess;  
                 black_num[1]++;
             }
             else if(temp >=4 && temp <= 5){
-                ChessGroup->AddNewObject(chess = new Chess("black_elephant.png", 635 + i * 200, 600 + j * 200 , ELEPHANT, BLACK,black_num[2]));
+                s = GetImage(BLACK,ELEPHANT);
+                ChessGroup->AddNewObject(chess = new Chess(s, 635 + i * 200, 600 + j * 200 , ELEPHANT, BLACK,black_num[2]));
                 chessPositions[j][i] = chess;
                 black_num[2]++;
             }
             else if(temp >=6 && temp <= 7){
-                ChessGroup->AddNewObject(chess = new Chess("black_car.png", 635 + i * 200, 600 + j * 200, CAR, BLACK,black_num[3]));
+                s = GetImage(BLACK,CAR);
+                ChessGroup->AddNewObject(chess = new Chess(s, 635 + i * 200, 600 + j * 200, CAR, BLACK,black_num[3]));
                 chessPositions[j][i] = chess;
                 black_num[3]++;
             }
             else if(temp >=8 && temp <= 9){
-                ChessGroup->AddNewObject(chess = new Chess("black_horse.png", 635 + i * 200, 600 + j * 200, HORSE, BLACK,black_num[4]));
+                s = GetImage(BLACK,HORSE);
+                ChessGroup->AddNewObject(chess = new Chess(s, 635 + i * 200, 600 + j * 200, HORSE, BLACK,black_num[4]));
                 chessPositions[j][i] = chess;
                 black_num[4]++;
             }
             else if(temp >=10 && temp <= 11){
-                ChessGroup->AddNewObject(chess = new Chess("black_cannon.png", 635 + i * 200, 600 + j * 200, CANNON, BLACK,black_num[5]));
+                s = GetImage(BLACK,CANNON);
+                ChessGroup->AddNewObject(chess = new Chess(s, 635 + i * 200, 600 + j * 200, CANNON, BLACK,black_num[5]));
                 chessPositions[j][i] = chess;
                 black_num[5]++;
             }
             else if(temp >=12 && temp <= 16){
-                ChessGroup->AddNewObject(chess = new Chess("black_soldier.png", 635 + i * 200, 600 + j * 200, SOLDIER,BLACK,black_num[6]));
+                s = GetImage(BLACK,SOLDIER);
+                ChessGroup->AddNewObject(chess = new Chess(s, 635 + i * 200, 600 + j * 200, SOLDIER,BLACK,black_num[6]));
                 chessPositions[j][i] = chess;
                 black_num[6]++;
             }
             else if(temp == 17){
-                ChessGroup->AddNewObject(chess = new Chess("red_king.png", 635 + i * 200, 600 + j * 200, KING, RED,red_num[0]));
+                s = GetImage(RED,KING);
+                ChessGroup->AddNewObject(chess = new Chess(s, 635 + i * 200, 600 + j * 200, KING, RED,red_num[0]));
                 chessPositions[j][i] = chess;
                 black_num[0]++;
             }
             else if(temp >= 18 && temp <= 19){
-                ChessGroup->AddNewObject(chess = new Chess("red_knight.png", 635 + i * 200, 600 + j * 200, KNIGHT, RED,red_num[1]));
+                s = GetImage(RED,KNIGHT);
+                ChessGroup->AddNewObject(chess = new Chess(s, 635 + i * 200, 600 + j * 200, KNIGHT, RED,red_num[1]));
                 chessPositions[j][i] = chess;
                 black_num[1]++;
             }
             else if(temp >= 20 && temp <= 21){
-                ChessGroup->AddNewObject(chess = new Chess("red_elephant.png", 635 + i * 200, 600 + j * 200,ELEPHANT, RED,red_num[2]));
+                s = GetImage(RED,ELEPHANT);
+                ChessGroup->AddNewObject(chess = new Chess(s, 635 + i * 200, 600 + j * 200,ELEPHANT, RED,red_num[2]));
                 chessPositions[j][i] = chess;
                 black_num[2]++;
             }
             else if(temp >= 22 && temp <= 23){
-                ChessGroup->AddNewObject(chess = new Chess("red_car.png", 635 + i * 200, 600 + j * 200, CAR, RED,red_num[3]));
+                s = GetImage(RED,CAR);
+                ChessGroup->AddNewObject(chess = new Chess(s, 635 + i * 200, 600 + j * 200, CAR, RED,red_num[3]));
                 chessPositions[j][i] = chess;
                 black_num[3]++;
             }
             else if(temp >= 24 && temp <= 25){
-                ChessGroup->AddNewObject(chess = new Chess("red_horse.png", 635 + i * 200, 600 + j * 200, HORSE, RED,red_num[4]));
+                s = GetImage(RED,HORSE);
+                ChessGroup->AddNewObject(chess = new Chess(s, 635 + i * 200, 600 + j * 200, HORSE, RED,red_num[4]));
                 chessPositions[j][i] = chess;
                 black_num[4]++;
             }
             else if(temp >= 26 && temp <= 27){
-                ChessGroup->AddNewObject(chess = new Chess("red_cannon.png", 635 + i * 200, 600 + j * 200, CANNON, RED,red_num[5]));
+                s = GetImage(RED,CANNON);
+                ChessGroup->AddNewObject(chess = new Chess(s, 635 + i * 200, 600 + j * 200, CANNON, RED,red_num[5]));
                 chessPositions[j][i] = chess;
                 black_num[5]++;
             }
             else if(temp >= 28 && temp <= 32){
-                ChessGroup->AddNewObject(chess = new Chess("red_soldier.png", 635 + i * 200, 600 + j * 200, SOLDIER, RED,red_num[6]));
+                s = GetImage(RED,SOLDIER);
+                ChessGroup->AddNewObject(chess = new Chess(s, 635 + i * 200, 600 + j * 200, SOLDIER, RED,red_num[6]));
                 chessPositions[j][i] = chess;
                 black_num[6]++;
             }
@@ -257,7 +272,7 @@ void AnqiScene::Initialize() {
         
     }
 
-    bgmId = AudioHelper::PlayBGM("play.ogg");
+    bgmId = AudioHelper::PlayBGM("play_music.ogg");
 }
 
 void RecordStep(ChessColor color,ChessType type,int operation,ChessColor target_color,ChessType target_type,std::pair<int,int> start,std::pair<int,int> destination){
@@ -744,8 +759,8 @@ void AnqiScene::Target(int j,int i,int temp_y,int temp_x){
 
 
 void AnqiScene::Terminate() {
-    IScene::Terminate();
     AudioHelper::StopBGM(bgmId);
+    IScene::Terminate();
 }
 
 bool AnqiScene::ClickCheck(Engine::Point pos){
@@ -855,6 +870,9 @@ std::string AnqiScene::GetImage(ChessColor color,ChessType type){
     }
     else{
         s += "soldier";
+    }
+    if(decide){
+        s += "3";
     }
     s += ".png";
     return s;

@@ -13,6 +13,7 @@
 #include "Chess/chess.hpp"
 extern bool mouseJustClicked;
 extern bool lastMouseDown;
+extern float pi;
 class Record{
     public:
         ChessColor color;

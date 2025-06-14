@@ -44,14 +44,24 @@ void Anqi_StartScene::Initialize() {
     bool mouseNowDown = al_mouse_button_down(&mouse, 1);
     mouseJustClicked = (mouseNowDown && !lastMouseDown);  // Rising edge
     lastMouseDown = mouseNowDown;
+
+    btn = new Engine::ImageButton("block2.png", "block5.png", 2366, 1350, 300, 150);
+    btn->SetOnClickCallback(std::bind(&Anqi_StartScene::BackOnClick, this, 1));
+    AddNewControlObject(btn);
+    AddNewObject(new Engine::Label("返回", "font2.ttc", 100, 2666-150, 1425, 255,255,255 , 255, 0.5, 0.5));
+    bgmId = AudioHelper::PlayBGM("anqi_start_music.ogg");
 }
 void Anqi_StartScene::Terminate() {
+    AudioHelper::StopBGM(bgmId);
     IScene::Terminate();
 }
 void Anqi_StartScene::PlayOnClick(int stage) {
     if(stage)
-        Engine::GameEngine::GetInstance().ChangeScene("mode_select");
+        Engine::GameEngine::GetInstance().ChangeScene("play");
 }
 void Anqi_StartScene::SettingsOnClick(int stage) {
     Engine::GameEngine::GetInstance().ChangeScene("setting");
+}
+void Anqi_StartScene::BackOnClick(int stage){
+    Engine::GameEngine::GetInstance().ChangeScene("playground");
 }
