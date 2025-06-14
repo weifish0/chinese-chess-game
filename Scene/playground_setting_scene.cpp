@@ -32,7 +32,15 @@ void PlaygroundSettingScene::Initialize() {
         "playground/Undertale-OST-071.ogg",
         "playground/Stardew-Valley-OST-Summer.ogg"
     };
-    current_music_index = 0;
+    
+    // 從 Playground 場景獲取當前音樂索引
+    auto playground = dynamic_cast<Playground*>(Engine::GameEngine::GetInstance().GetScene("playground"));
+    if (playground) {
+        current_music_index = playground->GetCurrentMusicIndex();
+    } else {
+        current_music_index = 0;
+    }
+    
     is_music_button_hovered = false;
 }
 
@@ -241,6 +249,7 @@ void PlaygroundSettingScene::OnMouseDown(int button, int mx, int my) {
                     al_set_sample_instance_playmode(new_instance.get(), ALLEGRO_PLAYMODE_LOOP);
                     al_play_sample_instance(new_instance.get());
                     playground->SetMusicInstance(new_instance);
+                    playground->SetCurrentMusicIndex(current_music_index);  // 更新 Playground 中的音樂索引
                 }
             }
         }

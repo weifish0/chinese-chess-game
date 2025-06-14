@@ -120,6 +120,9 @@ private:
     static bool show_minimap;  // 控制小地圖顯示狀態
     static bool m_key_was_down;  // 追蹤 M 鍵的狀態
 
+    // 音樂相關
+    int current_music_index = 0;  // 新增：當前音樂索引
+
 public:
     explicit Playground() : camera_x(0), camera_y(0), space_key_was_down(false) {}
     void Initialize() override;
@@ -130,9 +133,14 @@ public:
     // 滑鼠點擊事件
     void OnMouseDown(int button, int mx, int my) override;
 
-    // 新增：音樂實例的訪問方法
+    // 獲取音樂實例
     std::shared_ptr<ALLEGRO_SAMPLE_INSTANCE> GetMusicInstance() const { return music_instance; }
+    // 設置音樂實例
     void SetMusicInstance(std::shared_ptr<ALLEGRO_SAMPLE_INSTANCE> instance) { music_instance = instance; }
+    // 獲取當前音樂索引
+    int GetCurrentMusicIndex() const { return current_music_index; }
+    // 設置當前音樂索引
+    void SetCurrentMusicIndex(int index) { current_music_index = index; }
 
 private:
     // 更新鏡頭位置
