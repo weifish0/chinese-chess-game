@@ -100,7 +100,7 @@ void XiangqiScene::Initialize() {
     // Read Chessboard txt file
     ReadChessboard();
     ChessboardGroup->AddNewObject(chessboard = new Engine::Image("xiangqi/xiangqi_chessboard_albert.jpg", halfW, halfH, blockSize * 10, blockSize * 11, 0.5, 0.5));
-    ConstructUI();
+    
     
     // Game BGM
     bgmId = AudioHelper::PlayBGM("xiangqi.ogg");
@@ -121,6 +121,7 @@ void XiangqiScene::Initialize() {
 
     WrongPiece = false;
 
+    ConstructUI();
     // bgmId = AudioHelper::PlayBGM("play.ogg");
 }
 

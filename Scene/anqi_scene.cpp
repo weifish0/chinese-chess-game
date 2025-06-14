@@ -818,6 +818,10 @@ void AnqiScene::Recover(AnqiRecord* first,AnqiRecord* second){
     chessPositions[first->start.first][first->start.second] = chess;
     chessPositions[first->destination.first][first->destination.second] = nullptr;
     if(first->operation==1){//if eat
+        if(first->target_color==RED)
+            red->remain++;
+        else
+            black->remain++;
         int i = first->destination.second;
         int j = first->destination.first;
         std::string image = GetImage(first->target_color,first->target_type);//get image
@@ -833,6 +837,10 @@ void AnqiScene::Recover(AnqiRecord* first,AnqiRecord* second){
     chessPositions[second->start.first][second->start.second] = chess;
     chessPositions[second->destination.first][second->destination.second] = nullptr;
     if(second->operation==1){
+        if(second->target_color==RED)
+            red->remain++;
+        else
+            black->remain++;
         int i = second->destination.second;
         int j = second->destination.first;
         std::string image = GetImage(second->target_color,second->target_type);

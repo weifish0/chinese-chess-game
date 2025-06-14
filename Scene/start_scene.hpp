@@ -1,5 +1,5 @@
-#ifndef STARTSCENE_HPP
-#define STARTSCENE_HPP
+#ifndef START_SCENE_HPP
+#define START_SCENE_HPP
 
 #include <allegro5/allegro_audio.h>
 #include <memory>
@@ -11,5 +11,6 @@ public:
     void Initialize() override;
     void Terminate() override;
     void PlayOnClick();
+
 };
-#endif // STARTSCENE_HPP
+#endif // START_SCENE_HPP
