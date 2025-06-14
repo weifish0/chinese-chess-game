@@ -50,9 +50,9 @@ void Playground::Initialize() {
 
     // 初始化建築物
     buildings.push_back(Building(ANQI_HOUSE_X, ANQI_HOUSE_Y, HOUSE_SIZE, HOUSE_SIZE, 
-                                anqi_house_normal, anqi_house_pressed, "暗棋館"));
+                                anqi_house_normal, anqi_house_pressed, "霧影殿"));
     buildings.push_back(Building(XIANGQI_HOUSE_X, XIANGQI_HOUSE_Y, HOUSE_SIZE, HOUSE_SIZE, 
-                                xiangqi_house_normal, xiangqi_house_pressed, "象棋館"));
+                                xiangqi_house_normal, xiangqi_house_pressed, "太初殿"));
     
     // 創建玩家
     player = new Player();
@@ -68,25 +68,29 @@ void Playground::Initialize() {
     auto npc1_image = Engine::Resources::GetInstance().GetBitmap("playground/mr_shen_NPC.png");
     auto npc1_dialogue_image = Engine::Resources::GetInstance().GetBitmap("playground/mr_shen_NPC_dialogue.png");
     NPC* npc1 = new NPC(700, 350, 65, npc1_image, "沈大師", npc1_dialogue_image);
-    npc1->addDialogue("Hello, welcome to the chess world!");
-    npc1->addDialogue("There are two games here: anqi and xiangqi.");
-    npc1->addDialogue("Please choose a building to enter the game.");
+    npc1->addDialogue("歡迎來到棋境世界，年輕的棋士。");
+    npc1->addDialogue("這裡有兩座棋殿：霧影殿與太初殿。");
+    npc1->addDialogue("霧影殿通往暗棋，神秘且充滿變數。");
+    npc1->addDialogue("太初殿通往象棋，講究謀略與正道之戰。");
+    npc1->addDialogue("請選擇一座殿堂，開始你的修行之路。");
     npcs.push_back(npc1);
 
     auto npc2_image = Engine::Resources::GetInstance().GetBitmap("playground/anqi_NPC.png");
     auto npc2_dialogue_image = Engine::Resources::GetInstance().GetBitmap("playground/anqi_NPC_dialogue.png");
     NPC* npc2 = new NPC(800, 900, 65, npc2_image, "暗棋高手", npc2_dialogue_image);
-    npc2->addDialogue("Hello, welcome to the chess world!");
-    npc2->addDialogue("There are two games here: anqi and xiangqi.");
-    npc2->addDialogue("Please choose a building to enter the game.");
+    npc2->addDialogue("你踏入霧影殿，霧氣將遮蔽一切視線。");
+    npc2->addDialogue("暗棋，不講究起手順序，而是隨機揭示命運。");
+    npc2->addDialogue("在混沌中，仍能看穿對手的意圖，才是真正的高手。");
+    npc2->addDialogue("準備好了嗎？讓我們在霧中對決！");
     npcs.push_back(npc2);
 
     auto npc3_image = Engine::Resources::GetInstance().GetBitmap("playground/xiangqi_NPC.png");
     auto npc3_dialogue_image = Engine::Resources::GetInstance().GetBitmap("playground/xiangqi_NPC_dialogue.png");
     NPC* npc3 = new NPC(1450, 350, 65, npc3_image, "象棋高手", npc3_dialogue_image);
-    npc3->addDialogue("Hello, welcome to the chess world!");
-    npc3->addDialogue("There are two games here: anqi and xiangqi.");
-    npc3->addDialogue("Please choose a building to enter the game.");
+    npc3->addDialogue("年輕人，你來到的是太初殿——傳統象棋的聖地。");
+    npc3->addDialogue("每一步棋，都是智慧與歷練的試煉。");
+    npc3->addDialogue("紅先黑後，順序有定，勝負在你的一念之間。");
+    npc3->addDialogue("展現你的謀略，證明你是下一代棋王！");
     npcs.push_back(npc3);
 
     // 初始化鏡頭位置到玩家位置
@@ -525,7 +529,7 @@ void Playground::OnMouseDown(int button, int mx, int my) {
     
     // 檢查是否點擊了建築物
     for (const auto& building : buildings) {
-        if (building.IsMouseOver(mx, my, camera_x, camera_y, scale_x, scale_y) && building.name == "暗棋館") {
+        if (building.IsMouseOver(mx, my, camera_x, camera_y, scale_x, scale_y) && building.name == "霧影殿") {
             // 停止音樂
             if (music_instance) {
                 al_stop_sample_instance(music_instance.get());
@@ -533,7 +537,7 @@ void Playground::OnMouseDown(int button, int mx, int my) {
             Engine::GameEngine::GetInstance().ChangeScene("anqi_start");
             return;
         }
-        if (building.IsMouseOver(mx, my, camera_x, camera_y, scale_x, scale_y) && building.name == "象棋館") {
+        if (building.IsMouseOver(mx, my, camera_x, camera_y, scale_x, scale_y) && building.name == "太初殿") {
             // 停止音樂
             if (music_instance) {
                 al_stop_sample_instance(music_instance.get());

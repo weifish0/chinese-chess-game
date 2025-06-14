@@ -92,9 +92,9 @@ private:
     static constexpr float VIEWPORT_HEIGHT = 600;  // 視窗高度
 
     // 字體相關
-    static constexpr float NAME_FONT_SIZE = 32.0f;  // 一般名稱字體大小
-    static constexpr float BUILDING_FONT_SIZE = 64.0f;  // 建築物名稱字體大小
-    static constexpr float DIALOGUE_FONT_SIZE = 40.0f;  // 對話框字體大小
+    static constexpr float NAME_FONT_SIZE = 40.0f;  // 一般名稱字體大小
+    static constexpr float BUILDING_FONT_SIZE = 80.0f;  // 建築物名稱字體大小
+    static constexpr float DIALOGUE_FONT_SIZE = 60.0f;  // 對話框字體大小
 
     // 建築位置
     static constexpr float ANQI_HOUSE_X = 600;
