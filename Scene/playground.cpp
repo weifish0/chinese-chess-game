@@ -7,6 +7,8 @@
 float Playground::saved_player_x = 0.0f;
 float Playground::saved_player_y = 0.0f;
 bool Playground::has_saved_position = false;
+bool Playground::show_minimap = false;  // 初始化小地圖顯示狀態
+bool Playground::m_key_was_down = false;  // 初始化 M 鍵狀態
 
 void Playground::Initialize() {
     // 載入背景圖片
@@ -367,6 +369,52 @@ void Playground::Draw() const {
             }
         }
     }
+
+    // 只在 show_minimap 為 true 時繪製小地圖
+    if (show_minimap) {
+        // 計算小地圖位置（右下角）
+        float minimap_x = SCREEN_RIGHT - MINIMAP_SIZE - MINIMAP_PADDING;
+        float minimap_y = SCREEN_BOTTOM - MINIMAP_SIZE - MINIMAP_PADDING;
+
+        // 繪製小地圖背景
+        al_draw_filled_rectangle(
+            minimap_x, minimap_y,
+            minimap_x + MINIMAP_SIZE, minimap_y + MINIMAP_SIZE,
+            al_map_rgba(0, 0, 0, 128)  // 半透明黑色背景
+        );
+
+        // 繪製小地圖邊框
+        al_draw_rectangle(
+            minimap_x, minimap_y,
+            minimap_x + MINIMAP_SIZE, minimap_y + MINIMAP_SIZE,
+            al_map_rgb(255, 255, 255),  // 白色邊框
+            2.0f
+        );
+
+        // 繪製建築物位置
+        for (const auto& building : buildings) {
+            float building_minimap_x = minimap_x + building.x * MINIMAP_SCALE;
+            float building_minimap_y = minimap_y + building.y * MINIMAP_SCALE;
+            
+            al_draw_filled_circle(
+                building_minimap_x, building_minimap_y,
+                MINIMAP_BUILDING_SIZE,
+                al_map_rgb(128, 0, 128)  // 紫色
+            );
+        }
+
+        // 繪製玩家位置
+        if (player) {
+            float player_minimap_x = minimap_x + player->getX() * MINIMAP_SCALE;
+            float player_minimap_y = minimap_y + player->getY() * MINIMAP_SCALE;
+            
+            al_draw_filled_circle(
+                player_minimap_x, player_minimap_y,
+                MINIMAP_PLAYER_SIZE,
+                al_map_rgb(255, 0, 0)  // 紅色
+            );
+        }
+    }
 }
 
 void Playground::UpdateCamera() {
@@ -432,6 +480,13 @@ void Playground::Update(float deltaTime) {
     float playerY = player->getY();
     float playerSize = player->getSize();
     float moveSpeed = player->getSpeed();
+    
+    // 檢查 M 鍵的狀態變化
+    bool m_key_is_down = Engine::GameEngine::GetInstance().IsKeyDown(ALLEGRO_KEY_M);
+    if (m_key_is_down && !m_key_was_down) {  // 只在按下的那一瞬間觸發
+        show_minimap = !show_minimap;  // 切換小地圖顯示狀態
+    }
+    m_key_was_down = m_key_is_down;  // 更新狀態
     
     // 獲取滑鼠位置
     ALLEGRO_MOUSE_STATE mouse_state;

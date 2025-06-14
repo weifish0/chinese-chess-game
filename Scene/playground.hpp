@@ -111,6 +111,15 @@ private:
     static constexpr float ICON_SIZE = 100.0f;  // 登入圖標大小
     static constexpr float PADDING = 20.0f;  // 邊距
 
+    // 小地圖相關
+    static constexpr float MINIMAP_SIZE = 450.0f;  // 小地圖大小（原來的 3 倍）
+    static constexpr float MINIMAP_PADDING = 20.0f;  // 小地圖邊距
+    static constexpr float MINIMAP_SCALE = MINIMAP_SIZE / SCREEN_RIGHT;  // 小地圖縮放比例
+    static constexpr float MINIMAP_PLAYER_SIZE = 12.0f;  // 玩家在小地圖上的大小（原來的 3 倍）
+    static constexpr float MINIMAP_BUILDING_SIZE = 18.0f;  // 建築在小地圖上的大小（原來的 3 倍）
+    static bool show_minimap;  // 控制小地圖顯示狀態
+    static bool m_key_was_down;  // 追蹤 M 鍵的狀態
+
 public:
     explicit Playground() : camera_x(0), camera_y(0), space_key_was_down(false) {}
     void Initialize() override;
