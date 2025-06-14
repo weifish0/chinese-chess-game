@@ -117,6 +117,8 @@ void XiangqiScene::Initialize() {
     // Flying General Image
     UIGroup->AddNewObject(FlyingGeneralImg = new Engine::Image(black_general_img, halfW, halfH, blockSize * 8, blockSize * 8, 0.5, 0.5));
     FlyingGeneralImg->Visible = false;
+    // Too Late Label
+
 
     // Regret Button
     RegretBtn = new Engine::ImageButton("xiangqi/floor.png", "xiangqi/dirt.png", halfW/* * 1.75 */, halfH/* * 1.75 */, blockSize * 4, blockSize, 0.5, 0.5);
@@ -244,6 +246,11 @@ void XiangqiScene::Update(float deltaTime) {
     int w = Engine::GameEngine::GetInstance().GetScreenSize().x;
     int halfW = w / 2;
     int halfH = h / 2;
+
+    // Update RoundReminder & RoundWarning (for Move Regret)
+    RoundReminder->Text = (Round == HONG) ? "RED" : "BLACK";
+    RoundReminder->Color = (Round == HONG) ? al_map_rgba(255, 0, 0, 255) : al_map_rgba(100, 100, 150, 255);
+    RoundWarning2->Text = (Round == HONG) ? "BLACK PIECES" : "RED PIECES";
 
     // Winning Condition:
     if ((!RedKing && BlackKing) || (RedKing && !BlackKing)) {
@@ -416,8 +423,9 @@ void XiangqiScene::OnMouseUp(int button, int mx, int my) {
         dropSample = AudioHelper::PlaySample("chesspiece_drop.wav", false, AudioHelper::BGMVolume * 2, 0);
         if (STATES(_row_mouse, _col_mouse) * Round < 0) { // Of different country.
             // Eat the target
-            auto ptr = PIECES(_row_mouse, _col_mouse);
-            PieceGroup->RemoveObject(ptr->GetObjectIterator()); // Delete the eaten piece from PieceGroup.
+            // eaten = PIECES(_row_mouse, _col_mouse);
+            // PieceGroup->RemoveObject(ptr->GetObjectIterator()); // Delete the eaten piece from PieceGroup.
+            // Update (06/14): Let's not delete it, store it in our record system!
 
             // Case: Eating a WANG piece.
             if (STATES(_row_mouse, _col_mouse) == HONG * WANG)    RedKing = nullptr;
@@ -427,11 +435,11 @@ void XiangqiScene::OnMouseUp(int button, int mx, int my) {
         // Moved to Target
         MoveOnChessboard(SelectedRowCol.first, SelectedRowCol.second, _row_mouse, _col_mouse);
         
+        // Change RoundReminder & RoundWarning text.
         Round = (Round == HONG) ? HEI : HONG; // `Round` flip - for HONG to HEI, and vice versa.
         RoundReminder->Text = ((Round == HONG) ? "RED" : "BLACK"); // Change RoundReminder text.
         RoundReminder->Color = ((Round == HONG) ? al_map_rgba(255, 0, 0, 255) : al_map_rgba(100, 100, 150, 255));
         if (round_warning_tick == 0) RoundWarning2->Text = ((Round == HONG) ? "BLACK PIECES" : "RED PIECES"); // Change RoundWarning text.
-        std::cout << "[DEBUGGER] round == " << Round << std::endl;
     }
     PrintChessboardState();//
     WrongPiece = false; // Reset `WrongPiece` to default: false.
@@ -451,9 +459,7 @@ void XiangqiScene::OnMouseUp(int button, int mx, int my) {
         }
 
         // Flying General
-        std::cout << "[DEBUGGER] Regret Func. Debugger 168-1-2-3" << std::endl;
         int flyingGeneral = RedKing->GeneralFlies(y_to_row(RedKing->Position.y), x_to_col(RedKing->Position.x), y_to_row(BlackKing->Position.y), x_to_col(BlackKing->Position.x), Chessboard, Round);
-        std::cout << "[DEBUGGER] Regret Func. Debugger 168-1-2-4" << std::endl;
         if (flyingGeneral != 0) {
             FlyingGeneralImg->bmp = Engine::Resources::GetInstance().GetBitmap(((flyingGeneral == HONG) ? red_general_img : black_general_img));
             // Update FlyingGeneralImg.
@@ -480,6 +486,7 @@ void XiangqiScene::MoveOnChessboard(int ro, int co, int rf, int cf) {
     if (STATES(rf, cf) != NONE) {
         act_temp = Action::DIE;
         // Insert this record into regret deque.
+        PIECES(rf, cf)->Visible = false;
         InsertRegret(STATES(rf, cf), PIECES(rf, cf), {rf, cf}, {-1, -1}, Action::DIE);
     }
 
@@ -499,7 +506,7 @@ void XiangqiScene::MoveOnChessboard(int ro, int co, int rf, int cf) {
 }
 
 void XiangqiScene::InsertRegret(int Type, ChessPiece *Piece, RowCol Old, RowCol New, int Action) {
-    Record rcd(Type, Piece, Old, New, Action);
+    Record rcd(Type, Piece, Old, New, Action, Round);
     RegretDeq.push_back(rcd);
     std::cout << "[LOG] Record inserted; " << rcd << std::endl;
 }
@@ -507,7 +514,7 @@ void XiangqiScene::InsertRegret(int Type, ChessPiece *Piece, RowCol Old, RowCol 
 void XiangqiScene::RegretOnClick() {
     std::cout << "[LOG] RegretOnClick()" << std::endl;
     if (RegretDeq.empty()) return;
-    std::cout << "[LOG] RegretDeq not empty!" << std::endl;
+    if (flying_general_tick) return;
 
     Record *back = &RegretDeq.back();
     RegretDeq.pop_back();
@@ -518,6 +525,8 @@ void XiangqiScene::RegretOnClick() {
     // Change the position of the chesspiece. (through its pointer.)
     PIECES(back->OldRowCol.first, back->OldRowCol.second)->Position.y = row_to_y(back->OldRowCol.first);
     PIECES(back->OldRowCol.first, back->OldRowCol.second)->Position.x = col_to_x(back->OldRowCol.second);
+    // Reset to the round of that record.
+    Round = back->round;
 
     if (back->Action == Action::MOVE) {
         // Reset new row-col on the chessboard with {Piecetype::NONE, nullptr}.
@@ -530,56 +539,11 @@ void XiangqiScene::RegretOnClick() {
         auto piecetype = abs(eaten->Type);
         auto country = (eaten->Type / piecetype == -1) ? PieceColor::HONG : PieceColor::HEI;
 
-        // Construct all the chess pieces.
+        // Re-construct the eaten piece (rather than reuse the piece pointer - it somehow cannot be shown on the chessboard )
         // HEI at the top, HONG at the bottom.
-        Engine::Point position(col_to_x(eaten->OldRowCol.second), row_to_y(eaten->OldRowCol.first));
-        std::string img = "xiangqi/";
-        ChessPiece *revived = nullptr;
-
-        if (piecetype == WANG) {
-            if (country == HONG) {
-                img += "red_piece_shuai.png";
-                PieceGroup->AddNewObject(revived = new KingPiece(img, position, country, WANG * 10));
-                RedKing = revived;
-
-            } else {
-                img += "black_piece_jiang.png";
-                PieceGroup->AddNewObject(revived = new KingPiece(img, position, country, WANG * 10));
-                BlackKing = revived;
-            }
-
-        } else if (piecetype == GUARD) {
-            (country == HONG) ? img += "red_" : img += "black_";
-            img += "piece_shi.png";
-            PieceGroup->AddNewObject(revived = new GuardPiece(img, position, country, GUARD * 10));
-
-        } else if (piecetype == ELFNT) {
-            (country == HONG) ? img += "red_" : img += "black_";
-            img += "piece_xiang.png";
-            PieceGroup->AddNewObject(revived = new ElephantPiece(img, position, country, ELFNT * 10));
-
-        } else if (piecetype == MA) {
-            (country == HONG) ? img += "red_" : img += "black_";
-            img += "piece_ma.png";
-            PieceGroup->AddNewObject(revived = new HorsePiece(img, position, country, MA * 10));
-
-        } else if (piecetype == CHARIOT) {
-            (country == HONG) ? img += "red_" : img += "black_";
-            img += "piece_ju.png";
-            PieceGroup->AddNewObject(revived = new ChariotPiece(img, position, country, CHARIOT * 10));
-
-        } else if (piecetype == PAO) {
-            (country == HONG) ? img += "red_" : img += "black_";
-            img += "piece_pao.png";
-            PieceGroup->AddNewObject(revived = new CannonPiece(img, position, country, PAO * 10));
-
-        } else if (piecetype == PAWN) {
-            (country == HONG) ? img += "red_piece_bing.png" : img += "black_piece_zu.png";
-            PieceGroup->AddNewObject(revived = new PawnPiece(img, position, country, PAWN * 10));
-        }
-
-        if (revived) PIECES(eaten->OldRowCol.first, eaten->OldRowCol.second) = revived; // Store the piece pointer into the Chessboard.
-
+        ChessPiece *revived = eaten->Piece;
+        revived->Visible = true; // Enable its appearance!
+        
         assert(eaten->Action == Action::DIE); // The action status of the previous record must be Action::DIE
         assert(eaten->OldRowCol == back->NewRowCol); // The place the eaten piece died is where the newest piece moved to.
         assert(eaten->Piece != nullptr);
@@ -590,7 +554,6 @@ void XiangqiScene::RegretOnClick() {
         revived->Position.y = row_to_y(eaten->OldRowCol.first);
         revived->Position.x = col_to_x(eaten->OldRowCol.second);
         revived->Visible = true;
-        PieceGroup->AddNewObject(revived);
 
     } else {
         std::cout << "[DEBUGGER] Error occurs in Regret & Chessboard! Revise needed!" << std::endl;
@@ -598,4 +561,5 @@ void XiangqiScene::RegretOnClick() {
 
     PrintChessboardState();
     RegretCount--; // Decrease the count of remaining regrets.
+    RegretFlag = true;
 }
