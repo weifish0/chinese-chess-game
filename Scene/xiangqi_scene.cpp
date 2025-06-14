@@ -119,10 +119,10 @@ void XiangqiScene::Initialize() {
     FlyingGeneralImg->Visible = false;
 
     // Regret Button
-    RegretBtn = new Engine::ImageButton("xiangqi/floor.png", "xiangqi/dirt.png", halfW * 1.5, halfH * 1.5, blockSize * 4, blockSize, 0.5, 0.5);
+    RegretBtn = new Engine::ImageButton("xiangqi/floor.png", "xiangqi/dirt.png", halfW/* * 1.75 */, halfH/* * 1.75 */, blockSize * 4, blockSize, 0.5, 0.5);
     RegretBtn->SetOnClickCallback(std::bind(&XiangqiScene::RegretOnClick, this));
-    UIGroup->AddNewControlObject(RegretBtn);
-    UIGroup->AddNewObject(RegretLbl = new Engine::Label("Move Regret " + std::to_string(RegretCount) + "/3", "pirulen.ttf", 36, halfW * 1.5, halfH * 1.5, 255, 255, 255, 255, 0.5, 0.5)); 
+    AddNewControlObject(RegretBtn);
+    AddNewObject(RegretLbl = new Engine::Label("Move Regret " + std::to_string(RegretCount) + "/3", "pirulen.ttf", 36, halfW/* * 1.75 */, halfH/* * 1.75 */, 255, 255, 255, 255, 0.5, 0.5)); 
     
     // Game BGM
     bgmId = AudioHelper::PlayBGM("xiangqi.ogg");
@@ -239,6 +239,7 @@ void XiangqiScene::ReadChessboard() {
 }
 
 void XiangqiScene::Update(float deltaTime) {
+    std::cout << "[DEBUGGER] Regret Debugger 169" << std::endl;
     int h = Engine::GameEngine::GetInstance().GetScreenSize().y;
     int w = Engine::GameEngine::GetInstance().GetScreenSize().x;
     int halfW = w / 2;
@@ -298,6 +299,7 @@ void XiangqiScene::Update(float deltaTime) {
             Engine::GameEngine::GetInstance().ChangeScene("xiangqi_win");
         }
     }
+    std::cout << "[DEBUGGER] Regret Debugger 169-2" << std::endl;
 }
 
 void XiangqiScene::Terminate() {
@@ -308,6 +310,7 @@ void XiangqiScene::Terminate() {
 }
 
 void XiangqiScene::OnMouseDown(int button, int mx, int my) {
+    std::cout << "[DEBUGGER] Regret Debugger 166" << std::endl;
     int h = Engine::GameEngine::GetInstance().GetScreenSize().y;
     int w = Engine::GameEngine::GetInstance().GetScreenSize().x;
     int halfW = w / 2;
@@ -339,9 +342,11 @@ void XiangqiScene::OnMouseDown(int button, int mx, int my) {
             SelectFlag = false;
     }
     IScene::OnMouseDown(button, mx, my);
+    std::cout << "[DEBUGGER] Regret Debugger 166-2" << std::endl;
 }
 
 void XiangqiScene::OnMouseMove(int mx, int my) {
+    std::cout << "[DEBUGGER] Regret Debugger 167" << std::endl;
     int h = Engine::GameEngine::GetInstance().GetScreenSize().y;
     int w = Engine::GameEngine::GetInstance().GetScreenSize().x;
     int halfW = w / 2;
@@ -367,9 +372,11 @@ void XiangqiScene::OnMouseMove(int mx, int my) {
             preview->Tint = al_map_rgba(100, 255, 100, 150); // Greenish
         }
     }
+    std::cout << "[DEBUGGER] Regret Debugger 167-2" << std::endl;
 }
 
 void XiangqiScene::OnMouseUp(int button, int mx, int my) {
+    std::cout << "[DEBUGGER] Regret Debugger 168" << std::endl;
     int h = Engine::GameEngine::GetInstance().GetScreenSize().y;
     int w = Engine::GameEngine::GetInstance().GetScreenSize().x;
     int halfW = w / 2;
@@ -382,8 +389,6 @@ void XiangqiScene::OnMouseUp(int button, int mx, int my) {
         // Check if the target position (in terms of row-col)
         if (!PieceWithinChessboard(_row_mouse, _col_mouse))
             return;
-        // if (!PieceWithinChessboard(_row_mouse, _col_mouse));
-        //     return;
         
         // blockSize * (col-4) + halfW, blockSize * (row-4.5) + halfH
         std::cout << "[DEBUGGER] _row_selected, _col_selected = " <<  SelectedRowCol.first << "," << SelectedRowCol.second << std::endl;
@@ -402,6 +407,8 @@ void XiangqiScene::OnMouseUp(int button, int mx, int my) {
         // Where SelectedRowCol remains the same, yet the pointer for SelectedRowCol is already set as a nullptr.
         if (!PIECES(SelectedRowCol.first, SelectedRowCol.second))
             return;
+
+        std::cout << "[DEBUGGER] Regret Func. Debugger." << std::endl;
 
         // PIECE MOVEMENT & UPDATE        
         // Case 2 and 1: Eat an enemy || Wander to a no man's land.
@@ -423,28 +430,30 @@ void XiangqiScene::OnMouseUp(int button, int mx, int my) {
         Round = (Round == HONG) ? HEI : HONG; // `Round` flip - for HONG to HEI, and vice versa.
         RoundReminder->Text = ((Round == HONG) ? "RED" : "BLACK"); // Change RoundReminder text.
         RoundReminder->Color = ((Round == HONG) ? al_map_rgba(255, 0, 0, 255) : al_map_rgba(100, 100, 150, 255));
-        RoundWarning2->Text = ((Round == HONG) ? "BLACK PIECES" : "RED PIECES"); // Change RoundWarning text.
+        if (round_warning_tick == 0) RoundWarning2->Text = ((Round == HONG) ? "BLACK PIECES" : "RED PIECES"); // Change RoundWarning text.
         std::cout << "[DEBUGGER] round == " << Round << std::endl;
     }
     PrintChessboardState();//
     WrongPiece = false; // Reset `WrongPiece` to default: false.
 
     // Checkmate warning!
+    std::cout << "[DEBUGGER] Regret Func. Debugger 168-1-2 Kings Check" << std::endl;
     if (RedKing && BlackKing) {
-        bool blackCheckmate, redCheckmate;
-        std::cout << "[DEBUGGER] BlackKing at " << ((blackCheckmate = BlackKing->IsCheckmate(Chessboard)) ? "OMG" : "HUH") << " / RedKing at " << ((redCheckmate = RedKing->IsCheckmate(Chessboard)) ? "OMG" : "HUH") << std::endl;
+        std::cout << "[DEBUGGER] Regret Func. Debugger 168-1-2-1" << std::endl;
+        bool blackCheckmate = BlackKing->IsCheckmate(Chessboard), redCheckmate = RedKing->IsCheckmate(Chessboard);
         // Checkmate
+        std::cout << "[DEBUGGER] Regret Func. Debugger 168-1-2-2" << std::endl;
         if (blackCheckmate && !SelectFlag) {
             checkmate_warning_tick = 1;
-            std::cout << "[LOG] Warns the BLACK!" << std::endl;
-
+            
         } else if (redCheckmate && !SelectFlag) {
             checkmate_warning_tick = -1;
-            std::cout << "[LOG] Warns the RED!" << std::endl;
         }
 
         // Flying General
+        std::cout << "[DEBUGGER] Regret Func. Debugger 168-1-2-3" << std::endl;
         int flyingGeneral = RedKing->GeneralFlies(y_to_row(RedKing->Position.y), x_to_col(RedKing->Position.x), y_to_row(BlackKing->Position.y), x_to_col(BlackKing->Position.x), Chessboard, Round);
+        std::cout << "[DEBUGGER] Regret Func. Debugger 168-1-2-4" << std::endl;
         if (flyingGeneral != 0) {
             FlyingGeneralImg->bmp = Engine::Resources::GetInstance().GetBitmap(((flyingGeneral == HONG) ? red_general_img : black_general_img));
             // Update FlyingGeneralImg.
@@ -456,9 +465,11 @@ void XiangqiScene::OnMouseUp(int button, int mx, int my) {
             general_dist = abs(BlackKing->Position.y - RedKing->Position.y);
             flying_general_tick = flyingGeneral;
         }
+        std::cout << "[DEBUGGER] Regret Func. Debugger 168-1-2-5" << std::endl;
     }
 
     OnMouseMove(mx, my);
+    std::cout << "[DEBUGGER] Regret Debugger 168-2" << std::endl;
 }
 
 void XiangqiScene::MoveOnChessboard(int ro, int co, int rf, int cf) {
@@ -490,20 +501,23 @@ void XiangqiScene::MoveOnChessboard(int ro, int co, int rf, int cf) {
 void XiangqiScene::InsertRegret(int Type, ChessPiece *Piece, RowCol Old, RowCol New, int Action) {
     Record rcd(Type, Piece, Old, New, Action);
     RegretDeq.push_back(rcd);
+    std::cout << "[LOG] Record inserted; " << rcd << std::endl;
 }
 
 void XiangqiScene::RegretOnClick() {
-    if (!RegretDeq.empty()) return;
+    std::cout << "[LOG] RegretOnClick()" << std::endl;
+    if (RegretDeq.empty()) return;
+    std::cout << "[LOG] RegretDeq not empty!" << std::endl;
 
     Record *back = &RegretDeq.back();
     RegretDeq.pop_back();
 
     // Change content in the chessboard.
     STATES(back->OldRowCol.first, back->OldRowCol.second) = back->Type;
-    PIECES(back->OldRowCol.first, back->OldRowCol.second) = back->Piece;
+    PIECES(back->OldRowCol.first, back->OldRowCol.second) = PIECES(back->NewRowCol.first, back->NewRowCol.second);
     // Change the position of the chesspiece. (through its pointer.)
-    back->Piece->Position.y = row_to_y(back->OldRowCol.first);
-    back->Piece->Position.x = col_to_x(back->OldRowCol.second);
+    PIECES(back->OldRowCol.first, back->OldRowCol.second)->Position.y = row_to_y(back->OldRowCol.first);
+    PIECES(back->OldRowCol.first, back->OldRowCol.second)->Position.x = col_to_x(back->OldRowCol.second);
 
     if (back->Action == Action::MOVE) {
         // Reset new row-col on the chessboard with {Piecetype::NONE, nullptr}.
@@ -513,15 +527,75 @@ void XiangqiScene::RegretOnClick() {
     } else if (back->Action == Action::EAT) {
         Record *eaten = &RegretDeq.back();
         RegretDeq.pop_back();
+        auto piecetype = abs(eaten->Type);
+        auto country = (eaten->Type / piecetype == -1) ? PieceColor::HONG : PieceColor::HEI;
+
+        // Construct all the chess pieces.
+        // HEI at the top, HONG at the bottom.
+        Engine::Point position(col_to_x(eaten->OldRowCol.second), row_to_y(eaten->OldRowCol.first));
+        std::string img = "xiangqi/";
+        ChessPiece *revived = nullptr;
+
+        if (piecetype == WANG) {
+            if (country == HONG) {
+                img += "red_piece_shuai.png";
+                PieceGroup->AddNewObject(revived = new KingPiece(img, position, country, WANG * 10));
+                RedKing = revived;
+
+            } else {
+                img += "black_piece_jiang.png";
+                PieceGroup->AddNewObject(revived = new KingPiece(img, position, country, WANG * 10));
+                BlackKing = revived;
+            }
+
+        } else if (piecetype == GUARD) {
+            (country == HONG) ? img += "red_" : img += "black_";
+            img += "piece_shi.png";
+            PieceGroup->AddNewObject(revived = new GuardPiece(img, position, country, GUARD * 10));
+
+        } else if (piecetype == ELFNT) {
+            (country == HONG) ? img += "red_" : img += "black_";
+            img += "piece_xiang.png";
+            PieceGroup->AddNewObject(revived = new ElephantPiece(img, position, country, ELFNT * 10));
+
+        } else if (piecetype == MA) {
+            (country == HONG) ? img += "red_" : img += "black_";
+            img += "piece_ma.png";
+            PieceGroup->AddNewObject(revived = new HorsePiece(img, position, country, MA * 10));
+
+        } else if (piecetype == CHARIOT) {
+            (country == HONG) ? img += "red_" : img += "black_";
+            img += "piece_ju.png";
+            PieceGroup->AddNewObject(revived = new ChariotPiece(img, position, country, CHARIOT * 10));
+
+        } else if (piecetype == PAO) {
+            (country == HONG) ? img += "red_" : img += "black_";
+            img += "piece_pao.png";
+            PieceGroup->AddNewObject(revived = new CannonPiece(img, position, country, PAO * 10));
+
+        } else if (piecetype == PAWN) {
+            (country == HONG) ? img += "red_piece_bing.png" : img += "black_piece_zu.png";
+            PieceGroup->AddNewObject(revived = new PawnPiece(img, position, country, PAWN * 10));
+        }
+
+        if (revived) PIECES(eaten->OldRowCol.first, eaten->OldRowCol.second) = revived; // Store the piece pointer into the Chessboard.
+
         assert(eaten->Action == Action::DIE); // The action status of the previous record must be Action::DIE
         assert(eaten->OldRowCol == back->NewRowCol); // The place the eaten piece died is where the newest piece moved to.
+        assert(eaten->Piece != nullptr);
         // Rest new row-col on the chessboard with the previous chesspiece.
+        // Create a new chesspiece (@weihong)
         STATES(eaten->OldRowCol.first, eaten->OldRowCol.second) = eaten->Type;
-        PIECES(eaten->OldRowCol.first, eaten->OldRowCol.second) = eaten->Piece;
+        PIECES(eaten->OldRowCol.first, eaten->OldRowCol.second) = revived;
+        revived->Position.y = row_to_y(eaten->OldRowCol.first);
+        revived->Position.x = col_to_x(eaten->OldRowCol.second);
+        revived->Visible = true;
+        PieceGroup->AddNewObject(revived);
 
     } else {
         std::cout << "[DEBUGGER] Error occurs in Regret & Chessboard! Revise needed!" << std::endl;
     }
 
+    PrintChessboardState();
     RegretCount--; // Decrease the count of remaining regrets.
 }
