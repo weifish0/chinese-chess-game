@@ -17,6 +17,26 @@ void Playground::Initialize() {
     building_font = Engine::Resources::GetInstance().GetFont("font2.ttc", BUILDING_FONT_SIZE);
     dialogue_font = Engine::Resources::GetInstance().GetFont("font2.ttc", DIALOGUE_FONT_SIZE);
     
+    // 載入背景音樂
+    if (!background_music) {  // 只在第一次初始化時載入音樂
+        background_music = Engine::Resources::GetInstance().GetSample("playground/A Tender Feeling.ogg");
+        if (background_music) {
+            music_instance = std::shared_ptr<ALLEGRO_SAMPLE_INSTANCE>(
+                al_create_sample_instance(background_music.get()),
+                al_destroy_sample_instance
+            );
+            if (music_instance) {
+                al_attach_sample_instance_to_mixer(music_instance.get(), al_get_default_mixer());
+                al_set_sample_instance_playmode(music_instance.get(), ALLEGRO_PLAYMODE_LOOP);
+            }
+        }
+    }
+    
+    // 如果音樂實例存在但沒有在播放，則開始播放
+    if (music_instance && !al_get_sample_instance_playing(music_instance.get())) {
+        al_play_sample_instance(music_instance.get());
+    }
+    
     // 載入建築圖片
     auto anqi_house_normal = Engine::Resources::GetInstance().GetBitmap("playground/anqi_house.png");
     auto anqi_house_pressed = Engine::Resources::GetInstance().GetBitmap("playground/anqi_house_pressed.png");
@@ -75,7 +95,7 @@ void Playground::Initialize() {
 }
 
 void Playground::Terminate() {
-    // 保存玩家位置
+    // 不要停止音樂，只保存玩家位置
     if (player) {
         saved_player_x = player->getX();
         saved_player_y = player->getY();
@@ -506,10 +526,18 @@ void Playground::OnMouseDown(int button, int mx, int my) {
     // 檢查是否點擊了建築物
     for (const auto& building : buildings) {
         if (building.IsMouseOver(mx, my, camera_x, camera_y, scale_x, scale_y) && building.name == "暗棋館") {
+            // 停止音樂
+            if (music_instance) {
+                al_stop_sample_instance(music_instance.get());
+            }
             Engine::GameEngine::GetInstance().ChangeScene("anqi_start");
             return;
         }
         if (building.IsMouseOver(mx, my, camera_x, camera_y, scale_x, scale_y) && building.name == "象棋館") {
+            // 停止音樂
+            if (music_instance) {
+                al_stop_sample_instance(music_instance.get());
+            }
             Engine::GameEngine::GetInstance().ChangeScene("xiangqi");
             return;
         }

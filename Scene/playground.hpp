@@ -3,6 +3,7 @@
 
 #include <allegro5/allegro.h>
 #include <allegro5/allegro_primitives.h>
+#include <allegro5/allegro_audio.h>
 #include <memory>
 #include <vector>
 #include <cmath>
@@ -72,6 +73,8 @@ private:
     bool is_login_icon_hovered;  // 登入圖標懸停狀態
     std::shared_ptr<ALLEGRO_BITMAP> settings_icon;  // 設定圖標
     bool is_settings_icon_hovered;  // 設定圖標懸停狀態
+    std::shared_ptr<ALLEGRO_SAMPLE> background_music;  // 背景音樂
+    std::shared_ptr<ALLEGRO_SAMPLE_INSTANCE> music_instance;  // 音樂實例
     
     // 保存玩家位置
     static float saved_player_x;
