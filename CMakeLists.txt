@@ -92,6 +92,8 @@ add_executable(CHINESE-CHESS-GAME
     Scene/playground.hpp
     Scene/login.cpp
     Scene/login.hpp
+    Scene/setting_scene.cpp
+    Scene/setting_scene.hpp
     Player/player.cpp
     Player/player.hpp
     NPC/npc.cpp

@@ -25,6 +25,8 @@ void Playground::Initialize() {
     
     // 載入登入圖標
     login_icon = Engine::Resources::GetInstance().GetBitmap("playground/login_icon.png");
+    // 載入設定圖標
+    settings_icon = Engine::Resources::GetInstance().GetBitmap("playground/settings-icon.png");
 
     // 初始化建築物
     buildings.push_back(Building(ANQI_HOUSE_X, ANQI_HOUSE_Y, HOUSE_SIZE, HOUSE_SIZE, 
@@ -121,6 +123,25 @@ void Playground::Draw() const {
             al_get_bitmap_width(login_icon.get()),
             al_get_bitmap_height(login_icon.get()),
             PADDING, PADDING,
+            ICON_SIZE, ICON_SIZE,
+            0
+        );
+    }
+    
+    // 繪製設定圖標
+    if (settings_icon) {
+        // 設置混合模式
+        al_set_blender(ALLEGRO_ADD, ALLEGRO_ALPHA, ALLEGRO_INVERSE_ALPHA);
+        
+        // 根據懸停狀態設置透明度
+        float alpha = is_settings_icon_hovered ? 0.7f : 1.0f;
+        al_draw_tinted_scaled_bitmap(
+            settings_icon.get(),
+            al_map_rgba_f(alpha, alpha, alpha, 1.0f),
+            0, 0,
+            al_get_bitmap_width(settings_icon.get()),
+            al_get_bitmap_height(settings_icon.get()),
+            PADDING, PADDING + ICON_SIZE + PADDING,  // 在登入圖標下方
             ICON_SIZE, ICON_SIZE,
             0
         );
@@ -398,6 +419,11 @@ void Playground::Update(float deltaTime) {
     is_login_icon_hovered = (mouse_x >= PADDING && mouse_x <= PADDING + ICON_SIZE &&
                             mouse_y >= PADDING && mouse_y <= PADDING + ICON_SIZE);
     
+    // 檢查設定圖標懸停狀態
+    is_settings_icon_hovered = (mouse_x >= PADDING && mouse_x <= PADDING + ICON_SIZE &&
+                              mouse_y >= PADDING + ICON_SIZE + PADDING && 
+                              mouse_y <= PADDING + ICON_SIZE + PADDING + ICON_SIZE);
+    
     // 更新建築物的懸停狀態
     float scale_x = SCREEN_RIGHT / VIEWPORT_WIDTH;
     float scale_y = SCREEN_BOTTOM / VIEWPORT_HEIGHT;
@@ -466,6 +492,14 @@ void Playground::OnMouseDown(int button, int mx, int my) {
     if (mx >= PADDING && mx <= PADDING + ICON_SIZE &&
         my >= PADDING && my <= PADDING + ICON_SIZE) {
         Engine::GameEngine::GetInstance().ChangeScene("login");
+        return;
+    }
+    
+    // 檢查是否點擊了設定圖標
+    if (mx >= PADDING && mx <= PADDING + ICON_SIZE &&
+        my >= PADDING + ICON_SIZE + PADDING && 
+        my <= PADDING + ICON_SIZE + PADDING + ICON_SIZE) {
+        Engine::GameEngine::GetInstance().ChangeScene("setting");
         return;
     }
     

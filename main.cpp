@@ -14,6 +14,7 @@
 #include "Scene/xiangqi_win_scene.hpp"
 #include "Scene/playground.hpp"
 #include "Scene/login.hpp"
+#include "Scene/setting_scene.hpp"
 
 int main(int argc, char **argv) {
 	Engine::LOG::SetConfig(true);
@@ -29,6 +30,7 @@ int main(int argc, char **argv) {
     game.AddNewScene("start", new StartScene());
     game.AddNewScene("playground", new Playground());
     game.AddNewScene("login", new Login());
+    game.AddNewScene("setting", new SettingScene());
 
 	game.AddNewScene("xiangqi", new XiangqiScene()); // Used for xiangqi branch development
 	game.AddNewScene("xiangqi_win", new XiangqiWinScene()); // Used when a xiangqi game ends.

@@ -70,6 +70,8 @@ private:
     std::shared_ptr<ALLEGRO_FONT> dialogue_font;  // 對話框字體
     std::shared_ptr<ALLEGRO_BITMAP> login_icon;  // 登入圖標
     bool is_login_icon_hovered;  // 登入圖標懸停狀態
+    std::shared_ptr<ALLEGRO_BITMAP> settings_icon;  // 設定圖標
+    bool is_settings_icon_hovered;  // 設定圖標懸停狀態
     
     // 保存玩家位置
     static float saved_player_x;
