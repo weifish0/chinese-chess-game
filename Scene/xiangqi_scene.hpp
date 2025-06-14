@@ -38,10 +38,13 @@ private:
     RowCol OldRowCol;
     RowCol NewRowCol; // If the piece "dies", the NewRowCol would be {-1, -1}.
     int Action;
+    PieceColor round;
 
 public:
-    Record(int Type, ChessPiece *Piece, RowCol Old, RowCol New, int Action) 
+    Record(int Type, ChessPiece *Piece, RowCol Old, RowCol New, int Action, PieceColor round) 
         : Type(Type), Piece(Piece), OldRowCol(Old), NewRowCol(New), Action(Action) {
+        
+        this->round = round;
     }
 
     friend std::ostream &operator<<(std::ostream &out, Record &rcd);
@@ -99,12 +102,16 @@ public:
 
     std::deque<Record> RegretDeq;
     Engine::ImageButton *RegretBtn;
-    Engine::Label *RegretLbl;
+    Engine::Label *RegretBtnLbl;
     int RegretCount = 3;
+    int RegretFlag = 0;
+    int regret_tick = 0;
+    Engine::Label *RegretWarning;
 
     /* METHODS */
     explicit XiangqiScene() = default;
     void Initialize() override;
+    void ConstructUI();
     void ReadChessboard();
     void Update(float deltaTime) override;
     void Terminate() override;

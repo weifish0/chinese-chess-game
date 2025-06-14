@@ -99,30 +99,8 @@ void XiangqiScene::Initialize() {
 
     // Read Chessboard txt file
     ReadChessboard();
-
     ChessboardGroup->AddNewObject(chessboard = new Engine::Image("xiangqi/xiangqi_chessboard_albert.jpg", halfW, halfH, blockSize * 10, blockSize * 11, 0.5, 0.5));
-    // Round Reminder (country)
-    UIGroup->AddNewObject(new Engine::Label("Round:", "pirulen.ttf", 40, halfW / 4, halfH / 8, 255, 255, 255, 255, 0.5, 0.5));
-    UIGroup->AddNewObject(RoundReminder = new Engine::Label("RED", "pirulen.ttf", 40, halfW / 4, halfH / 8 + 40, 255, 255, 255, 255, 0.5, 0.5));
-    RoundReminder->Color = al_map_rgba(255, 0, 0, 255); // Current country: HONG
-    // Round Warning
-    UIGroup->AddNewObject(RoundWarning1 = new Engine::Label("Cannot choose", "pirulen.ttf", 30, w - halfW / 4, halfH / 8, 255, 150, 150, 0, 0.5, 0.5));
-    UIGroup->AddNewObject(RoundWarning2 = new Engine::Label("BLACK PIECES", "pirulen.ttf", 36, w - halfW / 4, halfH / 8 + 50, 255, 150, 150, 0, 0.5, 0.5));
-    UIGroup->AddNewObject(RoundWarning3 = new Engine::Label("in this round!!", "pirulen.ttf", 30, w - halfW / 4, halfH / 8 + 100, 255, 150, 150, 0, 0.5, 0.5));
-    // Checkmate Warning
-    UIGroup->AddNewObject(BlackCheckmateWarning = new Engine::Image("xiangqi/black_checkmate.png", halfW, halfH, blockSize * 4, blockSize * 4, 0.5, 0.5));
-    BlackCheckmateWarning->Visible = false;
-    UIGroup->AddNewObject(RedCheckmateWarning = new Engine::Image("xiangqi/red_checkmate.png", halfW, halfH, blockSize * 4, blockSize * 4, 0.5, 0.5));
-    RedCheckmateWarning->Visible = false;
-    // Flying General Image
-    UIGroup->AddNewObject(FlyingGeneralImg = new Engine::Image(black_general_img, halfW, halfH, blockSize * 8, blockSize * 8, 0.5, 0.5));
-    FlyingGeneralImg->Visible = false;
-
-    // Regret Button
-    RegretBtn = new Engine::ImageButton("xiangqi/floor.png", "xiangqi/dirt.png", halfW * 1.5, halfH * 1.5, blockSize * 4, blockSize, 0.5, 0.5);
-    RegretBtn->SetOnClickCallback(std::bind(&XiangqiScene::RegretOnClick, this));
-    UIGroup->AddNewControlObject(RegretBtn);
-    UIGroup->AddNewObject(RegretLbl = new Engine::Label("Move Regret " + std::to_string(RegretCount) + "/3", "pirulen.ttf", 36, halfW * 1.5, halfH * 1.5, 255, 255, 255, 255, 0.5, 0.5)); 
+    ConstructUI();
     
     // Game BGM
     bgmId = AudioHelper::PlayBGM("xiangqi.ogg");
@@ -139,6 +117,7 @@ void XiangqiScene::Initialize() {
     general_dist = 0.0;
 
     RegretDeq.clear();
+    RegretCount = 3;
 
     WrongPiece = false;
 
@@ -238,7 +217,40 @@ void XiangqiScene::ReadChessboard() {
     }
 }
 
+void XiangqiScene::ConstructUI() {
+    int h = Engine::GameEngine::GetInstance().GetScreenSize().y;
+    int w = Engine::GameEngine::GetInstance().GetScreenSize().x;
+    int halfW = w / 2;
+    int halfH = h / 2;
+
+    // Round Reminder (country)
+    UIGroup->AddNewObject(new Engine::Label("Round:", "pirulen.ttf", 40, halfW / 4, halfH / 8, 255, 255, 255, 255, 0.5, 0.5));
+    UIGroup->AddNewObject(RoundReminder = new Engine::Label("RED", "pirulen.ttf", 40, halfW / 4, halfH / 8 + 40, 255, 255, 255, 255, 0.5, 0.5));
+    RoundReminder->Color = al_map_rgba(255, 0, 0, 255); // Current country: HONG
+    // Round Warning
+    UIGroup->AddNewObject(RoundWarning1 = new Engine::Label("Cannot choose", "pirulen.ttf", 30, w - halfW / 4, halfH / 8, 255, 150, 150, 0, 0.5, 0.5));
+    UIGroup->AddNewObject(RoundWarning2 = new Engine::Label("BLACK PIECES", "pirulen.ttf", 36, w - halfW / 4, halfH / 8 + 50, 255, 150, 150, 0, 0.5, 0.5));
+    UIGroup->AddNewObject(RoundWarning3 = new Engine::Label("in this round!!", "pirulen.ttf", 30, w - halfW / 4, halfH / 8 + 100, 255, 150, 150, 0, 0.5, 0.5));
+    // Checkmate Warning
+    UIGroup->AddNewObject(BlackCheckmateWarning = new Engine::Image("xiangqi/black_checkmate.png", halfW, halfH, blockSize * 4, blockSize * 4, 0.5, 0.5));
+    BlackCheckmateWarning->Visible = false;
+    UIGroup->AddNewObject(RedCheckmateWarning = new Engine::Image("xiangqi/red_checkmate.png", halfW, halfH, blockSize * 4, blockSize * 4, 0.5, 0.5));
+    RedCheckmateWarning->Visible = false;
+    // Flying General Image
+    UIGroup->AddNewObject(FlyingGeneralImg = new Engine::Image(black_general_img, halfW, halfH, blockSize * 8, blockSize * 8, 0.5, 0.5));
+    FlyingGeneralImg->Visible = false;
+    // Too Late Label
+    UIGroup->AddNewObject(RegretWarning = new Engine::Label("It's too late...", "pirulen.ttf", 30, w - halfW / 4, halfH / 8, 255, 150, 150, 255, 0.5, 0.5));
+    RegretWarning->Visible = false;
+    // Regret Button
+    RegretBtn = new Engine::ImageButton("xiangqi/floor.png", "xiangqi/dirt.png", halfW/* * 1.75 */, halfH/* * 1.75 */, blockSize * 4, blockSize, 0.5, 0.5);
+    RegretBtn->SetOnClickCallback(std::bind(&XiangqiScene::RegretOnClick, this));
+    AddNewControlObject(RegretBtn);
+    AddNewObject(RegretBtnLbl = new Engine::Label("Regret " + std::to_string(RegretCount) + "/3", "pirulen.ttf", 36, halfW/* * 1.75 */, halfH/* * 1.75 */, 255, 255, 255, 255, 0.5, 0.5)); 
+}
+
 void XiangqiScene::Update(float deltaTime) {
+    std::cout << "[DEBUGGER] Regret Debugger 169" << std::endl;
     int h = Engine::GameEngine::GetInstance().GetScreenSize().y;
     int w = Engine::GameEngine::GetInstance().GetScreenSize().x;
     int halfW = w / 2;
@@ -250,17 +262,39 @@ void XiangqiScene::Update(float deltaTime) {
         Engine::GameEngine::GetInstance().ChangeScene("xiangqi_win");
     }
 
+    /* MESSAGES */
+    // Update RoundReminder & RoundWarning (for Move Regret)
+    RoundReminder->Text = (Round == HONG) ? "RED" : "BLACK";
+    RoundReminder->Color = (Round == HONG) ? al_map_rgba(255, 0, 0, 255) : al_map_rgba(100, 100, 150, 255);
+    RoundWarning2->Text = (Round == HONG) ? "BLACK PIECES" : "RED PIECES";
+
     // RoundWarnings
     if (1 <= round_warning_tick && round_warning_tick <= 60 * ALLEGRO_PI) {
         RoundWarning1->Color = al_map_rgba(255, 150, 150, 150 * std::sin(round_warning_tick / (20 * ALLEGRO_PI)));
         RoundWarning2->Color = al_map_rgba(255, 150, 150, 255 * std::sin(round_warning_tick / (20 * ALLEGRO_PI)));
         RoundWarning3->Color = al_map_rgba(255, 150, 150, 150 * std::sin(round_warning_tick / (20 * ALLEGRO_PI)));
         round_warning_tick++;
-    } else {
-        RoundWarning1->Color = al_map_rgba(255, 150, 150, 0);
-        RoundWarning2->Color = al_map_rgba(255, 150, 150, 0);
-        RoundWarning3->Color = al_map_rgba(255, 150, 150, 0);
-        round_warning_tick = 0; // Rest warning_tick
+        
+        if (round_warning_tick > 60 * ALLEGRO_PI) {
+            RoundWarning1->Color = al_map_rgba(255, 150, 150, 0);
+            RoundWarning2->Color = al_map_rgba(255, 150, 150, 0);
+            RoundWarning3->Color = al_map_rgba(255, 150, 150, 0);
+            round_warning_tick = 0; // Rest warning_tick
+        }
+    }
+    // Regret text ticks.
+    if (1 <= regret_tick && regret_tick <= 120) {
+        if (round_warning_tick) {
+            RegretWarning->Position.y = halfH / 8 + 150;
+        } else {
+            RegretWarning->Position.y = halfH / 8;
+        }
+        regret_tick++;
+        RegretWarning->Visible = true;
+        if (regret_tick > 120) {
+            RegretWarning->Visible = false;
+            regret_tick = 0;
+        }
     }
 
     // CheckmateWarning
@@ -298,6 +332,9 @@ void XiangqiScene::Update(float deltaTime) {
             Engine::GameEngine::GetInstance().ChangeScene("xiangqi_win");
         }
     }
+    std::cout << "[DEBUGGER] Regret Debugger 169-2" << std::endl;
+
+    
 }
 
 void XiangqiScene::Terminate() {
@@ -308,6 +345,7 @@ void XiangqiScene::Terminate() {
 }
 
 void XiangqiScene::OnMouseDown(int button, int mx, int my) {
+    std::cout << "[DEBUGGER] Regret Debugger 166" << std::endl;
     int h = Engine::GameEngine::GetInstance().GetScreenSize().y;
     int w = Engine::GameEngine::GetInstance().GetScreenSize().x;
     int halfW = w / 2;
@@ -339,9 +377,11 @@ void XiangqiScene::OnMouseDown(int button, int mx, int my) {
             SelectFlag = false;
     }
     IScene::OnMouseDown(button, mx, my);
+    std::cout << "[DEBUGGER] Regret Debugger 166-2" << std::endl;
 }
 
 void XiangqiScene::OnMouseMove(int mx, int my) {
+    std::cout << "[DEBUGGER] Regret Debugger 167" << std::endl;
     int h = Engine::GameEngine::GetInstance().GetScreenSize().y;
     int w = Engine::GameEngine::GetInstance().GetScreenSize().x;
     int halfW = w / 2;
@@ -367,9 +407,11 @@ void XiangqiScene::OnMouseMove(int mx, int my) {
             preview->Tint = al_map_rgba(100, 255, 100, 150); // Greenish
         }
     }
+    std::cout << "[DEBUGGER] Regret Debugger 167-2" << std::endl;
 }
 
 void XiangqiScene::OnMouseUp(int button, int mx, int my) {
+    std::cout << "[DEBUGGER] Regret Debugger 168" << std::endl;
     int h = Engine::GameEngine::GetInstance().GetScreenSize().y;
     int w = Engine::GameEngine::GetInstance().GetScreenSize().x;
     int halfW = w / 2;
@@ -382,8 +424,6 @@ void XiangqiScene::OnMouseUp(int button, int mx, int my) {
         // Check if the target position (in terms of row-col)
         if (!PieceWithinChessboard(_row_mouse, _col_mouse))
             return;
-        // if (!PieceWithinChessboard(_row_mouse, _col_mouse));
-        //     return;
         
         // blockSize * (col-4) + halfW, blockSize * (row-4.5) + halfH
         std::cout << "[DEBUGGER] _row_selected, _col_selected = " <<  SelectedRowCol.first << "," << SelectedRowCol.second << std::endl;
@@ -403,14 +443,17 @@ void XiangqiScene::OnMouseUp(int button, int mx, int my) {
         if (!PIECES(SelectedRowCol.first, SelectedRowCol.second))
             return;
 
+        std::cout << "[DEBUGGER] Regret Func. Debugger." << std::endl;
+
         // PIECE MOVEMENT & UPDATE        
         // Case 2 and 1: Eat an enemy || Wander to a no man's land.
         // Case 2: If the target block is occupied by a piece of different country, EAT it!
         dropSample = AudioHelper::PlaySample("chesspiece_drop.wav", false, AudioHelper::BGMVolume * 2, 0);
         if (STATES(_row_mouse, _col_mouse) * Round < 0) { // Of different country.
             // Eat the target
-            auto ptr = PIECES(_row_mouse, _col_mouse);
-            PieceGroup->RemoveObject(ptr->GetObjectIterator()); // Delete the eaten piece from PieceGroup.
+            // eaten = PIECES(_row_mouse, _col_mouse);
+            // PieceGroup->RemoveObject(ptr->GetObjectIterator()); // Delete the eaten piece from PieceGroup.
+            // Update (06/14): Let's not delete it, store it in our record system!
 
             // Case: Eating a WANG piece.
             if (STATES(_row_mouse, _col_mouse) == HONG * WANG)    RedKing = nullptr;
@@ -420,27 +463,27 @@ void XiangqiScene::OnMouseUp(int button, int mx, int my) {
         // Moved to Target
         MoveOnChessboard(SelectedRowCol.first, SelectedRowCol.second, _row_mouse, _col_mouse);
         
+        // Change RoundReminder & RoundWarning text.
         Round = (Round == HONG) ? HEI : HONG; // `Round` flip - for HONG to HEI, and vice versa.
         RoundReminder->Text = ((Round == HONG) ? "RED" : "BLACK"); // Change RoundReminder text.
         RoundReminder->Color = ((Round == HONG) ? al_map_rgba(255, 0, 0, 255) : al_map_rgba(100, 100, 150, 255));
-        RoundWarning2->Text = ((Round == HONG) ? "BLACK PIECES" : "RED PIECES"); // Change RoundWarning text.
-        std::cout << "[DEBUGGER] round == " << Round << std::endl;
+        if (round_warning_tick == 0) RoundWarning2->Text = ((Round == HONG) ? "BLACK PIECES" : "RED PIECES"); // Change RoundWarning text.
     }
     PrintChessboardState();//
     WrongPiece = false; // Reset `WrongPiece` to default: false.
 
     // Checkmate warning!
+    std::cout << "[DEBUGGER] Regret Func. Debugger 168-1-2 Kings Check" << std::endl;
     if (RedKing && BlackKing) {
-        bool blackCheckmate, redCheckmate;
-        std::cout << "[DEBUGGER] BlackKing at " << ((blackCheckmate = BlackKing->IsCheckmate(Chessboard)) ? "OMG" : "HUH") << " / RedKing at " << ((redCheckmate = RedKing->IsCheckmate(Chessboard)) ? "OMG" : "HUH") << std::endl;
+        std::cout << "[DEBUGGER] Regret Func. Debugger 168-1-2-1" << std::endl;
+        bool blackCheckmate = BlackKing->IsCheckmate(Chessboard), redCheckmate = RedKing->IsCheckmate(Chessboard);
         // Checkmate
+        std::cout << "[DEBUGGER] Regret Func. Debugger 168-1-2-2" << std::endl;
         if (blackCheckmate && !SelectFlag) {
             checkmate_warning_tick = 1;
-            std::cout << "[LOG] Warns the BLACK!" << std::endl;
-
+            
         } else if (redCheckmate && !SelectFlag) {
             checkmate_warning_tick = -1;
-            std::cout << "[LOG] Warns the RED!" << std::endl;
         }
 
         // Flying General
@@ -456,9 +499,11 @@ void XiangqiScene::OnMouseUp(int button, int mx, int my) {
             general_dist = abs(BlackKing->Position.y - RedKing->Position.y);
             flying_general_tick = flyingGeneral;
         }
+        std::cout << "[DEBUGGER] Regret Func. Debugger 168-1-2-5" << std::endl;
     }
 
     OnMouseMove(mx, my);
+    std::cout << "[DEBUGGER] Regret Debugger 168-2" << std::endl;
 }
 
 void XiangqiScene::MoveOnChessboard(int ro, int co, int rf, int cf) {
@@ -469,6 +514,7 @@ void XiangqiScene::MoveOnChessboard(int ro, int co, int rf, int cf) {
     if (STATES(rf, cf) != NONE) {
         act_temp = Action::DIE;
         // Insert this record into regret deque.
+        PIECES(rf, cf)->Visible = false;
         InsertRegret(STATES(rf, cf), PIECES(rf, cf), {rf, cf}, {-1, -1}, Action::DIE);
     }
 
@@ -488,22 +534,43 @@ void XiangqiScene::MoveOnChessboard(int ro, int co, int rf, int cf) {
 }
 
 void XiangqiScene::InsertRegret(int Type, ChessPiece *Piece, RowCol Old, RowCol New, int Action) {
-    Record rcd(Type, Piece, Old, New, Action);
+    Record rcd(Type, Piece, Old, New, Action, Round);
     RegretDeq.push_back(rcd);
+    std::cout << "[LOG] Record inserted; " << rcd << std::endl;
 }
 
 void XiangqiScene::RegretOnClick() {
-    if (!RegretDeq.empty()) return;
+    std::cout << "[LOG] RegretOnClick()" << std::endl;
+    if (RegretDeq.empty()) {
+        RegretWarning->Text = "No move record!";
+        RegretWarning->Visible = true;
+        regret_tick = 1;
+        return;
+    }
+    if (RegretCount <= 0) {
+        RegretWarning->Text = "No more chance...";
+        RegretWarning->Visible = false;
+        regret_tick = 1;
+        return;
+    }
+    if (flying_general_tick) {
+        RegretWarning->Text = "It's too late...";
+        RegretWarning->Visible = true;
+        regret_tick = 1;
+        return;
+    }
 
     Record *back = &RegretDeq.back();
     RegretDeq.pop_back();
 
     // Change content in the chessboard.
     STATES(back->OldRowCol.first, back->OldRowCol.second) = back->Type;
-    PIECES(back->OldRowCol.first, back->OldRowCol.second) = back->Piece;
+    PIECES(back->OldRowCol.first, back->OldRowCol.second) = PIECES(back->NewRowCol.first, back->NewRowCol.second);
     // Change the position of the chesspiece. (through its pointer.)
-    back->Piece->Position.y = row_to_y(back->OldRowCol.first);
-    back->Piece->Position.x = col_to_x(back->OldRowCol.second);
+    PIECES(back->OldRowCol.first, back->OldRowCol.second)->Position.y = row_to_y(back->OldRowCol.first);
+    PIECES(back->OldRowCol.first, back->OldRowCol.second)->Position.x = col_to_x(back->OldRowCol.second);
+    // Reset to the round of that record.
+    Round = back->round;
 
     if (back->Action == Action::MOVE) {
         // Reset new row-col on the chessboard with {Piecetype::NONE, nullptr}.
@@ -513,15 +580,32 @@ void XiangqiScene::RegretOnClick() {
     } else if (back->Action == Action::EAT) {
         Record *eaten = &RegretDeq.back();
         RegretDeq.pop_back();
+        auto piecetype = abs(eaten->Type);
+        auto country = (eaten->Type / piecetype == -1) ? PieceColor::HONG : PieceColor::HEI;
+
+        // Re-construct the eaten piece (rather than reuse the piece pointer - it somehow cannot be shown on the chessboard )
+        // HEI at the top, HONG at the bottom.
+        ChessPiece *revived = eaten->Piece;
+        revived->Visible = true; // Enable its appearance!
+        
         assert(eaten->Action == Action::DIE); // The action status of the previous record must be Action::DIE
         assert(eaten->OldRowCol == back->NewRowCol); // The place the eaten piece died is where the newest piece moved to.
+        assert(eaten->Piece != nullptr);
         // Rest new row-col on the chessboard with the previous chesspiece.
+        // Create a new chesspiece (@weihong)
         STATES(eaten->OldRowCol.first, eaten->OldRowCol.second) = eaten->Type;
-        PIECES(eaten->OldRowCol.first, eaten->OldRowCol.second) = eaten->Piece;
+        PIECES(eaten->OldRowCol.first, eaten->OldRowCol.second) = revived;
+        revived->Position.y = row_to_y(eaten->OldRowCol.first);
+        revived->Position.x = col_to_x(eaten->OldRowCol.second);
+        revived->Visible = true;
 
     } else {
         std::cout << "[DEBUGGER] Error occurs in Regret & Chessboard! Revise needed!" << std::endl;
     }
 
+    PrintChessboardState();
     RegretCount--; // Decrease the count of remaining regrets.
+    RegretBtnLbl->Text = "Regret " + std::to_string(RegretCount) + "/3";
+    if (!RegretCount) RegretBtnLbl->Color = al_map_rgba(255, 0, 0, 150);
+    RegretFlag = true;
 }

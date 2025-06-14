@@ -7,7 +7,7 @@
 class CannonPiece final : public ChessPiece {
 public:
     ChessPiece* Clone() const override {
-        std::cout << "[LOG] King Clone!" << std::endl;
+        std::cout << "[LOG] Cannon Clone!" << std::endl;
         return new CannonPiece(*this);
     }
     CannonPiece(std::string img, Engine::Point position, PieceColor country, int score);

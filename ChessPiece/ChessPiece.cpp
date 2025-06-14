@@ -22,6 +22,7 @@ bool ChessPiece::IsValidMove(int row, int col, int next_row, int next_col, std::
     return true;
 }
 bool ChessPiece::IsCheckmate(std::vector<std::vector<std::pair<int,ChessPiece*>>> &Chessboard) {
+    std::cout << "[DEBUGGER] Regret Func. Debugger 170-1" << std::endl;
     int h = Engine::GameEngine::GetInstance().GetScreenSize().y;
     int w = Engine::GameEngine::GetInstance().GetScreenSize().x;
     int halfW = w / 2;
@@ -29,10 +30,9 @@ bool ChessPiece::IsCheckmate(std::vector<std::vector<std::pair<int,ChessPiece*>>
 
     int col = std::floor((Position.x + 0.5 * blockSize - halfW) / blockSize) + 4; // The row of the current king piece.
     int row = std::floor((Position.y - halfH) / blockSize) + 5;                   // The column of the current king piece.
-    std::cout << "(" << row << "," << col << "): ";
 
     if (abs(Chessboard[row][col].first) != WANG) return false; // No access by other types of pieces. (except KING!)
-
+    std::cout << "[DEBUGGER] Regret Func. Debugger 170-2" << std::endl;
     // Traverse through all the pieces (smartly).
     int r; // The row of the traversed piece.
     int c; // The column of the traversed piece.
@@ -43,13 +43,17 @@ bool ChessPiece::IsCheckmate(std::vector<std::vector<std::pair<int,ChessPiece*>>
 
             if (abs(state) == NONE || abs(state) == GUARD || abs(state) == ELFNT || state * country > 0) // Ignore PieceType NONE, GUARD and ELFNT, and ignore those of the same country.
                 continue;
+            std::cout << "[DEBUGGER] Regret Func. Debugger 170-4" << std::endl;
 
+            std::cout << "[DEBUGGER] piece == nullptr ? " << ((piece == nullptr) ? "YES" : "NO");
             if (piece->IsValidMove(r, c, row, col, Chessboard)) { // If it is possible for the traversed piece to attack itself:
                 return true;
             }
+            std::cout << "[DEBUGGER] Regret Func. Debugger 170-5" << std::endl;
         }
     }
 
+    std::cout << "[DEBUGGER] Regret Func. Debugger 170-6" << std::endl;
     return false;
 }
 
