@@ -33,7 +33,7 @@ int main(int argc, char **argv) {
 	game.AddNewScene("xiangqi", new XiangqiScene()); // Used for xiangqi branch development
 	game.AddNewScene("xiangqi_win", new XiangqiWinScene()); // Used when a xiangqi game ends.
 
-	game.Start("start", 60, 2666, 1500);
+	game.Start("xiangqi", 60, 1700, 1000);
 	
 	return 0;
 }

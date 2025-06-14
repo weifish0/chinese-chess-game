@@ -10,8 +10,8 @@ public:
         std::cout << "[LOG] Pawn Clone!" << std::endl;
         return new PawnPiece(*this);
     }
-    PawnPiece(std::string img, Engine::Point position, PieceColor color, int score);
-    bool IsValidMove(int y,int x,int next_y,int next_x, std::vector<std::vector<std::pair<int,ChessPiece*>>> &ChessboardState) override;
+    PawnPiece(std::string img, Engine::Point position, PieceColor country, int score);
+    bool IsValidMove(int y,int x,int next_y,int next_x, std::vector<std::vector<std::pair<int,ChessPiece*>>> &Chessboard) override;
     // void OnAnimation(ChessPiece *enemy_piece);
     
 };
