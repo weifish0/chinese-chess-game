@@ -9,6 +9,7 @@
 #include "Engine/IScene.hpp"
 #include "Player/player.hpp"
 #include "NPC/npc.hpp"
+#include "login.hpp"
 
 // 建築物結構
 struct Building {
@@ -67,6 +68,13 @@ private:
     std::shared_ptr<ALLEGRO_FONT> name_font;  // 一般名稱字體
     std::shared_ptr<ALLEGRO_FONT> building_font;  // 建築物名稱字體
     std::shared_ptr<ALLEGRO_FONT> dialogue_font;  // 對話框字體
+    std::shared_ptr<ALLEGRO_BITMAP> login_icon;  // 登入圖標
+    bool is_login_icon_hovered;  // 登入圖標懸停狀態
+    
+    // 保存玩家位置
+    static float saved_player_x;
+    static float saved_player_y;
+    static bool has_saved_position;
 
     // 螢幕邊界
     static constexpr float SCREEN_LEFT = 0;
@@ -93,6 +101,10 @@ private:
     // 對話框相關
     static constexpr float DIALOGUE_BOX_HEIGHT = 350.0f;  // 對話框高度
     static constexpr float DIALOGUE_PADDING = 20.0f;  // 對話框內邊距
+
+    // 登入圖標相關
+    static constexpr float ICON_SIZE = 100.0f;  // 登入圖標大小
+    static constexpr float PADDING = 20.0f;  // 邊距
 
 public:
     explicit Playground() : camera_x(0), camera_y(0), space_key_was_down(false) {}

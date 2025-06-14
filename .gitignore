@@ -13,3 +13,7 @@ build
 
 # Others
 log.txt
+
+__pycache__
+myenv
+chess_game.db

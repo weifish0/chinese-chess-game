@@ -45,6 +45,7 @@ public:
     float getY() const { return y; }
     float getSize() const { return size; }
     float getSpeed() const { return speed; }
+    void setPosition(float new_x, float new_y) { x = new_x; y = new_y; }
 };
 
 #endif // PLAYER_HPP 

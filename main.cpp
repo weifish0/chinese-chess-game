@@ -13,6 +13,7 @@
 #include "Scene/xiangqi_scene.hpp"
 #include "Scene/xiangqi_win_scene.hpp"
 #include "Scene/playground.hpp"
+#include "Scene/login.hpp"
 
 int main(int argc, char **argv) {
 	Engine::LOG::SetConfig(true);
@@ -27,13 +28,12 @@ int main(int argc, char **argv) {
 	//game.AddNewScene("setting", new SettingScene());
     game.AddNewScene("start", new StartScene());
     game.AddNewScene("playground", new Playground());
-
-	// Register the scenes here!
+    game.AddNewScene("login", new Login());
 
 	game.AddNewScene("xiangqi", new XiangqiScene()); // Used for xiangqi branch development
 	game.AddNewScene("xiangqi_win", new XiangqiWinScene()); // Used when a xiangqi game ends.
 
-	game.Start("xiangqi", 60, 1700, 1000);
+	game.Start("start", 60, 2666, 1500);
 	
 	return 0;
 }

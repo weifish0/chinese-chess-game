@@ -3,6 +3,10 @@
 #include "Engine/Resources.hpp"
 #include <iostream>
 
+// 初始化靜態成員變數
+float Playground::saved_player_x = 0.0f;
+float Playground::saved_player_y = 0.0f;
+bool Playground::has_saved_position = false;
 
 void Playground::Initialize() {
     // 載入背景圖片
@@ -19,6 +23,9 @@ void Playground::Initialize() {
     auto xiangqi_house_normal = Engine::Resources::GetInstance().GetBitmap("playground/xiangqi_house.png");
     auto xiangqi_house_pressed = Engine::Resources::GetInstance().GetBitmap("playground/xiangqi_house_pressed.png");
     
+    // 載入登入圖標
+    login_icon = Engine::Resources::GetInstance().GetBitmap("playground/login_icon.png");
+
     // 初始化建築物
     buildings.push_back(Building(ANQI_HOUSE_X, ANQI_HOUSE_Y, HOUSE_SIZE, HOUSE_SIZE, 
                                 anqi_house_normal, anqi_house_pressed, "暗棋館"));
@@ -27,6 +34,12 @@ void Playground::Initialize() {
     
     // 創建玩家
     player = new Player();
+    
+    // 如果有保存的位置，則恢復玩家位置
+    if (has_saved_position) {
+        player->setPosition(saved_player_x, saved_player_y);
+    }
+    
     AddNewObject(player);
 
     // 創建 NPC
@@ -60,6 +73,13 @@ void Playground::Initialize() {
 }
 
 void Playground::Terminate() {
+    // 保存玩家位置
+    if (player) {
+        saved_player_x = player->getX();
+        saved_player_y = player->getY();
+        has_saved_position = true;
+    }
+    
     // 清理建築物資源
     buildings.clear();
     
@@ -83,6 +103,25 @@ void Playground::Draw() const {
             background.get(),
             camera_x, camera_y, VIEWPORT_WIDTH, VIEWPORT_HEIGHT,
             0, 0, SCREEN_RIGHT, SCREEN_BOTTOM,
+            0
+        );
+    }
+    
+    // 繪製登入圖標
+    if (login_icon) {
+        // 設置混合模式
+        al_set_blender(ALLEGRO_ADD, ALLEGRO_ALPHA, ALLEGRO_INVERSE_ALPHA);
+        
+        // 根據懸停狀態設置透明度
+        float alpha = is_login_icon_hovered ? 0.7f : 1.0f;
+        al_draw_tinted_scaled_bitmap(
+            login_icon.get(),
+            al_map_rgba_f(alpha, alpha, alpha, 1.0f),
+            0, 0,
+            al_get_bitmap_width(login_icon.get()),
+            al_get_bitmap_height(login_icon.get()),
+            PADDING, PADDING,
+            ICON_SIZE, ICON_SIZE,
             0
         );
     }
@@ -165,26 +204,57 @@ void Playground::Draw() const {
         
         // 繪製玩家名稱
         if (name_font) {
-            float text_width = al_get_text_width(name_font.get(), "玩家");
+            // 獲取當前場景
+            auto login_scene = dynamic_cast<Login*>(Engine::GameEngine::GetInstance().GetScene("login"));
+            float text_width = al_get_text_width(name_font.get(), "失憶的旅行者");
             float text_height = al_get_font_line_height(name_font.get());
             float padding = 10.0f;
             
-            al_draw_filled_rectangle(
-                draw_x + sprite_width * scale_x / 2 - text_width/2 - padding + 30,
-                draw_y - text_height - 10 - padding,
-                draw_x + sprite_width * scale_x / 2 + text_width/2 + padding + 30,
-                draw_y - 10 + padding,
-                al_map_rgba(0, 0, 0, 180)
-            );
-            
-            al_draw_text(
-                name_font.get(),
-                al_map_rgb(255, 255, 255),
-                draw_x + sprite_width * scale_x / 2 + 30,
-                draw_y - text_height - 10,
-                ALLEGRO_ALIGN_CENTER,
-                "玩家"
-            );
+            if (login_scene && !login_scene->GetCurrentUsername().empty()) {
+                // 用戶已登入，顯示用戶資料
+                std::string username = login_scene->GetCurrentUsername();
+                
+                // 計算文字寬度（使用最長的文字來計算寬度）
+                text_width = al_get_text_width(name_font.get(), username.c_str());
+                
+                // 繪製背景
+                al_draw_filled_rectangle(
+                    draw_x + sprite_width * scale_x / 2 - text_width/2 - padding + 30,
+                    draw_y - text_height - 10 - padding,
+                    draw_x + sprite_width * scale_x / 2 + text_width/2 + padding + 30,
+                    draw_y - 10 + padding,
+                    al_map_rgba(0, 0, 0, 180)
+                );
+                
+                // 繪製用戶名
+                al_draw_text(
+                    name_font.get(),
+                    al_map_rgb(255, 255, 255),
+                    draw_x + sprite_width * scale_x / 2 + 30,
+                    draw_y - text_height - 10,
+                    ALLEGRO_ALIGN_CENTER,
+                    username.c_str()
+                );
+                
+            } else {
+                // 用戶未登入，只顯示"玩家"
+                al_draw_filled_rectangle(
+                    draw_x + sprite_width * scale_x / 2 - text_width/2 - padding + 30,
+                    draw_y - text_height - 10 - padding,
+                    draw_x + sprite_width * scale_x / 2 + text_width/2 + padding + 30,
+                    draw_y - 10 + padding,
+                    al_map_rgba(0, 0, 0, 180)
+                );
+                
+                al_draw_text(
+                    name_font.get(),
+                    al_map_rgb(255, 255, 255),
+                    draw_x + sprite_width * scale_x / 2 + 30,
+                    draw_y - text_height - 10,
+                    ALLEGRO_ALIGN_CENTER,
+                    "失憶的旅行者"
+                );
+            }
         }
     }
 
@@ -324,6 +394,10 @@ void Playground::Update(float deltaTime) {
     int mouse_x = mouse_state.x;
     int mouse_y = mouse_state.y;
     
+    // 檢查登入圖標懸停狀態
+    is_login_icon_hovered = (mouse_x >= PADDING && mouse_x <= PADDING + ICON_SIZE &&
+                            mouse_y >= PADDING && mouse_y <= PADDING + ICON_SIZE);
+    
     // 更新建築物的懸停狀態
     float scale_x = SCREEN_RIGHT / VIEWPORT_WIDTH;
     float scale_y = SCREEN_BOTTOM / VIEWPORT_HEIGHT;
@@ -387,6 +461,13 @@ void Playground::Update(float deltaTime) {
 void Playground::OnMouseDown(int button, int mx, int my) {
     float scale_x = SCREEN_RIGHT / VIEWPORT_WIDTH;
     float scale_y = SCREEN_BOTTOM / VIEWPORT_HEIGHT;
+    
+    // 檢查是否點擊了登入圖標
+    if (mx >= PADDING && mx <= PADDING + ICON_SIZE &&
+        my >= PADDING && my <= PADDING + ICON_SIZE) {
+        Engine::GameEngine::GetInstance().ChangeScene("login");
+        return;
+    }
     
     // 檢查是否點擊了建築物
     for (const auto& building : buildings) {
