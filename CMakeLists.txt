@@ -38,8 +38,8 @@ add_executable(CHINESE-CHESS-GAME
     Engine/Sprite.cpp
     Engine/Sprite.hpp
     
-    Scene/setting_scene.cpp
-    Scene/setting_scene.hpp
+    Scene/anqi_setting_scene.cpp
+    Scene/anqi_setting_scene.hpp
     Scene/anqi_start_scene.cpp
     Scene/anqi_start_scene.hpp
     Scene/mode_select.cpp

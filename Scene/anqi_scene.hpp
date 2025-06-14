@@ -7,20 +7,22 @@
 #include <memory>
 #include <utility>
 #include <vector>
-
+#include <set>
+#include <string>
 #include "Engine/IScene.hpp"
 #include "Engine/Point.hpp"
 #include "Chess/chess.hpp"
 extern bool mouseJustClicked;
 extern bool lastMouseDown;
 extern float pi;
-class Record{
+class AnqiRecord{
     public:
         ChessColor color;
         ChessType type;
         int operation;
         ChessColor target_color;
         ChessType target_type;
+        int target_num;
         std::pair<int,int> start;
         std::pair<int,int> destination;  
 };
@@ -50,12 +52,13 @@ public:
     void Go(Engine::Point pos,int j,int i);
     void ConstructUI(ChessColor color);
     void ButtonClick(int id);
-    void Target(int j,int i,int temp_y,int temp_x);
+    void Target(int j,int i);
     bool Edible(Chess* eater,Chess* prey);
     void ShowPeace();
-    void Recover(Record* first,Record* second);
+    void Recover(AnqiRecord* first,AnqiRecord* second);
     void RecoverValid(int& regret_time);
     std::string GetImage(ChessColor color,ChessType type);
+    void CannonTarget(int des_j,int des_i,int& mark);
     void StopSign();
     // void PlayOnClick(int stage);
     // void SettingsOnClick(int stage);

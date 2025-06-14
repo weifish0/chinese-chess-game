@@ -7,10 +7,10 @@
 #include "Engine/IScene.hpp"
 extern int decide;
 extern std::string close_img;
-class SettingScene final : public Engine::IScene {
+class AnqiSettingScene final : public Engine::IScene {
 public:
     ALLEGRO_SAMPLE_ID bgmId;
-    explicit SettingScene() = default;
+    explicit AnqiSettingScene() = default;
     void Initialize() override;
     void Terminate() override;
     void Update(float deltaTime) override;

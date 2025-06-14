@@ -9,7 +9,7 @@
 #include "Engine/Point.hpp"
 #include "Engine/Resources.hpp"
 
-#include "Scene/setting_scene.hpp"
+#include "Scene/anqi_setting_scene.hpp"
 #include "UI/Component/ImageButton.hpp"
 #include "UI/Component/Label.hpp"
 #include "UI/Component/Slider.hpp"
@@ -20,7 +20,7 @@ int x1,x2;
 int pointer_tick = -45;
 Engine::Image *pointer1;
 std::string close_img = "unknown.png";
-void SettingScene::Update(float deltaTime){
+void AnqiSettingScene::Update(float deltaTime){
     close_img = decide?"unknown3.png":"unknown.png";
     int x = decide?x2:x1;
     pointer1->Position.x = x + 10*sin(2*pi*pointer_tick/45);
@@ -29,7 +29,7 @@ void SettingScene::Update(float deltaTime){
         pointer_tick = -45;
     }
 }
-void SettingScene::Initialize() {
+void AnqiSettingScene::Initialize() {
     pointer_tick = -45;
     int w = Engine::GameEngine::GetInstance().GetScreenSize().x;
     int h = Engine::GameEngine::GetInstance().GetScreenSize().y;
@@ -57,12 +57,12 @@ void SettingScene::Initialize() {
     // if (!font) std::cerr << "Font load failed!" << std::endl;
 
     btn = new Engine::ImageButton("block2.png", "block5.png", 600, 1250, 300,150);
-    btn->SetOnClickCallback(std::bind(&SettingScene::SettingsOnClick, this, 0));
+    btn->SetOnClickCallback(std::bind(&AnqiSettingScene::SettingsOnClick, this, 0));
     AddNewControlObject(btn);
     AddNewObject(new Engine::Label("選擇", "font2.ttc", 100, 750, 1325, 255,255,255 , 255, 0.5, 0.5));
 
     btn = new Engine::ImageButton("block2.png", "block5.png", 1600, 1250, 300,150);
-    btn->SetOnClickCallback(std::bind(&SettingScene::SettingsOnClick, this, 1));
+    btn->SetOnClickCallback(std::bind(&AnqiSettingScene::SettingsOnClick, this, 1));
     AddNewControlObject(btn);
     AddNewObject(new Engine::Label("選擇", "font2.ttc", 100, 1750, 1325, 255,255,255, 255, 0.5, 0.5));
     // ALLEGRO_MOUSE_STATE mouse;
@@ -72,18 +72,18 @@ void SettingScene::Initialize() {
     // lastMouseDown = mouseNowDown;
 
     btn = new Engine::ImageButton("block2.png", "block5.png", 2266, 1250, 300, 150);
-    btn->SetOnClickCallback(std::bind(&SettingScene::BackOnClick, this, 1));
+    btn->SetOnClickCallback(std::bind(&AnqiSettingScene::BackOnClick, this, 1));
     AddNewControlObject(btn);
     AddNewObject(new Engine::Label("返回", "font2.ttc", 100, 2666-250, 1325, 255,255,255 , 255, 0.5, 0.5));
     bgmId = AudioHelper::PlayBGM("setting_music.ogg");
 }
-void SettingScene::Terminate() {
+void AnqiSettingScene::Terminate() {
     AudioHelper::StopBGM(bgmId);
     IScene::Terminate();
 }
-void SettingScene::SettingsOnClick(int id) {
+void AnqiSettingScene::SettingsOnClick(int id) {
     decide = id;
 }
-void SettingScene::BackOnClick(int stage) {
+void AnqiSettingScene::BackOnClick(int stage) {
     Engine::GameEngine::GetInstance().ChangeScene("anqi_start");
 }

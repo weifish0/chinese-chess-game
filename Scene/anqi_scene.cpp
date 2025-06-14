@@ -16,7 +16,7 @@
 #include "UI/Component/Label.hpp"
 #include "UI/Component/Slider.hpp"
 #include "Chess/chess.hpp"
-#include "setting_scene.hpp"
+#include "anqi_setting_scene.hpp"
 
 #include <algorithm>  // for std::shuffle
 #include <random>     // for std::default_random_engine
@@ -26,7 +26,14 @@
 #include <set>
 #include <deque>
 
+class Attacker_Cannon{
+    public:
+        Chess* red_cannon1;
+        Chess* red_cannon2;
+        Chess* black_cannon1;
+        Chess* black_cannon2;
 
+};
 class Manage{
     public:
         int attack_step;
@@ -36,6 +43,7 @@ class Manage{
         int prolong_time;
         Chess* attacker;
         std::set<Chess*> attack_target;
+        std::set<Chess*> cannon_target;
 
 };
 class Tick{
@@ -91,32 +99,52 @@ enum Turn{
     RED_TURN,
     BLACK_TURN,
 };
-std::deque<Record*> record;
+std::deque<AnqiRecord*> anqi_record;
 Turn turn = UNKNOWNED;
 Turn first_turn;
 std::vector<std::vector<Chess*>> chessPositions(4, std::vector<Chess*>(8, nullptr));
 
-Manage* red;
-Manage* black;
-Tick* tick;
-Flag* flag;
-Sign* sign;
+Manage* red = new Manage();
+Manage* black = new Manage();
+Tick* tick = new Tick();
+Flag* flag = new Flag();
+Sign* sign = new Sign();
+Attacker_Cannon* attacker_cannon;
+std::vector<bool> black_state(17,true);
+std::vector<bool> red_state(17,true);
 void AnqiScene::Initialize() {
-    red = new Manage();
-    black = new Manage();
-    tick = new Tick();
-    flag = new Flag();
-    sign = new Sign();
+    for(int i=1;i<=16;i++){
+        black_state[i] = true;
+        black_state[i] = true;
+    }
+    attacker_cannon = new Attacker_Cannon();
+    attacker_cannon->red_cannon1 = nullptr;
+    attacker_cannon->red_cannon2 = nullptr;
+    attacker_cannon->black_cannon1 = nullptr;
+    attacker_cannon->black_cannon2 = nullptr;
     red->prolong_time = 0;
-    black->prolong_time = 0;
-    red->request_time = 0;
-    black->regret_time = 0;
+    red->remain = 16;
     red->regret_time = 0;
+    red->request_time = 0;
+    red->attack_step = 0;
+    red->cannon_target.clear();
+    red->attack_target.clear();
+    red->attacker = nullptr;
+
+    black->prolong_time = 0;
+    black->remain = 16;
     black->regret_time = 0;
+    black->regret_time = 0;
+    black->attack_step = 0;
+    black->attack_target.clear();
+    black->cannon_target.clear();
+    red->attacker = nullptr;
+    harmony_step = 0;
+    
     //tick
     tick->regret_invalid_tick = 0;
     tick->regret_tick = 0;
-    tick->turn_tick = 1259;
+    tick->turn_tick = 7200;
     tick->pointer_tick = -30;
     tick->prolong_tick = 0;
     tick->peace_tick = 0;
@@ -132,14 +160,8 @@ void AnqiScene::Initialize() {
     flag->attack_mark = 0;
     flag->peace_flag = 0;
     color = -1;
-    black->remain = 16;
-    red->remain = 16;
-    harmony_step = 0;
-    red->attack_step = 0;
-    black->attack_step = 0;
-    red->attack_target.clear();
-    black->attack_target.clear();
-    record.clear();
+    
+    anqi_record.clear();
     turn = UNKNOWNED;
     int w = Engine::GameEngine::GetInstance().GetScreenSize().x;
     int h = Engine::GameEngine::GetInstance().GetScreenSize().y;
@@ -179,94 +201,91 @@ void AnqiScene::Initialize() {
     
     //sign->peace_ask->Color = al_map_rgba(255,255,255,255);
     std::string s;
-    std::vector<int> black_num(7,0);
-    std::vector<int> red_num(7,0);
+    
     for(int j=0;j<4;j++){
         for(int i=0;i<8;i++){
             int temp = order[j*8+i];
             if(temp == 1){
                 s = GetImage(BLACK,KING);
-                ChessGroup->AddNewObject(chess = new Chess(s, 635 + i * 200, 600 + j * 200, KING , BLACK,black_num[0]));
+                ChessGroup->AddNewObject(chess = new Chess(s, 635 + i * 200, 600 + j * 200, KING , BLACK,temp));
                 chessPositions[j][i] = chess;  
-                black_num[0]++;
             }
             else if(temp >=2 && temp<=3){
                 s = GetImage(BLACK,KNIGHT);
-                ChessGroup->AddNewObject(chess = new Chess(s, 635 + i * 200, 600 + j * 200 ,KNIGHT, BLACK,black_num[1]));
+                ChessGroup->AddNewObject(chess = new Chess(s, 635 + i * 200, 600 + j * 200 ,KNIGHT, BLACK,temp));
                 chessPositions[j][i] = chess;  
-                black_num[1]++;
             }
             else if(temp >=4 && temp <= 5){
                 s = GetImage(BLACK,ELEPHANT);
-                ChessGroup->AddNewObject(chess = new Chess(s, 635 + i * 200, 600 + j * 200 , ELEPHANT, BLACK,black_num[2]));
+                ChessGroup->AddNewObject(chess = new Chess(s, 635 + i * 200, 600 + j * 200 , ELEPHANT, BLACK,temp));
                 chessPositions[j][i] = chess;
-                black_num[2]++;
             }
             else if(temp >=6 && temp <= 7){
                 s = GetImage(BLACK,CAR);
-                ChessGroup->AddNewObject(chess = new Chess(s, 635 + i * 200, 600 + j * 200, CAR, BLACK,black_num[3]));
+                ChessGroup->AddNewObject(chess = new Chess(s, 635 + i * 200, 600 + j * 200, CAR, BLACK,temp));
                 chessPositions[j][i] = chess;
-                black_num[3]++;
             }
             else if(temp >=8 && temp <= 9){
                 s = GetImage(BLACK,HORSE);
-                ChessGroup->AddNewObject(chess = new Chess(s, 635 + i * 200, 600 + j * 200, HORSE, BLACK,black_num[4]));
+                ChessGroup->AddNewObject(chess = new Chess(s, 635 + i * 200, 600 + j * 200, HORSE, BLACK,temp));
                 chessPositions[j][i] = chess;
-                black_num[4]++;
             }
             else if(temp >=10 && temp <= 11){
                 s = GetImage(BLACK,CANNON);
-                ChessGroup->AddNewObject(chess = new Chess(s, 635 + i * 200, 600 + j * 200, CANNON, BLACK,black_num[5]));
+                ChessGroup->AddNewObject(chess = new Chess(s, 635 + i * 200, 600 + j * 200, CANNON, BLACK,temp));
+                if(temp == 10){
+                    attacker_cannon->black_cannon1 = chess;
+                }
+                else{
+                    attacker_cannon->black_cannon2 = chess;
+                }
                 chessPositions[j][i] = chess;
-                black_num[5]++;
             }
             else if(temp >=12 && temp <= 16){
                 s = GetImage(BLACK,SOLDIER);
-                ChessGroup->AddNewObject(chess = new Chess(s, 635 + i * 200, 600 + j * 200, SOLDIER,BLACK,black_num[6]));
+                ChessGroup->AddNewObject(chess = new Chess(s, 635 + i * 200, 600 + j * 200, SOLDIER,BLACK,temp));
                 chessPositions[j][i] = chess;
-                black_num[6]++;
             }
             else if(temp == 17){
                 s = GetImage(RED,KING);
-                ChessGroup->AddNewObject(chess = new Chess(s, 635 + i * 200, 600 + j * 200, KING, RED,red_num[0]));
+                ChessGroup->AddNewObject(chess = new Chess(s, 635 + i * 200, 600 + j * 200, KING, RED,temp-16));
                 chessPositions[j][i] = chess;
-                black_num[0]++;
             }
             else if(temp >= 18 && temp <= 19){
                 s = GetImage(RED,KNIGHT);
-                ChessGroup->AddNewObject(chess = new Chess(s, 635 + i * 200, 600 + j * 200, KNIGHT, RED,red_num[1]));
+                ChessGroup->AddNewObject(chess = new Chess(s, 635 + i * 200, 600 + j * 200, KNIGHT, RED,temp-16));
                 chessPositions[j][i] = chess;
-                black_num[1]++;
             }
             else if(temp >= 20 && temp <= 21){
                 s = GetImage(RED,ELEPHANT);
-                ChessGroup->AddNewObject(chess = new Chess(s, 635 + i * 200, 600 + j * 200,ELEPHANT, RED,red_num[2]));
+                ChessGroup->AddNewObject(chess = new Chess(s, 635 + i * 200, 600 + j * 200,ELEPHANT, RED,temp-16));
                 chessPositions[j][i] = chess;
-                black_num[2]++;
             }
             else if(temp >= 22 && temp <= 23){
                 s = GetImage(RED,CAR);
-                ChessGroup->AddNewObject(chess = new Chess(s, 635 + i * 200, 600 + j * 200, CAR, RED,red_num[3]));
+                ChessGroup->AddNewObject(chess = new Chess(s, 635 + i * 200, 600 + j * 200, CAR, RED,temp-16));
                 chessPositions[j][i] = chess;
-                black_num[3]++;
             }
             else if(temp >= 24 && temp <= 25){
                 s = GetImage(RED,HORSE);
-                ChessGroup->AddNewObject(chess = new Chess(s, 635 + i * 200, 600 + j * 200, HORSE, RED,red_num[4]));
+                ChessGroup->AddNewObject(chess = new Chess(s, 635 + i * 200, 600 + j * 200, HORSE, RED,temp-16));
                 chessPositions[j][i] = chess;
-                black_num[4]++;
             }
             else if(temp >= 26 && temp <= 27){
                 s = GetImage(RED,CANNON);
-                ChessGroup->AddNewObject(chess = new Chess(s, 635 + i * 200, 600 + j * 200, CANNON, RED,red_num[5]));
+                ChessGroup->AddNewObject(chess = new Chess(s, 635 + i * 200, 600 + j * 200, CANNON, RED,temp-16));
+                if(temp==26){
+                    attacker_cannon->red_cannon1 = chess;
+                }
+                else{
+                    attacker_cannon->red_cannon2 = chess;
+                }
                 chessPositions[j][i] = chess;
-                black_num[5]++;
             }
             else if(temp >= 28 && temp <= 32){
                 s = GetImage(RED,SOLDIER);
-                ChessGroup->AddNewObject(chess = new Chess(s, 635 + i * 200, 600 + j * 200, SOLDIER, RED,red_num[6]));
+                ChessGroup->AddNewObject(chess = new Chess(s, 635 + i * 200, 600 + j * 200, SOLDIER, RED,temp-16));
                 chessPositions[j][i] = chess;
-                black_num[6]++;
             }
         }
         
@@ -275,8 +294,8 @@ void AnqiScene::Initialize() {
     bgmId = AudioHelper::PlayBGM("play_music.ogg");
 }
 
-void RecordStep(ChessColor color,ChessType type,int operation,ChessColor target_color,ChessType target_type,std::pair<int,int> start,std::pair<int,int> destination){
-    Record* a = new Record();
+void RecordStep(ChessColor color,ChessType type,int operation,ChessColor target_color,ChessType target_type,int target_num,std::pair<int,int> start,std::pair<int,int> destination){
+    AnqiRecord* a = new AnqiRecord();
     a->color = color;
     a->type = type;
     a->operation = operation;
@@ -284,7 +303,8 @@ void RecordStep(ChessColor color,ChessType type,int operation,ChessColor target_
     a->destination = destination;
     a->target_color = target_color;
     a->target_type = target_type;
-    record.push_back(a);
+    a->target_num = target_num;
+    anqi_record.push_back(a);
 }
 
 bool AnqiScene::Edible(Chess* eater,Chess* prey){
@@ -407,7 +427,7 @@ void AnqiScene::InitializeRound(ChessColor color){
 }
 
 void AnqiScene::ChangeRound(){
-    tick->turn_tick = 1259;
+    tick->turn_tick = 7200;
     turn = turn==RED_TURN ? BLACK_TURN : RED_TURN;
     if(turn==RED_TURN)
         std::cout << "Red turn!\n";
@@ -442,10 +462,28 @@ void AnqiScene::StopSign(){
     sign->regret_warn->Color = al_map_rgba(255,255,255,0);
 }
 
-void AnqiScene::Update(float deltaTime) {
-    
-    
 
+void CheckEatCannon(Chess* chess){
+    if(chess->getType()==CANNON){
+        if(chess->getColor()==RED){
+            if(chess->getNumber()==10)
+                attacker_cannon->red_cannon1 = nullptr;
+            else
+                attacker_cannon->red_cannon2 = nullptr;
+        }
+        else{
+            if(chess->getNumber()==10)
+                attacker_cannon->black_cannon1 = nullptr;
+            else
+                attacker_cannon->black_cannon2 = nullptr;
+        }
+    }
+    else{
+        return;
+    }
+}
+
+void AnqiScene::Update(float deltaTime) {
     if(tick->turn_tick==30){
         if(turn==RED_TURN){
             Engine::GameEngine::GetInstance().ChangeScene("black_win");
@@ -612,7 +650,7 @@ void AnqiScene::Update(float deltaTime) {
                     int& attack_step = (turn==RED_TURN)?red->attack_step:black->attack_step;
                     attack_step = 0;
                     chess->Open();
-                    RecordStep(chess->getColor(),chess->getType(),-1,RED,KING,{-1,-1},{j,i});
+                    RecordStep(chess->getColor(),chess->getType(),-1,RED,KING,0,{-1,-1},{j,i});
                     if(turn==UNKNOWNED)
                         InitializeRound(chess->getColor());
                     else
@@ -630,15 +668,19 @@ void AnqiScene::Update(float deltaTime) {
                         }
                         else if(temp->getType()==CANNON){//diff color
                             if(CannonValidEating(j,i,temp_y,temp_x)){
+                                CheckEatCannon(chess);
                                 int& attack_step = (turn==RED_TURN)?red->attack_step:black->attack_step;
                                 attack_step = 0;
                                 pos = chess->Position;
-                                RecordStep(temp->getColor(),temp->getType(),1,chess->getColor(),chess->getType(),{temp_y,temp_x},{j,i});
+                                RecordStep(temp->getColor(),temp->getType(),1,chess->getColor(),chess->getType(),chess->getNumber(),{temp_y,temp_x},{j,i});
                                 if(chess->getColor()==RED)
                                     red->remain--;
                                 else
                                     black->remain--;
-
+                                if(chess->getColor()==RED)
+                                    red_state[chess->getNumber()] = false;
+                                else
+                                    black_state[chess->getNumber()] = false;
                                 ChessGroup->RemoveObject(chess->GetObjectIterator());
                                 Go(pos,j,i);
                                 harmony_step = 0;
@@ -646,14 +688,19 @@ void AnqiScene::Update(float deltaTime) {
                         }
                         else if(abs(temp_y-j)+abs(temp_x-i)==1){//diff color
                             if(Edible(temp,chess)){
+                                CheckEatCannon(chess);
                                 int& attack_step = (turn==RED_TURN)?red->attack_step:black->attack_step;
                                 attack_step = 0;
                                 pos = chess->Position;
-                                RecordStep(temp->getColor(),temp->getType(),1,chess->getColor(),chess->getType(),{temp_y,temp_x},{j,i});
+                                RecordStep(temp->getColor(),temp->getType(),1,chess->getColor(),chess->getType(),chess->getNumber(),{temp_y,temp_x},{j,i});
                                 if(chess->getColor()==RED)
                                     red->remain--;
                                 else
                                     black->remain--;
+                                if(chess->getColor()==RED)
+                                    red_state[chess->getNumber()] = false;
+                                else
+                                    black_state[chess->getNumber()] = false;
                                 ChessGroup->RemoveObject(chess->GetObjectIterator());
                                 Go(pos,j,i);
                                 harmony_step = 0;
@@ -676,8 +723,8 @@ void AnqiScene::Update(float deltaTime) {
                 int attack_step = (temp->getColor()==RED)?red->attack_step:black->attack_step;
                 if(abs(temp_y-j)+abs(temp_x-i)==1){//!(attack_step==10&&temp==attacker)
                     if(!(attack_step==10&&temp==cur_attacker)){
-                        RecordStep(temp->getColor(),temp->getType(),0,RED,KING,{temp_y,temp_x},{j,i});
-                        Target(j,i,temp_y,temp_x);
+                        RecordStep(temp->getColor(),temp->getType(),0,RED,KING,0,{temp_y,temp_x},{j,i});
+                        Target(j,i);
                         Go(pos,j,i);//move
                         harmony_step++;
                         flag->harmony_flag = 0;
@@ -696,9 +743,141 @@ void AnqiScene::Update(float deltaTime) {
     }
 
 }
+void UpdateCannon1(int op,int& mark,int j,int i,int dj,int di,int des_y,int des_x,std::set<Chess*> cannon_target,std::set<Chess*>& update_cannon_target);
 
-void AnqiScene::Target(int j,int i,int temp_y,int temp_x){
+void AnqiScene::CannonTarget(int des_y,int des_x,int& mark){//cannon fix
     int color = temp->getColor();
+    Chess* attacker1 = (color==RED)?attacker_cannon->red_cannon1:attacker_cannon->black_cannon1;
+    Chess* attacker2 = (color==RED)?attacker_cannon->red_cannon2:attacker_cannon->black_cannon2;
+    std::set<Chess*>& cannon_target = (color==RED)?red->cannon_target:black->cannon_target;
+    std::set<Chess*> update_cannon_target;
+    if(attacker1&&attacker1->Check_open()){
+        int j = (attacker1->Position.y - 600) / 200;
+        int i = (attacker1->Position.x - 635) / 200;
+        if(temp_y==j&&des_y!=j){//move away
+            int di = (des_x-i>0)?1:-1;
+            UpdateCannon1(0,mark,j,i,0,di,des_y,des_x,cannon_target,update_cannon_target);
+        }
+        else if(temp_x==i&&des_x!=i){//move away
+            int dj = (des_y-j>0)?1:-1;
+            UpdateCannon1(0,mark,j,i,dj,0,des_y,des_x,cannon_target,update_cannon_target);
+        }
+        else if(des_y==j&&temp_y!=j){//move in
+            int di = (des_x-i>0)?1:-1;
+            UpdateCannon1(1,mark,j,i,0,di,des_y,des_x,cannon_target,update_cannon_target);
+        }
+        else if(des_x==i&&temp_x!=i){//move in
+            int dj = (des_y-j>0)?1:-1;
+            UpdateCannon1(1,mark,j,i,dj,0,des_y,des_x,cannon_target,update_cannon_target);
+        }
+
+    }
+    if(attacker2&&attacker2->Check_open()){
+        int j = (attacker2->Position.y - 600) / 200;
+        int i = (attacker2->Position.x - 635) / 200;
+        if(temp_y==j&&des_y!=j){//move away
+            int di = (des_x-i>0)?1:-1;
+            UpdateCannon1(0,mark,j,i,0,di,des_y,des_x,cannon_target,update_cannon_target);
+        }
+        else if(temp_x==i&&des_x!=i){//move away
+            int dj = (des_y-j>0)?1:-1;
+            UpdateCannon1(0,mark,j,i,dj,0,des_y,des_x,cannon_target,update_cannon_target);
+        }
+        else if(des_y==j&&temp_y!=j){//move in
+            int di = (des_x-i>0)?1:-1;
+            UpdateCannon1(1,mark,j,i,0,di,des_y,des_x,cannon_target,update_cannon_target);
+        }
+        else if(des_x==i&&temp_x!=i){//move in
+            int dj = (des_y-j>0)?1:-1;
+            UpdateCannon1(1,mark,j,i,dj,0,des_y,des_x,cannon_target,update_cannon_target);
+        }
+    }
+    cannon_target = update_cannon_target;
+
+}
+
+void UpdateCannon1(int op,int& mark,int j,int i,int dj,int di,int des_y,int des_x,std::set<Chess*> cannon_target,std::set<Chess*>& update_cannon_target){//temp!=cannon
+    //op==0:move away, op==1:move in
+    //temp is not cannon
+    int flag = 0;
+    if(dj!=0){
+        for(int k=1;j+dj*k>=0&&j+dj*k<4;k++){
+            Chess* chess = chessPositions[j+dj*k][i];
+            if(op&&(chess||j+dj*k == des_y)||!op&&chess&&chess!=temp){
+                if(flag){
+                    if(chess&&chess->Check_open()){
+                        update_cannon_target.insert(chess);
+                        if(cannon_target.find(chess)!=cannon_target.end())
+                            mark = 1;
+                    }
+                    return;
+                }
+                flag = 1;
+            }
+        }
+    }
+    else{
+        for(int k=1;i+di*k>=0&&i+di*k<8;k++){
+            Chess* chess = chessPositions[j][i+di*k];
+            if(op&&(chess||i+di*k == des_x)||!op&&chess&&chess!=temp){
+                if(flag){
+                    if(chess&&chess->Check_open()){
+                        update_cannon_target.insert(chess);
+                        if(cannon_target.find(chess)!=cannon_target.end())
+                            mark = 1;
+                    }
+                    return ;
+                }
+                flag = 1;
+            }
+        }
+    }
+        
+}
+
+void UpdateCannon2(int& mark,int j,int i,int dj,int di,std::set<Chess*>& cur_attack_target,std::set<Chess*>& update_attack_target){//temp==cannon
+    //temp is cannon
+    int flag = 0;
+    if(dj!=0){
+        for(int k=1;j+dj*k>=0&&j+dj*k<4;k++){
+            Chess* chess = chessPositions[j+dj*k][i];
+            if(chess&&chess!=temp){
+                if(flag){
+                    if(chess->Check_open()){
+                        update_attack_target.insert(chess);
+                        if(cur_attack_target.find(chess)!=cur_attack_target.end())
+                            mark = 1;
+                    }
+                    return;
+                }
+                flag = 1;
+            }
+        }
+    }
+    else{
+        for(int k=1;i+di*k>=0&&i+di*k<8;k++){
+            Chess* chess = chessPositions[j][i+di*k];
+            if(chess&&chess!=temp){
+                if(flag){
+                    if(chess->Check_open()){
+                        update_attack_target.insert(chess);
+                        if(cur_attack_target.find(chess)!=cur_attack_target.end())
+                            mark = 1;
+                    }
+                    return ;
+                }
+                flag = 1;
+            }
+        }
+    }
+
+}
+
+void AnqiScene::Target(int j,int i){
+
+    int color = temp->getColor();
+    int mark = 0;
+    
     std::vector<std::pair<int,int>> direction = {
         {-1,0},//up
         {1,0},//down
@@ -708,42 +887,61 @@ void AnqiScene::Target(int j,int i,int temp_y,int temp_x){
     std::set<Chess*>& cur_attack_target = (color==RED)?red->attack_target:black->attack_target;
     int& cur_attack_step = (color==RED)?red->attack_step:black->attack_step;
     Chess*& cur_attacker = (color==RED)?red->attacker:black->attacker;
-    if(cur_attack_target.empty()){
-        for(auto dir:direction){
-            int dj = dir.first;
-            int di = dir.second;
-            if(j+dj>=0&&j+dj<4&&i+di>=0&&i+di<8){
-                if(chessPositions[j+dj][i+di]!=nullptr&&(j+dj!=temp_y||i+di!=temp_x)){
-                    cur_attack_target.insert(chessPositions[j+dj][i+di]);
-                }
-            }
-        }
-    }
-    else{
-        int mark = 0;
-        std::set<Chess*> update_attack_target;
-        for(auto dir:direction){
-            int dj = dir.first;
-            int di = dir.second;
-            if(j+dj>=0&&j+dj<4&&i+di>=0&&i+di<8){
-                if(chessPositions[j+dj][i+di]!=nullptr&&(j+dj!=temp_y||i+di!=temp_x)){
-                    Chess* chess = chessPositions[j+dj][i+di];
-                    if(cur_attack_target.find(chess)!=cur_attack_target.end()){
-                        mark = 1;
-                    }
-                    update_attack_target.insert(chess);
-                }
-            }
-        }
-        cur_attack_target = update_attack_target;
-        if(mark)
-            cur_attack_step++;
-        else
-            cur_attack_step = 0;
 
-        std::cout << mark << std::endl;
+    std::set<Chess*> update_attack_target;
+
+    if(temp->getType()!=CANNON){
+        CannonTarget(j,i,mark);
+        if(cur_attack_target.empty()){
+            for(auto dir:direction){
+                int dj = dir.first;
+                int di = dir.second;
+                if(j+dj>=0&&j+dj<4&&i+di>=0&&i+di<8){
+                    if(chessPositions[j+dj][i+di]!=nullptr&&(j+dj!=temp_y||i+di!=temp_x)){
+                        Chess* chess = chessPositions[j+dj][i+di];
+                        if(Edible(temp,chess)&&temp->getColor()!=chess->getColor()){
+                            update_attack_target.insert(chess);
+                        }
+                    }
+                }
+            }
+        }
+        else{
+            for(auto dir:direction){
+                int dj = dir.first;
+                int di = dir.second;
+                if(j+dj>=0&&j+dj<4&&i+di>=0&&i+di<8){
+                    if(chessPositions[j+dj][i+di]!=nullptr&&(j+dj!=temp_y||i+di!=temp_x)){
+                        Chess* chess = chessPositions[j+dj][i+di];
+                        if(Edible(temp,chess)&&temp->getColor()!=chess->getColor()){
+                            update_attack_target.insert(chess);
+                            if(cur_attack_target.find(chess)!=cur_attack_target.end()){
+                                mark = 1;
+                            }
+                        }
+                    }
+                }
+            }
+            
+        }
     }
-    if(!cur_attack_target.empty()){
+        
+    else{//temp is cannon
+        UpdateCannon2(mark,j,i,-1,0,cur_attack_target,update_attack_target);
+        UpdateCannon2(mark,j,i,1,0,cur_attack_target,update_attack_target);
+        UpdateCannon2(mark,j,i,0,-1,cur_attack_target,update_attack_target);
+        UpdateCannon2(mark,j,i,0,1,cur_attack_target,update_attack_target);
+    }
+
+    cur_attack_target = update_attack_target;
+    
+    if(mark)
+        cur_attack_step++;
+    else
+        cur_attack_step = 0;
+    std::set<Chess*> cannon_target = (color==RED)?red->cannon_target:black->cannon_target;
+
+    if(!cur_attack_target.empty()||!cannon_target.empty()){
         cur_attacker = temp;
         flag->attack_flag = 0;
     }
@@ -751,8 +949,12 @@ void AnqiScene::Target(int j,int i,int temp_y,int temp_x){
         cur_attacker = nullptr;
 
     // if(cur_attacker){
-    //     std::cout << cur_attacker->getType() << " " << cur_attacker->getColor() << " " << cur_attacker->getNumber() << std::endl;
-    //     std::cout << cur_attack_step << std::endl;
+        //std::cout << cur_attacker->getType() << " " << cur_attacker->getColor() << " " << cur_attacker->getNumber() << std::endl;
+        if(color==RED)
+            std::cout << "RED:";
+        else
+            std::cout << "BLACK:";
+        std::cout << cur_attack_step << std::endl;
     // }
 
 }
@@ -808,7 +1010,7 @@ void AnqiScene::ShowPeace(){
     
 
 }
-void AnqiScene::Recover(Record* first,Record* second){
+void AnqiScene::Recover(AnqiRecord* first,AnqiRecord* second){
     Chess* chess = chessPositions[first->destination.first][first->destination.second];
     Engine::Point recover_pos;
     std::cout << first->destination.first << " " << first->destination.second << std::endl;
@@ -818,13 +1020,21 @@ void AnqiScene::Recover(Record* first,Record* second){
     chessPositions[first->start.first][first->start.second] = chess;
     chessPositions[first->destination.first][first->destination.second] = nullptr;
     if(first->operation==1){//if eat
+        if(first->target_color==RED)
+            red->remain++;
+        else
+            black->remain++;
         int i = first->destination.second;
         int j = first->destination.first;
         std::string image = GetImage(first->target_color,first->target_type);//get image
         std::cout << image << std::endl;
-        ChessGroup->AddNewObject(chess = new Chess(image, 635 + i * 200, 600 + j * 200 ,first->target_type, first->target_color,1));//recover eaten chess
+        ChessGroup->AddNewObject(chess = new Chess(image, 635 + i * 200, 600 + j * 200 ,first->target_type, first->target_color,first->target_num));//recover eaten chess
         chess->Open();
         chessPositions[first->destination.first][first->destination.second] = chess;
+        if(first->target_color==RED)
+            red_state[first->target_num] = true;
+        else
+            black_state[first->target_num] = true;
     }
     chess = chessPositions[second->destination.first][second->destination.second];
     recover_pos.y = 600+200*second->start.first;
@@ -833,13 +1043,21 @@ void AnqiScene::Recover(Record* first,Record* second){
     chessPositions[second->start.first][second->start.second] = chess;
     chessPositions[second->destination.first][second->destination.second] = nullptr;
     if(second->operation==1){
+        if(second->target_color==RED)
+            red->remain++;
+        else
+            black->remain++;
         int i = second->destination.second;
         int j = second->destination.first;
         std::string image = GetImage(second->target_color,second->target_type);
         std::cout << image << std::endl;
-        ChessGroup->AddNewObject(chess = new Chess(image, 635 + i * 200, 600 + j * 200 ,second->target_type, second->target_color,1));
+        ChessGroup->AddNewObject(chess = new Chess(image, 635 + i * 200, 600 + j * 200 ,second->target_type, second->target_color,second->target_num));
         chess->Open();
         chessPositions[second->destination.first][second->destination.second] = chess;
+        if(second->target_color==RED)
+            red_state[second->target_num] = true;
+        else
+            black_state[second->target_num] = true;
     }
     
 }
@@ -879,22 +1097,22 @@ std::string AnqiScene::GetImage(ChessColor color,ChessType type){
 
 }
 void AnqiScene::RecoverValid(int& regret_time){
-    if(record.size()<2){
+    if(anqi_record.size()<2){
         flag->regret_invalid_flag = 1;
         tick->regret_invalid_tick = 0;
         return;
     }
-    Record* a = record.back();
-    record.pop_back();
-    Record* b = record.back();
+    AnqiRecord* a = anqi_record.back();
+    anqi_record.pop_back();
+    AnqiRecord* b = anqi_record.back();
     if(a->operation==-1||b->operation==-1){
         flag->regret_invalid_flag = 1;
         tick->regret_invalid_tick = 0;
-        record.push_back(a);
+        anqi_record.push_back(a);
         return;
     }
     regret_time++;
-    record.pop_back();
+    anqi_record.pop_back();
     Recover(a,b);
     
 }
