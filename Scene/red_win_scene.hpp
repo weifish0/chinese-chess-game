@@ -9,6 +9,7 @@ class Red_Win_Scene final : public Engine::IScene {
 private:
     ALLEGRO_SAMPLE_ID bgmId;
 public:
+
     explicit Red_Win_Scene() = default;
     void Initialize() override;
     void Terminate() override;

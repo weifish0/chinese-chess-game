@@ -12,8 +12,8 @@
 #include "chess.hpp"
 #include "UI/Component/Image.hpp"
 #include "Engine/Resources.hpp"
+#include "Scene/anqi_setting_scene.hpp"
 
-std::string close_img = "unknown.png";
 std::string frame_img = "frame.png";
 Chess::Chess(std::string img, float x, float y,ChessType type,ChessColor color,int number): Sprite(close_img, x, y,180,180),frame(frame_img,x,y,180,180){
     this->img = img;

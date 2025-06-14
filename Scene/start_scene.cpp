@@ -19,17 +19,17 @@ void StartScene::Initialize() {
     int halfW = w / 2;
     int halfH = h / 2;
     Engine::ImageButton *btn;
+    
+    AddNewObject(new Engine::Label("紅與黑", "font2.ttc", 300, halfW, halfH / 3 + 50, 255, 255, 255, 255, 0.5, 0.5));
 
-    AddNewObject(new Engine::Label("elephant chess", "pirulen.ttf", 120, halfW, halfH / 3 + 50, 10, 255, 255, 255, 0.5, 0.5));
-
-    btn = new Engine::ImageButton("stage-select/dirt.png", "stage-select/floor.png", halfW - 200, halfH / 2 + 200, 400, 100);
+    btn = new Engine::ImageButton("block2.png", "block5.png", halfW - 225, 1200, 450, 200);
     btn->SetOnClickCallback(std::bind(&StartScene::PlayOnClick, this));
     AddNewControlObject(btn);
-    AddNewObject(new Engine::Label("Play", "pirulen.ttf", 48, halfW, halfH / 2 + 250, 0, 0, 0, 255, 0.5, 0.5));
+    AddNewObject(new Engine::Label("開始冒險", "font2.ttc", 100, halfW, 1300, 255, 255, 255, 255, 0.5, 0.5));
 }
 
 void StartScene::PlayOnClick() {
-    Engine::GameEngine::GetInstance().ChangeScene("playground");
+    Engine::GameEngine::GetInstance().ChangeScene("playground");//playground
 }
 
 void StartScene::Terminate() {

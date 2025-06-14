@@ -108,6 +108,9 @@ public:
     int regret_tick = 0;
     Engine::Label *RegretWarning;
 
+    Engine::Label *PerpetualPeaceWarning;
+    int PerpetualPeaceCount = 0;
+
     /* METHODS */
     explicit XiangqiScene() = default;
     void Initialize() override;
@@ -115,9 +118,11 @@ public:
     void ReadChessboard();
     void Update(float deltaTime) override;
     void Terminate() override;
+
     void OnMouseDown(int button, int mx, int my) override;
     void OnMouseMove(int mx, int my) override;
     void OnMouseUp(int button, int mx, int my) override;
+    void OnKeyDown(int keyCode) override;
     bool PieceWithinChessboard(int r, int c);
 
     /* CHESSBOARD KIT */

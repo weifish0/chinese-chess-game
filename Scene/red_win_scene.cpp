@@ -29,10 +29,11 @@ void Red_Win_Scene::Initialize(){
     btn->SetOnClickCallback(std::bind(&Red_Win_Scene::BackOnClick, this, 1));
     AddNewControlObject(btn);
     AddNewObject(new Engine::Label("返回", "font2.ttc", 140, w-300, halfH *3 / 2 + 200, 14 , 37 , 67 , 255, 0.5, 0.5));
-    
+    bgmId = AudioHelper::PlayBGM("red_win_music.ogg");
 }
 
 void Red_Win_Scene::Terminate(){
+    AudioHelper::StopBGM(bgmId);
     IScene::Terminate();
 
 }

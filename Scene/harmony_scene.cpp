@@ -28,14 +28,15 @@ void HarmonyScene::Initialize(){
     btn->SetOnClickCallback(std::bind(&HarmonyScene::BackOnClick, this, 1));
     AddNewControlObject(btn);
     AddNewObject(new Engine::Label("返回", "font2.ttc", 140, w-300, halfH *3 / 2 + 200, 14 , 37 , 67 , 255, 0.5, 0.5));
-    
+    bgmId = AudioHelper::PlayBGM("peace_music.ogg");
 
 }
 
 void HarmonyScene::Terminate(){
+    AudioHelper::StopBGM(bgmId);
     IScene::Terminate();
-    
 }
 void HarmonyScene::BackOnClick(int stage){
-    Engine::GameEngine::GetInstance().ChangeScene("start");
+
+    Engine::GameEngine::GetInstance().ChangeScene("anqi_start");
 }

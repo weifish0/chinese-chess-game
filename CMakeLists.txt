@@ -24,7 +24,6 @@ FetchContent_Declare(
 FetchContent_MakeAvailable(json)
 
 add_executable(CHINESE-CHESS-GAME
-
     ChessPiece/ChessPiece.cpp
     ChessPiece/ChessPiece.hpp
     ChessPiece/CannonPiece.cpp
@@ -67,7 +66,10 @@ add_executable(CHINESE-CHESS-GAME
     Engine/Sprite.cpp
     Engine/Sprite.hpp
     
-    
+    Scene/playground_setting_scene.cpp
+    Scene/playground_setting_scene.hpp
+    Scene/anqi_setting_scene.cpp
+    Scene/anqi_setting_scene.hpp
     Scene/anqi_start_scene.cpp
     Scene/anqi_start_scene.hpp
     Scene/mode_select.cpp
@@ -92,8 +94,6 @@ add_executable(CHINESE-CHESS-GAME
     Scene/playground.hpp
     Scene/login.cpp
     Scene/login.hpp
-    Scene/setting_scene.cpp
-    Scene/setting_scene.hpp
     Player/player.cpp
     Player/player.hpp
     NPC/npc.cpp

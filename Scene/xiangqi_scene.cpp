@@ -243,14 +243,14 @@ void XiangqiScene::ConstructUI() {
     UIGroup->AddNewObject(RegretWarning = new Engine::Label("It's too late...", "pirulen.ttf", 30, w - halfW / 4, halfH / 8, 255, 150, 150, 255, 0.5, 0.5));
     RegretWarning->Visible = false;
     // Regret Button
-    RegretBtn = new Engine::ImageButton("xiangqi/floor.png", "xiangqi/dirt.png", halfW/* * 1.75 */, halfH/* * 1.75 */, blockSize * 4, blockSize, 0.5, 0.5);
-    RegretBtn->SetOnClickCallback(std::bind(&XiangqiScene::RegretOnClick, this));
-    AddNewControlObject(RegretBtn);
-    AddNewObject(RegretBtnLbl = new Engine::Label("Regret " + std::to_string(RegretCount) + "/3", "pirulen.ttf", 36, halfW/* * 1.75 */, halfH/* * 1.75 */, 255, 255, 255, 255, 0.5, 0.5)); 
+    // RegretBtn = new Engine::ImageButton("xiangqi/floor.png", "xiangqi/dirt.png", halfW / 4 - blockSize * 2, halfH, blockSize * 5, blockSize, 0.5, 0.5);
+    // RegretBtn->SetOnClickCallback(std::bind(&XiangqiScene::RegretOnClick, this));
+    // AddNewControlObject(RegretBtn);
+    AddNewObject(new Engine::Label("Press 'R' to Regret!", "pirulen.ttf", 24, halfW / 4, halfH * 1.5 - 50, 255, 255, 255, 255, 0.5, 0.5));
+    AddNewObject(RegretBtnLbl = new Engine::Label("Regret " + std::to_string(RegretCount) + "/3", "pirulen.ttf", 36, halfW / 4, halfH * 1.5, 255, 255, 255, 255, 0.5, 0.5)); 
 }
 
 void XiangqiScene::Update(float deltaTime) {
-    std::cout << "[DEBUGGER] Regret Debugger 169" << std::endl;
     int h = Engine::GameEngine::GetInstance().GetScreenSize().y;
     int w = Engine::GameEngine::GetInstance().GetScreenSize().x;
     int halfW = w / 2;
@@ -331,10 +331,7 @@ void XiangqiScene::Update(float deltaTime) {
             winner = HONG;
             Engine::GameEngine::GetInstance().ChangeScene("xiangqi_win");
         }
-    }
-    std::cout << "[DEBUGGER] Regret Debugger 169-2" << std::endl;
-
-    
+    }    
 }
 
 void XiangqiScene::Terminate() {
@@ -345,7 +342,6 @@ void XiangqiScene::Terminate() {
 }
 
 void XiangqiScene::OnMouseDown(int button, int mx, int my) {
-    std::cout << "[DEBUGGER] Regret Debugger 166" << std::endl;
     int h = Engine::GameEngine::GetInstance().GetScreenSize().y;
     int w = Engine::GameEngine::GetInstance().GetScreenSize().x;
     int halfW = w / 2;
@@ -377,11 +373,9 @@ void XiangqiScene::OnMouseDown(int button, int mx, int my) {
             SelectFlag = false;
     }
     IScene::OnMouseDown(button, mx, my);
-    std::cout << "[DEBUGGER] Regret Debugger 166-2" << std::endl;
 }
 
 void XiangqiScene::OnMouseMove(int mx, int my) {
-    std::cout << "[DEBUGGER] Regret Debugger 167" << std::endl;
     int h = Engine::GameEngine::GetInstance().GetScreenSize().y;
     int w = Engine::GameEngine::GetInstance().GetScreenSize().x;
     int halfW = w / 2;
@@ -407,11 +401,9 @@ void XiangqiScene::OnMouseMove(int mx, int my) {
             preview->Tint = al_map_rgba(100, 255, 100, 150); // Greenish
         }
     }
-    std::cout << "[DEBUGGER] Regret Debugger 167-2" << std::endl;
 }
 
 void XiangqiScene::OnMouseUp(int button, int mx, int my) {
-    std::cout << "[DEBUGGER] Regret Debugger 168" << std::endl;
     int h = Engine::GameEngine::GetInstance().GetScreenSize().y;
     int w = Engine::GameEngine::GetInstance().GetScreenSize().x;
     int halfW = w / 2;
@@ -434,7 +426,6 @@ void XiangqiScene::OnMouseUp(int button, int mx, int my) {
             && PIECES(SelectedRowCol.first, SelectedRowCol.second)\
             && !PIECES(SelectedRowCol.first, SelectedRowCol.second)->IsValidMove(SelectedRowCol.first, SelectedRowCol.second, _row_mouse, _col_mouse, Chessboard)) {
             
-            std::cout << "[DEBUGGER] OnMouseUp: return right after valid check" << std::endl;
             return;
         }
 
@@ -442,8 +433,6 @@ void XiangqiScene::OnMouseUp(int button, int mx, int my) {
         // Where SelectedRowCol remains the same, yet the pointer for SelectedRowCol is already set as a nullptr.
         if (!PIECES(SelectedRowCol.first, SelectedRowCol.second))
             return;
-
-        std::cout << "[DEBUGGER] Regret Func. Debugger." << std::endl;
 
         // PIECE MOVEMENT & UPDATE        
         // Case 2 and 1: Eat an enemy || Wander to a no man's land.
@@ -473,12 +462,9 @@ void XiangqiScene::OnMouseUp(int button, int mx, int my) {
     WrongPiece = false; // Reset `WrongPiece` to default: false.
 
     // Checkmate warning!
-    std::cout << "[DEBUGGER] Regret Func. Debugger 168-1-2 Kings Check" << std::endl;
     if (RedKing && BlackKing) {
-        std::cout << "[DEBUGGER] Regret Func. Debugger 168-1-2-1" << std::endl;
         bool blackCheckmate = BlackKing->IsCheckmate(Chessboard), redCheckmate = RedKing->IsCheckmate(Chessboard);
         // Checkmate
-        std::cout << "[DEBUGGER] Regret Func. Debugger 168-1-2-2" << std::endl;
         if (blackCheckmate && !SelectFlag) {
             checkmate_warning_tick = 1;
             
@@ -499,11 +485,15 @@ void XiangqiScene::OnMouseUp(int button, int mx, int my) {
             general_dist = abs(BlackKing->Position.y - RedKing->Position.y);
             flying_general_tick = flyingGeneral;
         }
-        std::cout << "[DEBUGGER] Regret Func. Debugger 168-1-2-5" << std::endl;
     }
 
     OnMouseMove(mx, my);
-    std::cout << "[DEBUGGER] Regret Debugger 168-2" << std::endl;
+}
+
+void XiangqiScene::OnKeyDown(int keyCode) {
+    if (keyCode == ALLEGRO_KEY_R) {
+        RegretOnClick();
+    }
 }
 
 void XiangqiScene::MoveOnChessboard(int ro, int co, int rf, int cf) {

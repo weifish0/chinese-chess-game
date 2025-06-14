@@ -578,7 +578,7 @@ void Playground::OnMouseDown(int button, int mx, int my) {
     if (mx >= PADDING && mx <= PADDING + ICON_SIZE &&
         my >= PADDING + ICON_SIZE + PADDING && 
         my <= PADDING + ICON_SIZE + PADDING + ICON_SIZE) {
-        Engine::GameEngine::GetInstance().ChangeScene("setting");
+        Engine::GameEngine::GetInstance().ChangeScene("playground_setting");
         return;
     }
     
