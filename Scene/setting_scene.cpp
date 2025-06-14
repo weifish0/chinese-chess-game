@@ -1,6 +1,7 @@
 #include "setting_scene.hpp"
 #include "Engine/GameEngine.hpp"
 #include "Engine/Resources.hpp"
+#include "playground.hpp"
 #include <allegro5/allegro.h>
 #include <allegro5/allegro_font.h>
 #include <allegro5/allegro_primitives.h>
@@ -21,9 +22,18 @@ void SettingScene::Initialize() {
     is_back_button_hovered = false;
     
     // 初始化音量滑軌
-    volume = 1.0f;  // 預設音量為最大
+    volume = 1.0f;
     is_dragging = false;
     is_volume_slider_hovered = false;
+    
+    // 初始化音樂列表
+    music_list = {
+        "playground/A Tender Feeling.ogg",
+        "playground/Undertale-OST-071.ogg",
+        "playground/Stardew-Valley-OST-Summer.ogg"
+    };
+    current_music_index = 0;
+    is_music_button_hovered = false;
 }
 
 void SettingScene::Terminate() {
@@ -56,6 +66,12 @@ void SettingScene::Update(float deltaTime) {
                                mouse_x <= VOLUME_SLIDER_X + VOLUME_SLIDER_WIDTH + VOLUME_KNOB_SIZE/2 &&
                                mouse_y >= VOLUME_SLIDER_Y - VOLUME_KNOB_SIZE/2 && 
                                mouse_y <= VOLUME_SLIDER_Y + VOLUME_KNOB_SIZE/2);
+    
+    // 更新音樂切換按鈕懸停狀態
+    is_music_button_hovered = (mouse_x >= MUSIC_BUTTON_X && 
+                              mouse_x <= MUSIC_BUTTON_X + MUSIC_BUTTON_WIDTH &&
+                              mouse_y >= MUSIC_BUTTON_Y + 100 && 
+                              mouse_y <= MUSIC_BUTTON_Y + MUSIC_BUTTON_HEIGHT + 100);
     
     // 如果正在拖動滑軌且滑鼠在滑軌區域內，更新音量值
     if (is_dragging && is_volume_slider_hovered) {
@@ -112,15 +128,28 @@ void SettingScene::Draw() const {
         );
     }
     
-    // 繪製音量滑軌
-    // 繪製滑軌背景
-    al_draw_filled_rectangle(
+    // 繪製音量控制區
+    // 繪製音量標籤
+    if (volume_font) {
+        al_draw_text(
+            static_cast<ALLEGRO_FONT*>(volume_font),
+            al_map_rgb(0, 0, 0),
+            VOLUME_LABEL_X,
+            VOLUME_LABEL_Y - al_get_font_line_height(static_cast<ALLEGRO_FONT*>(volume_font))/2,
+            ALLEGRO_ALIGN_LEFT,
+            "音量"
+        );
+    }
+    
+    // 繪製音量滑軌背景
+    al_draw_filled_rounded_rectangle(
         VOLUME_SLIDER_X, VOLUME_SLIDER_Y,
         VOLUME_SLIDER_X + VOLUME_SLIDER_WIDTH, VOLUME_SLIDER_Y + VOLUME_SLIDER_HEIGHT,
+        VOLUME_SLIDER_HEIGHT/2, VOLUME_SLIDER_HEIGHT/2,
         al_map_rgb(200, 200, 200)
     );
     
-    // 繪製滑軌按鈕
+    // 繪製音量滑軌按鈕
     float knob_x = VOLUME_SLIDER_X + volume * VOLUME_SLIDER_WIDTH;
     al_draw_filled_circle(
         knob_x, VOLUME_SLIDER_Y + VOLUME_SLIDER_HEIGHT/2,
@@ -128,15 +157,38 @@ void SettingScene::Draw() const {
         is_volume_slider_hovered || is_dragging ? al_map_rgb(100, 100, 100) : al_map_rgb(150, 150, 150)
     );
     
-    // 繪製音量文字
+    // 繪製音樂控制區
+    // 繪製音樂標籤
+    std::string music_label = "音樂： " + music_list[current_music_index].substr(music_list[current_music_index].find_last_of("/"));
     if (volume_font) {
         al_draw_text(
             static_cast<ALLEGRO_FONT*>(volume_font),
             al_map_rgb(0, 0, 0),
-            VOLUME_SLIDER_X - 200,
-            VOLUME_SLIDER_Y - 50,  // 調整位置以適應更大的字體
+            MUSIC_LABEL_X,
+            MUSIC_LABEL_Y - al_get_font_line_height(static_cast<ALLEGRO_FONT*>(volume_font))/2,
             ALLEGRO_ALIGN_LEFT,
-            "音量"
+            music_label.c_str()
+        );
+    }
+    
+    // 繪製音樂切換按鈕
+    al_draw_filled_rounded_rectangle(
+        MUSIC_BUTTON_X, MUSIC_BUTTON_Y + 100,
+        MUSIC_BUTTON_X + MUSIC_BUTTON_WIDTH, MUSIC_BUTTON_Y + MUSIC_BUTTON_HEIGHT + 100, 
+        10, 10,
+        is_music_button_hovered ? al_map_rgb(180, 180, 180) : al_map_rgb(200, 200, 200)
+    );
+    
+    // 繪製音樂切換按鈕文字
+    if (volume_font) {
+        std::string button_text = "切換音樂";
+        al_draw_text(
+            static_cast<ALLEGRO_FONT*>(volume_font),
+            al_map_rgb(0, 0, 0),
+            MUSIC_BUTTON_X + MUSIC_BUTTON_WIDTH/2,
+            MUSIC_BUTTON_Y + 100,
+            ALLEGRO_ALIGN_CENTER,
+            button_text.c_str()
         );
     }
 }
@@ -162,6 +214,36 @@ void SettingScene::OnMouseDown(int button, int mx, int my) {
                       static_cast<float>(mx)));
         volume = (knob_x - VOLUME_SLIDER_X) / VOLUME_SLIDER_WIDTH;
         al_set_mixer_gain(al_get_default_mixer(), volume);
+    }
+    
+    // 檢查是否點擊音樂切換按鈕
+    if (is_music_button_hovered) {
+        // 切換到下一首音樂
+        current_music_index = (current_music_index + 1) % music_list.size();
+        
+        // 獲取當前場景
+        auto playground = dynamic_cast<Playground*>(Engine::GameEngine::GetInstance().GetScene("playground"));
+        if (playground) {
+            // 停止當前音樂
+            if (playground->GetMusicInstance()) {
+                al_stop_sample_instance(playground->GetMusicInstance().get());
+            }
+            
+            // 載入並播放新音樂
+            auto new_music = Engine::Resources::GetInstance().GetSample(music_list[current_music_index]);
+            if (new_music) {
+                auto new_instance = std::shared_ptr<ALLEGRO_SAMPLE_INSTANCE>(
+                    al_create_sample_instance(new_music.get()),
+                    al_destroy_sample_instance
+                );
+                if (new_instance) {
+                    al_attach_sample_instance_to_mixer(new_instance.get(), al_get_default_mixer());
+                    al_set_sample_instance_playmode(new_instance.get(), ALLEGRO_PLAYMODE_LOOP);
+                    al_play_sample_instance(new_instance.get());
+                    playground->SetMusicInstance(new_instance);
+                }
+            }
+        }
     }
 }
 

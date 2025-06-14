@@ -121,6 +121,10 @@ public:
     // 滑鼠點擊事件
     void OnMouseDown(int button, int mx, int my) override;
 
+    // 新增：音樂實例的訪問方法
+    std::shared_ptr<ALLEGRO_SAMPLE_INSTANCE> GetMusicInstance() const { return music_instance; }
+    void SetMusicInstance(std::shared_ptr<ALLEGRO_SAMPLE_INSTANCE> instance) { music_instance = instance; }
+
 private:
     // 更新鏡頭位置
     void UpdateCamera();
