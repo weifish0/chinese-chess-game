@@ -42,6 +42,7 @@
 
 ### 高階功能 [Hard]
 - Anqi: 長捉禁手規則
+- Playground: JWT Token
 - Playground: SQLite 儲存玩家資訊與成就
 - Playground: 帳號密碼提示、有效檢查
 - Playground: 鏡頭跟隨功能
