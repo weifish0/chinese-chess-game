@@ -43,7 +43,6 @@ class Manage{
         int prolong_time;
         Chess* attacker;
         std::set<Chess*> attack_target;
-        std::set<Chess*> cannon_target;
 
 };
 class Tick{
@@ -127,7 +126,6 @@ void AnqiScene::Initialize() {
     red->regret_time = 0;
     red->request_time = 0;
     red->attack_step = 0;
-    red->cannon_target.clear();
     red->attack_target.clear();
     red->attacker = nullptr;
 
@@ -137,7 +135,6 @@ void AnqiScene::Initialize() {
     black->regret_time = 0;
     black->attack_step = 0;
     black->attack_target.clear();
-    black->cannon_target.clear();
     red->attacker = nullptr;
     harmony_step = 0;
     
@@ -745,30 +742,28 @@ void AnqiScene::Update(float deltaTime) {
 }
 void UpdateCannon1(int op,int& mark,int j,int i,int dj,int di,int des_y,int des_x,std::set<Chess*> cannon_target,std::set<Chess*>& update_cannon_target);
 
-void AnqiScene::CannonTarget(int des_y,int des_x,int& mark){//cannon fix
+void AnqiScene::CannonTarget(int des_y,int des_x,int& mark,std::set<Chess*> attack_target,std::set<Chess*>& update_attack_target){//cannon fix
     int color = temp->getColor();
     Chess* attacker1 = (color==RED)?attacker_cannon->red_cannon1:attacker_cannon->black_cannon1;
     Chess* attacker2 = (color==RED)?attacker_cannon->red_cannon2:attacker_cannon->black_cannon2;
-    std::set<Chess*>& cannon_target = (color==RED)?red->cannon_target:black->cannon_target;
-    std::set<Chess*> update_cannon_target;
     if(attacker1&&attacker1->Check_open()){
         int j = (attacker1->Position.y - 600) / 200;
         int i = (attacker1->Position.x - 635) / 200;
         if(temp_y==j&&des_y!=j){//move away
             int di = (des_x-i>0)?1:-1;
-            UpdateCannon1(0,mark,j,i,0,di,des_y,des_x,cannon_target,update_cannon_target);
+            UpdateCannon1(0,mark,j,i,0,di,des_y,des_x,attack_target,update_attack_target);
         }
         else if(temp_x==i&&des_x!=i){//move away
             int dj = (des_y-j>0)?1:-1;
-            UpdateCannon1(0,mark,j,i,dj,0,des_y,des_x,cannon_target,update_cannon_target);
+            UpdateCannon1(0,mark,j,i,dj,0,des_y,des_x,attack_target,update_attack_target);
         }
         else if(des_y==j&&temp_y!=j){//move in
             int di = (des_x-i>0)?1:-1;
-            UpdateCannon1(1,mark,j,i,0,di,des_y,des_x,cannon_target,update_cannon_target);
+            UpdateCannon1(1,mark,j,i,0,di,des_y,des_x,attack_target,update_attack_target);
         }
         else if(des_x==i&&temp_x!=i){//move in
             int dj = (des_y-j>0)?1:-1;
-            UpdateCannon1(1,mark,j,i,dj,0,des_y,des_x,cannon_target,update_cannon_target);
+            UpdateCannon1(1,mark,j,i,dj,0,des_y,des_x,attack_target,update_attack_target);
         }
 
     }
@@ -777,26 +772,25 @@ void AnqiScene::CannonTarget(int des_y,int des_x,int& mark){//cannon fix
         int i = (attacker2->Position.x - 635) / 200;
         if(temp_y==j&&des_y!=j){//move away
             int di = (des_x-i>0)?1:-1;
-            UpdateCannon1(0,mark,j,i,0,di,des_y,des_x,cannon_target,update_cannon_target);
+            UpdateCannon1(0,mark,j,i,0,di,des_y,des_x,attack_target,update_attack_target);
         }
         else if(temp_x==i&&des_x!=i){//move away
             int dj = (des_y-j>0)?1:-1;
-            UpdateCannon1(0,mark,j,i,dj,0,des_y,des_x,cannon_target,update_cannon_target);
+            UpdateCannon1(0,mark,j,i,dj,0,des_y,des_x,attack_target,update_attack_target);
         }
         else if(des_y==j&&temp_y!=j){//move in
             int di = (des_x-i>0)?1:-1;
-            UpdateCannon1(1,mark,j,i,0,di,des_y,des_x,cannon_target,update_cannon_target);
+            UpdateCannon1(1,mark,j,i,0,di,des_y,des_x,attack_target,update_attack_target);
         }
         else if(des_x==i&&temp_x!=i){//move in
             int dj = (des_y-j>0)?1:-1;
-            UpdateCannon1(1,mark,j,i,dj,0,des_y,des_x,cannon_target,update_cannon_target);
+            UpdateCannon1(1,mark,j,i,dj,0,des_y,des_x,attack_target,update_attack_target);
         }
     }
-    cannon_target = update_cannon_target;
 
 }
 
-void UpdateCannon1(int op,int& mark,int j,int i,int dj,int di,int des_y,int des_x,std::set<Chess*> cannon_target,std::set<Chess*>& update_cannon_target){//temp!=cannon
+void UpdateCannon1(int op,int& mark,int j,int i,int dj,int di,int des_y,int des_x,std::set<Chess*> attack_target,std::set<Chess*>& update_cannon_target){//temp!=cannon
     //op==0:move away, op==1:move in
     //temp is not cannon
     int flag = 0;
@@ -807,7 +801,7 @@ void UpdateCannon1(int op,int& mark,int j,int i,int dj,int di,int des_y,int des_
                 if(flag){
                     if(chess&&chess->Check_open()){
                         update_cannon_target.insert(chess);
-                        if(cannon_target.find(chess)!=cannon_target.end())
+                        if(attack_target.find(chess)!=attack_target.end())
                             mark = 1;
                     }
                     return;
@@ -823,7 +817,7 @@ void UpdateCannon1(int op,int& mark,int j,int i,int dj,int di,int des_y,int des_
                 if(flag){
                     if(chess&&chess->Check_open()){
                         update_cannon_target.insert(chess);
-                        if(cannon_target.find(chess)!=cannon_target.end())
+                        if(attack_target.find(chess)!=attack_target.end())
                             mark = 1;
                     }
                     return ;
@@ -835,7 +829,7 @@ void UpdateCannon1(int op,int& mark,int j,int i,int dj,int di,int des_y,int des_
         
 }
 
-void UpdateCannon2(int& mark,int j,int i,int dj,int di,std::set<Chess*>& cur_attack_target,std::set<Chess*>& update_attack_target){//temp==cannon
+void UpdateCannon2(int& mark,int j,int i,int dj,int di,std::set<Chess*> attack_target,std::set<Chess*>& update_attack_target){//temp==cannon
     //temp is cannon
     int flag = 0;
     if(dj!=0){
@@ -845,7 +839,7 @@ void UpdateCannon2(int& mark,int j,int i,int dj,int di,std::set<Chess*>& cur_att
                 if(flag){
                     if(chess->Check_open()){
                         update_attack_target.insert(chess);
-                        if(cur_attack_target.find(chess)!=cur_attack_target.end())
+                        if(attack_target.find(chess)!=attack_target.end())
                             mark = 1;
                     }
                     return;
@@ -861,7 +855,7 @@ void UpdateCannon2(int& mark,int j,int i,int dj,int di,std::set<Chess*>& cur_att
                 if(flag){
                     if(chess->Check_open()){
                         update_attack_target.insert(chess);
-                        if(cur_attack_target.find(chess)!=cur_attack_target.end())
+                        if(attack_target.find(chess)!=attack_target.end())
                             mark = 1;
                     }
                     return ;
@@ -889,9 +883,16 @@ void AnqiScene::Target(int j,int i){
     Chess*& cur_attacker = (color==RED)?red->attacker:black->attacker;
 
     std::set<Chess*> update_attack_target;
-
+    if(color==RED&&black->remain==1){
+        cur_attack_step = 0;
+        return;
+    }
+    else if(color==BLACK&&red->remain==1){
+        cur_attack_step = 0;
+        return;
+    }
     if(temp->getType()!=CANNON){
-        CannonTarget(j,i,mark);
+        CannonTarget(j,i,mark,cur_attack_target,update_attack_target);
         if(cur_attack_target.empty()){
             for(auto dir:direction){
                 int dj = dir.first;
@@ -939,9 +940,8 @@ void AnqiScene::Target(int j,int i){
         cur_attack_step++;
     else
         cur_attack_step = 0;
-    std::set<Chess*> cannon_target = (color==RED)?red->cannon_target:black->cannon_target;
 
-    if(!cur_attack_target.empty()||!cannon_target.empty()){
+    if(!cur_attack_target.empty()){
         cur_attacker = temp;
         flag->attack_flag = 0;
     }
@@ -1031,10 +1031,25 @@ void AnqiScene::Recover(AnqiRecord* first,AnqiRecord* second){
         ChessGroup->AddNewObject(chess = new Chess(image, 635 + i * 200, 600 + j * 200 ,first->target_type, first->target_color,first->target_num));//recover eaten chess
         chess->Open();
         chessPositions[first->destination.first][first->destination.second] = chess;
-        if(first->target_color==RED)
-            red_state[first->target_num] = true;
-        else
-            black_state[first->target_num] = true;
+        if(second->target_color==RED){
+            red_state[second->target_num] = true;
+            if(second->target_type==CANNON){
+                if(second->target_num==10)
+                    attacker_cannon->red_cannon1 = chess;
+                else
+                    attacker_cannon->red_cannon2 = chess;
+            }
+
+        }
+        else{
+            black_state[second->target_num] = true;
+            if(second->target_type==CANNON){
+                if(second->target_num==10)
+                    attacker_cannon->black_cannon1 = chess;
+                else
+                    attacker_cannon->black_cannon2 = chess;
+            }
+        }
     }
     chess = chessPositions[second->destination.first][second->destination.second];
     recover_pos.y = 600+200*second->start.first;
@@ -1054,10 +1069,26 @@ void AnqiScene::Recover(AnqiRecord* first,AnqiRecord* second){
         ChessGroup->AddNewObject(chess = new Chess(image, 635 + i * 200, 600 + j * 200 ,second->target_type, second->target_color,second->target_num));
         chess->Open();
         chessPositions[second->destination.first][second->destination.second] = chess;
-        if(second->target_color==RED)
+        if(second->target_color==RED){
             red_state[second->target_num] = true;
-        else
+            if(second->target_type==CANNON){
+                if(second->target_num==10)
+                    attacker_cannon->red_cannon1 = chess;
+                else
+                    attacker_cannon->red_cannon2 = chess;
+            }
+
+        }
+        else{
             black_state[second->target_num] = true;
+            if(second->target_type==CANNON){
+                if(second->target_num==10)
+                    attacker_cannon->black_cannon1 = chess;
+                else
+                    attacker_cannon->black_cannon2 = chess;
+            }
+        }
+            
     }
     
 }

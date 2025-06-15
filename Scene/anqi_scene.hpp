@@ -58,7 +58,7 @@ public:
     void Recover(AnqiRecord* first,AnqiRecord* second);
     void RecoverValid(int& regret_time);
     std::string GetImage(ChessColor color,ChessType type);
-    void CannonTarget(int des_j,int des_i,int& mark);
+    void CannonTarget(int j,int i,int& mark,std::set<Chess*> attack_target,std::set<Chess*>& update_attack_target);
     void StopSign();
     // void PlayOnClick(int stage);
     // void SettingsOnClick(int stage);
