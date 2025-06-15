@@ -22,26 +22,34 @@
 
 ### 基礎功能 [Easy]
 - Xiangqi: 明棋基礎規則（走法合法判斷）
+- Anqi: 造型更換
 - Anqi: 暗棋隨機翻牌與走子規則
+- Anqi: 回合時間限制、玩家回合提示
+- Anqi: 求和、投降、延長時間
 - Playground: NPC 對話功能（空白鍵觸發）
+- Playground: 切換背景音樂
+- Playground: 基礎碰撞判斷
 - 本地雙人遊戲（PVP 模式）
 
 ### 進階功能 [Normal]
 - 悔棋、空步判和
 - 特效動畫（~~吃子動畫~~、音效）
 - Playgorund: 中間場景角色移動動畫 + 地圖指引互動
+- Playground: 彩蛋功能：找到郭教授可以與之聊天（支援 chatGPT 請求）
 - ~~關卡達成任務紀錄與提示~~
 - ~~計分系統（依照棋子階級與條件加權）~~
-- 彩蛋功能：找到郭教授可以與之聊天（支援 chatGPT 請求）
+
 
 ### 高階功能 [Hard]
 - Anqi: 長捉禁手規則
-- ~~FastAPI 登入系統（LINE、GitHub、Google OAuth 整合）~~
-- SQLite 儲存玩家資訊與成就
-- ~~線上對戰房間系統（建房 / 加入 / 同步棋步）~~
-- 支線任務模擬課程教授測驗（RPG 敘事互動）
-- ~~AI 對戰邏輯（明棋與暗棋）~~
+- Playground: SQLite 儲存玩家資訊與成就
+- Playground: 帳號密碼提示、有效檢查
 - Playground: 鏡頭跟隨功能
+- Playground: Mini Map
+- ~~FastAPI 登入系統（LINE、GitHub、Google OAuth 整合）~~
+- ~~線上對戰房間系統（建房 / 加入 / 同步棋步）~~
+- ~~支線任務模擬課程教授測驗（RPG 敘事互動）~~
+- ~~AI 對戰邏輯（明棋與暗棋）~~
 
 ## 🎲 遊戲流程
 
